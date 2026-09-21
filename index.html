@@ -773,10 +773,10 @@ const NETWORK_SEND_RATE=50;
 const MAG_SIZE=12;
 
 const WEAPONS={
- rifle:{name:"RIFLE",fireDelay:145,bodyDamage:34,headDamage:100,pellets:1,spread:0,zoom:.90},
- smg:{name:"SMG",fireDelay:110,bodyDamage:30,headDamage:95,pellets:1,spread:.006,zoom:.92},
- shotgun:{name:"SHOTGUN",fireDelay:520,bodyDamage:8,headDamage:11,pellets:6,spread:.055,zoom:1.0},
- sniper:{name:"SNIPER",fireDelay:650,bodyDamage:58,headDamage:100,pellets:1,spread:0,zoom:.48}
+ rifle:{name:"RIFLE",fireDelay:145,bodyDamage:34,headDamage:100,pellets:1,spread:0,zoom:.72},
+ smg:{name:"SMG",fireDelay:110,bodyDamage:30,headDamage:95,pellets:1,spread:.006,zoom:.78},
+ shotgun:{name:"SHOTGUN",fireDelay:520,bodyDamage:8,headDamage:11,pellets:6,spread:.055,zoom:.83},
+ sniper:{name:"SNIPER",fireDelay:650,bodyDamage:58,headDamage:100,pellets:1,spread:0,zoom:.42}
 };
 
 let currentWeapon="rifle";
@@ -1565,6 +1565,79 @@ function createScene(){
   point.intensity=.45;
   point.range=12;
  });
+
+ // ===== 고급 전술기지 디테일 =====
+ // 중앙 구역을 하나의 큰 전술 광장처럼 보이게 만드는 바닥 패널/라인
+ for(let z=-30;z<=30;z+=6){
+  decoBox("roadPanel",0,.025,z,28,.03,.16,darkMat,false);
+ }
+ for(let x=-30;x<=30;x+=6){
+  decoBox("roadPanelV",x,.026,0,.16,.03,28,darkMat,false);
+ }
+
+ // 낮은 벽 위의 반복되는 금속 패널과 수직 보강재
+ function panelWall(x,y,z,w,h,d,material=darkMat){
+  decoBox("panelWall",x,y,z,w,h,d,material,false);
+  const count=Math.max(2,Math.floor(Math.max(w,d)/2.5));
+  for(let i=0;i<count;i++){
+   const t=(i+.5)/count-.5;
+   if(w>=d) decoBox("panelRib",x+t*w,y,z-d/2-.025,.08,h*.82,.06,trimMat,false);
+   else decoBox("panelRib",x-d/2-.025,y,z+t*d,.06,h*.82,.08,trimMat,false);
+  }
+ }
+ panelWall(-22,2.6,12,5.2,3.8,.18);
+ panelWall(22,2.6,-12,5.2,3.8,.18);
+
+ // 중앙 통신탑/관측 구조물
+ decoBox("commandBase",0,.35,0,8,.7,8,darkMat,true);
+ decoBox("commandCore",0,1.15,0,4.8,1.0,4.8,coverMat,true);
+ decoBox("commandGlow",0,1.68,0,3.8,.08,3.8,trimMat,false);
+ for(let a=0;a<4;a++){
+  const ang=a*Math.PI/2;
+  const x=Math.cos(ang)*3.2;
+  const z=Math.sin(ang)*3.2;
+  decoBox("commandPillar",x,2.0,z,.45,3.0,.45,darkMat,false);
+  decoBox("commandLight",x,3.55,z,.5,.08,.5,warmMat,false);
+ }
+
+ // 고지대 주변의 금속 난간 느낌을 내는 기둥과 상부 빔
+ [[-28,22],[28,22],[-28,-22],[28,-22]].forEach(q=>{
+  const [x,z]=q;
+  for(let dx of [-5,0,5]){
+   decoBox("railPost",x+dx,6.9,z-4.3,.12,1.8,.12,darkMat,false);
+  }
+  decoBox("railTop",x,7.7,z-4.3,10.2,.12,.12,trimMat,false);
+ });
+
+ // 컨테이너/전술 장비 보관소 형태의 구조물
+ function containerUnit(x,z,rot=0){
+  const c=decoBox("container",x,1.5,z,8,3,3,darkMat,true);
+  c.rotation.y=rot;
+  for(let i=-3;i<=3;i+=2){
+   const px=x+Math.cos(rot)*i;
+   const pz=z+Math.sin(rot)*i;
+   decoBox("containerStripe",px,1.5,pz,.12,2.5,3.08,trimMat,false).rotation.y=rot;
+  }
+ }
+ containerUnit(-35,-18,.08);
+ containerUnit(35,18,-.08);
+
+ // 맵 끝부분에 입구 아치 형태를 추가해 단순한 벽 느낌을 줄임
+ function gate(x,z,rot=0){
+  const left=decoBox("gateLeft",x-4,3,z,1.2,6,1.2,darkMat,true); left.rotation.y=rot;
+  const right=decoBox("gateRight",x+4,3,z,1.2,6,1.2,darkMat,true); right.rotation.y=rot;
+  const top=decoBox("gateTop",x,5.7,z,9.2,1.2,1.2,coverMat,true); top.rotation.y=rot;
+  decoBox("gateLight",x,5.55,z-.66,5.5,.12,.12,warmMat,false).rotation.y=rot;
+ }
+ gate(0,42,0);
+ gate(0,-42,0);
+
+ // 지면에 작은 금속 볼라드와 경고등을 배치
+ for(let x=-36;x<=36;x+=8){
+  if(Math.abs(x)<12) continue;
+  decoBox("bollard",x,.55,30,.32,1.1,.32,darkMat,false);
+  decoBox("warningLight",x,1.1,30,.38,.08,.38,warmMat,false);
+ }
 
  return scene;
 
@@ -2588,14 +2661,14 @@ function findPlayerHit(
     y:t.y+1.85,
     z:t.z,
     part:"head",
-    r:.34
+    r:.48
    },
    {
     x:t.x,
     y:t.y+.95,
     z:t.z,
     part:"body",
-    r:.55
+    r:.78
    }
   ];
 
@@ -2622,7 +2695,7 @@ function findPlayerHit(
 
    if(
     along<0 ||
-    along>100
+    along>150
    )continue;
 
    const cx=
@@ -3801,19 +3874,12 @@ function hideWeaponSelect(){
 function setZoom(active){
  zoomed=!!active;
  const scope=document.getElementById("scopeOverlay");
- // 스코프는 저격총에서만 실제로 열립니다.
- if(currentWeapon!=="sniper"){
-  zoomed=false;
- }
+ // 모든 총이 조준(ADS) 가능하고, 저격총만 실제 스코프 화면을 표시합니다.
  camera.fov=zoomed?WEAPONS[currentWeapon].zoom:.9;
- scope.classList.toggle("active",zoomed);
+ scope.classList.toggle("active",zoomed && currentWeapon==="sniper");
 }
 
 function toggleZoom(){
- if(currentWeapon!=="sniper"){
-  showHitMarker();
-  return;
- }
  setZoom(!zoomed);
 }
 
