@@ -2,226 +2,2644 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>VECTOR WebGL Test</title>
+<meta name="viewport"
+      content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+
+<title>VECTOR FPS</title>
 
 <style>
-html,body{
-    margin:0;
-    width:100%;
-    height:100%;
-    overflow:hidden;
-    background:#111;
+*{
+  box-sizing:border-box;
+  user-select:none;
+  -webkit-user-select:none;
+  -webkit-touch-callout:none;
 }
 
-#info{
-    position:fixed;
-    top:20px;
-    left:20px;
-    z-index:10;
-    color:white;
-    background:#000c;
-    padding:15px;
-    font-family:Arial,sans-serif;
+html,body{
+  margin:0;
+  width:100%;
+  height:100%;
+  overflow:hidden;
+  background:#071019;
+  font-family:Arial,Helvetica,sans-serif;
+}
+
+#game{
+  position:fixed;
+  inset:0;
+}
+
+#renderCanvas{
+  width:100%;
+  height:100%;
+  display:block;
+  touch-action:none;
+}
+
+
+/* =========================================================
+   START MENU
+========================================================= */
+
+#menu{
+  position:fixed;
+  inset:0;
+  z-index:100;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  background:
+    radial-gradient(
+      circle at center,
+      #1c3045 0%,
+      #08101a 55%,
+      #030609 100%
+    );
+  color:white;
+  text-align:center;
+}
+
+.logo{
+  font-size:clamp(55px,12vw,110px);
+  font-weight:900;
+  letter-spacing:14px;
+  margin:0;
+}
+
+.logoLine{
+  width:160px;
+  height:3px;
+  background:#dfe8f2;
+  margin:18px auto;
+}
+
+.subtitle{
+  color:#8293a8;
+  letter-spacing:6px;
+  font-size:13px;
+  margin-bottom:45px;
+}
+
+#startButton,
+#restartButton{
+  border:0;
+  background:#e8eef5;
+  color:#0a1119;
+  padding:17px 55px;
+  font-size:17px;
+  font-weight:900;
+  border-radius:3px;
+}
+
+#startButton:active,
+#restartButton:active{
+  transform:scale(.97);
+}
+
+.instructions{
+  margin-top:30px;
+  color:#7c8da2;
+  font-size:13px;
+  line-height:1.9;
+}
+
+
+/* =========================================================
+   HUD
+========================================================= */
+
+#hud{
+  position:fixed;
+  inset:0;
+  z-index:20;
+  display:none;
+  pointer-events:none;
+  color:white;
+}
+
+.panel{
+  position:absolute;
+  top:18px;
+  padding:10px 15px;
+  background:#06101bdd;
+  border:1px solid #425367;
+  backdrop-filter:blur(4px);
+}
+
+.panel small{
+  display:block;
+  color:#788ba1;
+  font-size:9px;
+  letter-spacing:2px;
+  margin-bottom:3px;
+}
+
+.panel strong{
+  font-size:23px;
+}
+
+#enemyPanel{
+  left:18px;
+}
+
+#ammoPanel{
+  right:18px;
+  text-align:right;
+}
+
+#crosshair{
+  position:absolute;
+  left:50%;
+  top:50%;
+  width:28px;
+  height:28px;
+  transform:translate(-50%,-50%);
+}
+
+.cross{
+  position:absolute;
+  background:white;
+  box-shadow:0 0 3px #000;
+}
+
+.cross1{
+  width:2px;
+  height:9px;
+  left:13px;
+  top:0;
+}
+
+.cross2{
+  width:2px;
+  height:9px;
+  left:13px;
+  bottom:0;
+}
+
+.cross3{
+  width:9px;
+  height:2px;
+  left:0;
+  top:13px;
+}
+
+.cross4{
+  width:9px;
+  height:2px;
+  right:0;
+  top:13px;
+}
+
+#healthBox{
+  position:absolute;
+  left:18px;
+  bottom:20px;
+  width:280px;
+}
+
+#healthBar{
+  width:100%;
+  height:14px;
+  background:#19232f;
+  border:1px solid #536276;
+}
+
+#healthFill{
+  height:100%;
+  width:100%;
+  background:#e7edf4;
+  transition:width .15s;
+}
+
+#healthText{
+  margin-top:5px;
+  font-size:13px;
+  color:#c4cfdb;
+}
+
+#message{
+  position:absolute;
+  left:0;
+  right:0;
+  top:38%;
+  text-align:center;
+  font-size:30px;
+  font-weight:900;
+  letter-spacing:6px;
+  text-shadow:0 2px 8px #000;
+  opacity:0;
+}
+
+
+/* =========================================================
+   DAMAGE EFFECT
+========================================================= */
+
+#damageFlash{
+  position:fixed;
+  inset:0;
+  z-index:21;
+  pointer-events:none;
+  opacity:0;
+  background:
+    radial-gradient(
+      circle,
+      transparent 40%,
+      #ff243833 100%
+    );
+}
+
+
+/* =========================================================
+   MOBILE CONTROLS
+========================================================= */
+
+#mobileControls{
+  display:none;
+  position:fixed;
+  inset:0;
+  z-index:30;
+  pointer-events:none;
+}
+
+.mobileButton{
+  position:absolute;
+  pointer-events:auto;
+  width:72px;
+  height:72px;
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:white;
+  font-size:12px;
+  font-weight:900;
+  background:#172230aa;
+  border:1px solid #ffffff66;
+  backdrop-filter:blur(4px);
+}
+
+#fireButton{
+  right:32px;
+  bottom:105px;
+}
+
+#reloadButton{
+  right:120px;
+  bottom:35px;
+}
+
+#sprintButton{
+  left:30px;
+  bottom:35px;
+}
+
+#jumpButton{
+  right:32px;
+  bottom:190px;
+}
+
+#joystick{
+  position:absolute;
+  left:25px;
+  bottom:90px;
+  width:130px;
+  height:130px;
+  border-radius:50%;
+  background:#ffffff0c;
+  border:1px solid #ffffff2b;
+  pointer-events:auto;
+}
+
+#joystickKnob{
+  position:absolute;
+  width:55px;
+  height:55px;
+  left:37px;
+  top:37px;
+  border-radius:50%;
+  background:#ffffff22;
+  border:1px solid #ffffff55;
+}
+
+
+/* =========================================================
+   DEATH / VICTORY
+========================================================= */
+
+#endScreen{
+  position:fixed;
+  inset:0;
+  z-index:110;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  flex-direction:column;
+  text-align:center;
+  color:white;
+  background:#03070bcc;
+}
+
+#endTitle{
+  font-size:clamp(48px,10vw,90px);
+  font-weight:900;
+  letter-spacing:9px;
+  margin:0;
+}
+
+#endScore{
+  color:#92a2b7;
+  letter-spacing:3px;
+  margin:15px 0 35px;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media(max-width:900px){
+
+  #mobileControls{
+    display:block;
+  }
+
+  #healthBox{
+    width:220px;
+  }
+
+  .instructions{
+    font-size:12px;
+  }
+
+}
+
+@media(min-width:901px){
+
+  #mobileControls{
+    display:none!important;
+  }
+
 }
 </style>
 </head>
 
 <body>
 
-<div id="info">
-    WebGL 테스트 중...
+<div id="game">
+  <canvas id="renderCanvas"></canvas>
 </div>
 
-<canvas id="canvas"></canvas>
+
+<!-- =======================================================
+     MENU
+======================================================= -->
+
+<div id="menu">
+
+  <h1 class="logo">VECTOR</h1>
+
+  <div class="logoLine"></div>
+
+  <div class="subtitle">
+    TACTICAL FPS
+  </div>
+
+  <button id="startButton">
+    START GAME
+  </button>
+
+  <div class="instructions">
+    PC<br>
+    WASD — MOVE　 SHIFT — SPRINT<br>
+    SPACE — JUMP　 R — RELOAD　 LEFT CLICK — FIRE<br><br>
+
+    GALAXY TAB<br>
+    왼쪽 조이스틱 — 이동　 화면 드래그 — 시점<br>
+    FIRE — 사격　 R — 재장전
+  </div>
+
+</div>
+
+
+<!-- =======================================================
+     HUD
+======================================================= -->
+
+<div id="hud">
+
+  <div id="enemyPanel" class="panel">
+    <small>HOSTILES</small>
+    <strong id="enemyCount">5</strong>
+  </div>
+
+  <div id="ammoPanel" class="panel">
+    <small>AMMO</small>
+    <strong>
+      <span id="magAmmo">12</span>
+      /
+      <span id="reserveAmmo">60</span>
+    </strong>
+  </div>
+
+  <div id="crosshair">
+
+    <div class="cross cross1"></div>
+    <div class="cross cross2"></div>
+    <div class="cross cross3"></div>
+    <div class="cross cross4"></div>
+
+  </div>
+
+  <div id="healthBox">
+
+    <div id="healthBar">
+      <div id="healthFill"></div>
+    </div>
+
+    <div id="healthText">
+      100 HP
+    </div>
+
+  </div>
+
+  <div id="message"></div>
+
+</div>
+
+
+<div id="damageFlash"></div>
+
+
+<!-- =======================================================
+     MOBILE
+======================================================= -->
+
+<div id="mobileControls">
+
+  <div id="joystick">
+    <div id="joystickKnob"></div>
+  </div>
+
+  <div
+    id="fireButton"
+    class="mobileButton">
+    FIRE
+  </div>
+
+  <div
+    id="reloadButton"
+    class="mobileButton">
+    R
+  </div>
+
+  <div
+    id="sprintButton"
+    class="mobileButton">
+    RUN
+  </div>
+
+  <div
+    id="jumpButton"
+    class="mobileButton">
+    JUMP
+  </div>
+
+</div>
+
+
+<!-- =======================================================
+     END
+======================================================= -->
+
+<div id="endScreen">
+
+  <h1 id="endTitle">
+    ELIMINATED
+  </h1>
+
+  <div id="endScore">
+    0 KILLS
+  </div>
+
+  <button id="restartButton">
+    RESTART
+  </button>
+
+</div>
+
+
+<!-- =======================================================
+     BABYLON.JS
+======================================================= -->
+
+<script src="https://cdn.babylonjs.com/babylon.js"></script>
+
 
 <script>
 
+/* ==========================================================
+   VECTOR FPS
+   Babylon.js Edition
+========================================================== */
+
 const canvas =
-    document.getElementById("canvas");
-
-canvas.width =
-    window.innerWidth;
-
-canvas.height =
-    window.innerHeight;
+  document.getElementById("renderCanvas");
 
 
-/* WebGL 가져오기 */
+/* ==========================================================
+   ENGINE
+========================================================== */
 
-const gl =
-    canvas.getContext("webgl", {
-        antialias:true
-    });
-
-
-/* WebGL 지원 여부 */
-
-if(!gl){
-
-    document.getElementById("info").innerHTML =
-        "❌ WebGL을 사용할 수 없습니다.<br>" +
-        "이 브라우저에서는 3D 게임 실행이 어렵습니다.";
-
-}else{
-
-    document.getElementById("info").innerHTML =
-        "✅ WebGL 정상 작동<br>" +
-        "아래에 색깔 있는 삼각형이 보여야 합니다.";
-
-
-    /* 버텍스 셰이더 */
-
-    const vertexShaderSource = `
-        attribute vec2 position;
-
-        void main(){
-            gl_Position =
-                vec4(position,0.0,1.0);
-        }
-    `;
-
-
-    /* 프래그먼트 셰이더 */
-
-    const fragmentShaderSource = `
-        precision mediump float;
-
-        void main(){
-            gl_FragColor =
-                vec4(1.0,0.15,0.1,1.0);
-        }
-    `;
-
-
-    function createShader(
-        type,
-        source
-    ){
-
-        const shader =
-            gl.createShader(type);
-
-        gl.shaderSource(
-            shader,
-            source
-        );
-
-        gl.compileShader(shader);
-
-        return shader;
+const engine =
+  new BABYLON.Engine(
+    canvas,
+    true,
+    {
+      preserveDrawingBuffer:false,
+      stencil:true,
+      antialias:true
     }
+  );
 
 
-    const vertexShader =
-        createShader(
-            gl.VERTEX_SHADER,
-            vertexShaderSource
-        );
+/* ==========================================================
+   SCENE
+========================================================== */
+
+const scene =
+  new BABYLON.Scene(engine);
+
+scene.clearColor =
+  new BABYLON.Color4(
+    0.025,
+    0.045,
+    0.07,
+    1
+  );
 
 
-    const fragmentShader =
-        createShader(
-            gl.FRAGMENT_SHADER,
-            fragmentShaderSource
-        );
+/* ==========================================================
+   CAMERA
+========================================================== */
+
+const camera =
+  new BABYLON.UniversalCamera(
+    "playerCamera",
+    new BABYLON.Vector3(
+      0,
+      1.7,
+      25
+    ),
+    scene
+  );
+
+camera.minZ = 0.05;
+camera.fov = 1.15;
+
+camera.applyGravity = true;
+
+camera.checkCollisions = true;
+
+camera.ellipsoid =
+  new BABYLON.Vector3(
+    0.45,
+    0.85,
+    0.45
+  );
 
 
-    const program =
-        gl.createProgram();
+scene.activeCamera =
+  camera;
 
-    gl.attachShader(
-        program,
-        vertexShader
+
+/* ==========================================================
+   GRAVITY / COLLISION
+========================================================== */
+
+scene.gravity =
+  new BABYLON.Vector3(
+    0,
+    -9.81,
+    0
+  );
+
+scene.collisionsEnabled = true;
+
+
+/* ==========================================================
+   LIGHTING
+========================================================== */
+
+const hemi =
+  new BABYLON.HemisphericLight(
+    "hemi",
+    new BABYLON.Vector3(
+      0,
+      1,
+      0
+    ),
+    scene
+  );
+
+hemi.intensity = 1.0;
+
+hemi.diffuse =
+  new BABYLON.Color3(
+    0.75,
+    0.85,
+    1
+  );
+
+hemi.groundColor =
+  new BABYLON.Color3(
+    0.12,
+    0.15,
+    0.2
+  );
+
+
+const sun =
+  new BABYLON.DirectionalLight(
+    "sun",
+    new BABYLON.Vector3(
+      -0.4,
+      -1,
+      0.3
+    ),
+    scene
+  );
+
+sun.position =
+  new BABYLON.Vector3(
+    20,
+    35,
+    20
+  );
+
+sun.intensity = 1.2;
+
+
+/* ==========================================================
+   MATERIAL HELPER
+========================================================== */
+
+function material(
+  name,
+  color
+){
+
+  const m =
+    new BABYLON.StandardMaterial(
+      name,
+      scene
     );
 
-    gl.attachShader(
-        program,
-        fragmentShader
+  m.diffuseColor =
+    BABYLON.Color3.FromHexString(
+      color
     );
 
-    gl.linkProgram(program);
-
-    gl.useProgram(program);
-
-
-    /* 삼각형 */
-
-    const vertices =
-        new Float32Array([
-             0.0,  0.7,
-            -0.7, -0.7,
-             0.7, -0.7
-        ]);
-
-
-    const buffer =
-        gl.createBuffer();
-
-    gl.bindBuffer(
-        gl.ARRAY_BUFFER,
-        buffer
+  m.specularColor =
+    new BABYLON.Color3(
+      0.15,
+      0.15,
+      0.15
     );
 
-    gl.bufferData(
-        gl.ARRAY_BUFFER,
-        vertices,
-        gl.STATIC_DRAW
+  return m;
+}
+
+
+/* ==========================================================
+   MATERIALS
+========================================================== */
+
+const floorMat =
+  material(
+    "floorMat",
+    "#26313D"
+  );
+
+const wallMat =
+  material(
+    "wallMat",
+    "#465567"
+  );
+
+const coverMat =
+  material(
+    "coverMat",
+    "#586878"
+  );
+
+const redMat =
+  material(
+    "enemyBody",
+    "#C83D4D"
+  );
+
+const headMat =
+  material(
+    "enemyHead",
+    "#E7A28E"
+  );
+
+const gunMat =
+  material(
+    "gunMat",
+    "#151A21"
+  );
+
+const barrelMat =
+  material(
+    "barrelMat",
+    "#090C10"
+  );
+
+const bulletMat =
+  material(
+    "bulletMat",
+    "#FFD36A"
+  );
+
+
+/* ==========================================================
+   FLOOR
+========================================================== */
+
+const floor =
+  BABYLON.MeshBuilder.CreateGround(
+    "floor",
+    {
+      width:100,
+      height:100
+    },
+    scene
+  );
+
+floor.material =
+  floorMat;
+
+floor.checkCollisions = true;
+
+
+/* ==========================================================
+   GRID
+========================================================== */
+
+function createGrid(){
+
+  const lineMat =
+    new BABYLON.StandardMaterial(
+      "gridMat",
+      scene
+    );
+
+  lineMat.diffuseColor =
+    new BABYLON.Color3(
+      0.25,
+      0.31,
+      0.38
+    );
+
+  lineMat.emissiveColor =
+    new BABYLON.Color3(
+      0.05,
+      0.07,
+      0.09
     );
 
 
-    const position =
-        gl.getAttribLocation(
-            program,
-            "position"
-        );
+  for(
+    let i=-45;
+    i<=45;
+    i+=3
+  ){
+
+    const a =
+      BABYLON.MeshBuilder.CreateLines(
+        "gridA",
+        {
+          points:[
+            new BABYLON.Vector3(
+              i,
+              0.012,
+              -45
+            ),
+            new BABYLON.Vector3(
+              i,
+              0.012,
+              45
+            )
+          ]
+        },
+        scene
+      );
+
+    a.color =
+      new BABYLON.Color3(
+        0.22,
+        0.27,
+        0.33
+      );
 
 
-    gl.enableVertexAttribArray(
-        position
+    const b =
+      BABYLON.MeshBuilder.CreateLines(
+        "gridB",
+        {
+          points:[
+            new BABYLON.Vector3(
+              -45,
+              0.013,
+              i
+            ),
+            new BABYLON.Vector3(
+              45,
+              0.013,
+              i
+            )
+          ]
+        },
+        scene
+      );
+
+    b.color =
+      new BABYLON.Color3(
+        0.22,
+        0.27,
+        0.33
+      );
+
+  }
+
+}
+
+createGrid();
+
+
+/* ==========================================================
+   BOX
+========================================================== */
+
+const obstacles=[];
+
+function createBox(
+  name,
+  width,
+  height,
+  depth,
+  x,
+  y,
+  z,
+  mat
+){
+
+  const box =
+    BABYLON.MeshBuilder.CreateBox(
+      name,
+      {
+        width,
+        height,
+        depth
+      },
+      scene
+    );
+
+  box.position =
+    new BABYLON.Vector3(
+      x,
+      y,
+      z
+    );
+
+  box.material = mat;
+
+  box.checkCollisions = true;
+
+  box.receiveShadows = true;
+
+  obstacles.push(box);
+
+  return box;
+}
+
+
+/* ==========================================================
+   MAP
+========================================================== */
+
+/* outer walls */
+
+createBox(
+  "northWall",
+  100,8,2,
+  0,4,-48,
+  wallMat
+);
+
+createBox(
+  "southWall",
+  100,8,2,
+  0,4,48,
+  wallMat
+);
+
+createBox(
+  "westWall",
+  2,8,100,
+  -48,4,0,
+  wallMat
+);
+
+createBox(
+  "eastWall",
+  2,8,100,
+  48,4,0,
+  wallMat
+);
+
+
+/* central cross */
+
+createBox(
+  "centerA",
+  16,3,3,
+  0,1.5,0,
+  coverMat
+);
+
+createBox(
+  "centerB",
+  3,3,16,
+  0,1.5,0,
+  coverMat
+);
+
+
+/* side covers */
+
+createBox(
+  "cover1",
+  9,3,3,
+  -22,1.5,-12,
+  coverMat
+);
+
+createBox(
+  "cover2",
+  9,3,3,
+  22,1.5,-12,
+  coverMat
+);
+
+createBox(
+  "cover3",
+  9,3,3,
+  -22,1.5,12,
+  coverMat
+);
+
+createBox(
+  "cover4",
+  9,3,3,
+  22,1.5,12,
+  coverMat
+);
+
+
+/* forward cover */
+
+createBox(
+  "frontA",
+  3,3,10,
+  -11,1.5,25,
+  coverMat
+);
+
+createBox(
+  "frontB",
+  3,3,10,
+  11,1.5,25,
+  coverMat
+);
+
+
+/* rear cover */
+
+createBox(
+  "rearA",
+  3,3,10,
+  -11,1.5,-25,
+  coverMat
+);
+
+createBox(
+  "rearB",
+  3,3,10,
+  11,1.5,-25,
+  coverMat
+);
+
+
+/* ==========================================================
+   GUN
+========================================================== */
+
+const gun =
+  new BABYLON.TransformNode(
+    "gun",
+    scene
+  );
+
+gun.parent =
+  camera;
+
+gun.position =
+  new BABYLON.Vector3(
+    0.32,
+    -0.28,
+    0.7
+  );
+
+
+const gunBody =
+  BABYLON.MeshBuilder.CreateBox(
+    "gunBody",
+    {
+      width:0.18,
+      height:0.18,
+      depth:0.65
+    },
+    scene
+  );
+
+gunBody.parent=gun;
+gunBody.material=gunMat;
+
+
+const barrel =
+  BABYLON.MeshBuilder.CreateCylinder(
+    "gunBarrel",
+    {
+      diameter:0.07,
+      height:0.45,
+      tessellation:12
+    },
+    scene
+  );
+
+barrel.parent=gun;
+
+barrel.rotation.x =
+  Math.PI/2;
+
+barrel.position.z =
+  0.48;
+
+barrel.material =
+  barrelMat;
+
+
+const grip =
+  BABYLON.MeshBuilder.CreateBox(
+    "gunGrip",
+    {
+      width:0.12,
+      height:0.3,
+      depth:0.14
+    },
+    scene
+  );
+
+grip.parent=gun;
+
+grip.position.y =
+  -0.18;
+
+grip.position.z =
+  0.08;
+
+grip.rotation.x =
+  -0.2;
+
+grip.material =
+  gunMat;
+
+
+/* ==========================================================
+   GAME VARIABLES
+========================================================== */
+
+let gameStarted=false;
+let gameOver=false;
+
+let hp=100;
+
+let magazine=12;
+let reserve=60;
+
+const magazineSize=12;
+
+let kills=0;
+
+let firing=false;
+
+let lastShot=0;
+
+const fireDelay=170;
+
+let reloadLock=false;
+
+const enemies=[];
+
+
+/* ==========================================================
+   ENEMY CREATION
+========================================================== */
+
+const enemyPositions=[
+  [-20,-20],
+  [20,-20],
+  [-22,0],
+  [22,0],
+  [0,-30]
+];
+
+
+function createEnemy(
+  x,
+  z
+){
+
+  const root =
+    new BABYLON.TransformNode(
+      "enemyRoot",
+      scene
+    );
+
+  root.position =
+    new BABYLON.Vector3(
+      x,
+      0,
+      z
     );
 
 
-    gl.vertexAttribPointer(
-        position,
-        2,
-        gl.FLOAT,
-        false,
-        0,
-        0
+  root.metadata={
+    hp:100,
+    alive:true,
+    cooldown:
+      Math.random()*1.5,
+    speed:
+      1.5+
+      Math.random()*0.7
+  };
+
+
+  /* body */
+
+  const body =
+    BABYLON.MeshBuilder.CreateBox(
+      "enemyBody",
+      {
+        width:0.85,
+        height:1.6,
+        depth:0.55
+      },
+      scene
     );
 
+  body.parent=root;
 
-    /* 화면 초기화 */
+  body.position.y=1;
 
-    gl.viewport(
-        0,
-        0,
-        canvas.width,
-        canvas.height
+  body.material=redMat;
+
+  body.metadata={
+    enemy:root,
+    hit:"body"
+  };
+
+
+  /* head */
+
+  const head =
+    BABYLON.MeshBuilder.CreateSphere(
+      "enemyHead",
+      {
+        diameter:0.65,
+        segments:16
+      },
+      scene
     );
 
-    gl.clearColor(
-        0.05,
-        0.08,
-        0.12,
-        1
+  head.parent=root;
+
+  head.position.y=2.15;
+
+  head.material=headMat;
+
+  head.metadata={
+    enemy:root,
+    hit:"head"
+  };
+
+
+  /* weapon */
+
+  const weapon =
+    BABYLON.MeshBuilder.CreateBox(
+      "enemyWeapon",
+      {
+        width:0.1,
+        height:0.1,
+        depth:0.65
+      },
+      scene
     );
 
-    gl.clear(
-        gl.COLOR_BUFFER_BIT
+  weapon.parent=root;
+
+  weapon.position =
+    new BABYLON.Vector3(
+      0.45,
+      1.05,
+      0.25
     );
 
+  weapon.material=gunMat;
 
-    /* 삼각형 그리기 */
 
-    gl.drawArrays(
-        gl.TRIANGLES,
-        0,
-        3
+  enemies.push(root);
+
+}
+
+
+/* ==========================================================
+   RESET ENEMIES
+========================================================== */
+
+function resetEnemies(){
+
+  enemies.forEach(
+    enemy=>{
+      enemy.dispose();
+    }
+  );
+
+  enemies.length=0;
+
+  enemyPositions.forEach(
+    p=>{
+      createEnemy(
+        p[0],
+        p[1]
+      );
+    }
+  );
+
+}
+
+
+/* ==========================================================
+   HUD
+========================================================== */
+
+function updateHUD(){
+
+  const alive=
+    enemies.filter(
+      e=>
+        e.metadata &&
+        e.metadata.alive
+    ).length;
+
+  document.getElementById(
+    "enemyCount"
+  ).textContent=alive;
+
+  document.getElementById(
+    "magAmmo"
+  ).textContent=magazine;
+
+  document.getElementById(
+    "reserveAmmo"
+  ).textContent=reserve;
+
+  document.getElementById(
+    "healthFill"
+  ).style.width=
+    Math.max(
+      0,
+      hp
+    )+"%";
+
+  document.getElementById(
+    "healthText"
+  ).textContent=
+    Math.ceil(hp)+" HP";
+
+}
+
+
+/* ==========================================================
+   MESSAGE
+========================================================== */
+
+let messageTimeout;
+
+function showMessage(text){
+
+  const el =
+    document.getElementById(
+      "message"
+    );
+
+  el.textContent=text;
+
+  el.style.opacity="1";
+
+  clearTimeout(
+    messageTimeout
+  );
+
+  messageTimeout=
+    setTimeout(
+      ()=>{
+        el.style.opacity="0";
+      },
+      700
     );
 
 }
+
+
+/* ==========================================================
+   DAMAGE PLAYER
+========================================================== */
+
+function damagePlayer(amount){
+
+  if(
+    !gameStarted ||
+    gameOver
+  )
+    return;
+
+  hp-=amount;
+
+  hp=
+    Math.max(
+      0,
+      hp
+    );
+
+
+  const flash =
+    document.getElementById(
+      "damageFlash"
+    );
+
+  flash.style.opacity="1";
+
+  setTimeout(
+    ()=>{
+      flash.style.opacity="0";
+    },
+    120
+  );
+
+
+  updateHUD();
+
+
+  if(hp<=0){
+
+    endGame(false);
+
+  }
+
+}
+
+
+/* ==========================================================
+   PLAYER SHOOT
+========================================================== */
+
+function shoot(){
+
+  if(
+    !gameStarted ||
+    gameOver ||
+    reloadLock
+  )
+    return;
+
+
+  const now=
+    performance.now();
+
+
+  if(
+    now-lastShot <
+    fireDelay
+  )
+    return;
+
+
+  if(magazine<=0){
+
+    reload();
+
+    return;
+
+  }
+
+
+  lastShot=now;
+
+  magazine--;
+
+  updateHUD();
+
+
+  /* recoil */
+
+  camera.rotation.x +=
+    0.025;
+
+  gun.position.z +=
+    0.05;
+
+
+  setTimeout(
+    ()=>{
+      gun.position.z -=
+        0.05;
+    },
+    60
+  );
+
+
+  /* ray */
+
+  const ray =
+    scene.createPickingRay(
+      engine.getRenderWidth()/2,
+      engine.getRenderHeight()/2,
+      BABYLON.Matrix.Identity(),
+      camera
+    );
+
+
+  const hit =
+    scene.pickWithRay(
+      ray,
+      mesh=>{
+        return (
+          mesh.metadata &&
+          mesh.metadata.enemy
+        );
+      }
+    );
+
+
+  if(
+    hit &&
+    hit.hit &&
+    hit.pickedMesh
+  ){
+
+    const part =
+      hit.pickedMesh;
+
+    const enemy =
+      part.metadata.enemy;
+
+    if(
+      !enemy ||
+      !enemy.metadata.alive
+    )
+      return;
+
+
+    const damage =
+      part.metadata.hit === "head"
+        ? 100
+        : 34;
+
+
+    enemy.metadata.hp -=
+      damage;
+
+
+    if(
+      part.metadata.hit ===
+      "head"
+    ){
+
+      showMessage(
+        "HEADSHOT"
+      );
+
+    }
+
+
+    if(
+      enemy.metadata.hp<=0
+    ){
+
+      killEnemy(enemy);
+
+    }
+
+  }
+
+}
+
+
+/* ==========================================================
+   KILL ENEMY
+========================================================== */
+
+function killEnemy(enemy){
+
+  if(
+    !enemy.metadata.alive
+  )
+    return;
+
+  enemy.metadata.alive=false;
+
+  kills++;
+
+  /* fall animation */
+
+  const startRot =
+    enemy.rotation.x;
+
+  let progress=0;
+
+  const fall =
+    setInterval(
+      ()=>{
+
+        progress+=0.08;
+
+        enemy.rotation.x =
+          startRot -
+          progress;
+
+        enemy.position.y =
+          Math.max(
+            0,
+            enemy.position.y-
+            0.02
+          );
+
+        if(progress>=1.6){
+
+          clearInterval(fall);
+
+          enemy.setEnabled(
+            false
+          );
+
+        }
+
+      },
+      30
+    );
+
+
+  updateHUD();
+
+
+  if(
+    enemies.filter(
+      e=>
+        e.metadata.alive
+    ).length===0
+  ){
+
+    setTimeout(
+      ()=>{
+        endGame(true);
+      },
+      500
+    );
+
+  }
+
+}
+
+
+/* ==========================================================
+   RELOAD
+========================================================== */
+
+function reload(){
+
+  if(
+    reloadLock ||
+    magazine>=magazineSize ||
+    reserve<=0
+  )
+    return;
+
+
+  reloadLock=true;
+
+  showMessage(
+    "RELOADING"
+  );
+
+
+  setTimeout(
+    ()=>{
+
+      const need =
+        magazineSize-
+        magazine;
+
+      const amount =
+        Math.min(
+          need,
+          reserve
+        );
+
+      magazine+=amount;
+
+      reserve-=amount;
+
+      reloadLock=false;
+
+      updateHUD();
+
+    },
+    900
+  );
+
+}
+
+
+/* ==========================================================
+   ENEMY AI
+========================================================== */
+
+function updateEnemies(){
+
+  if(
+    !gameStarted ||
+    gameOver
+  )
+    return;
+
+
+  const dt =
+    engine.getDeltaTime()/1000;
+
+
+  enemies.forEach(
+    enemy=>{
+
+      if(
+        !enemy.metadata.alive
+      )
+        return;
+
+
+      const dx =
+        camera.position.x-
+        enemy.position.x;
+
+      const dz =
+        camera.position.z-
+        enemy.position.z;
+
+      const distance =
+        Math.sqrt(
+          dx*dx+
+          dz*dz
+        );
+
+
+      /* rotate */
+
+      enemy.rotation.y =
+        Math.atan2(
+          dx,
+          dz
+        );
+
+
+      /* chase */
+
+      if(distance>9){
+
+        const len =
+          Math.sqrt(
+            dx*dx+
+            dz*dz
+          );
+
+
+        if(len>0.1){
+
+          enemy.position.x +=
+            dx/len*
+            enemy.metadata.speed*
+            dt;
+
+          enemy.position.z +=
+            dz/len*
+            enemy.metadata.speed*
+            dt;
+
+        }
+
+      }
+
+
+      /* attack */
+
+      enemy.metadata.cooldown -=
+        dt;
+
+
+      if(
+        distance<32 &&
+        enemy.metadata.cooldown<=0
+      ){
+
+        enemy.metadata.cooldown =
+          1.0+
+          Math.random()*1.5;
+
+        damagePlayer(
+          4+
+          Math.random()*7
+        );
+
+      }
+
+    }
+  );
+
+}
+
+
+/* ==========================================================
+   MOVEMENT
+========================================================== */
+
+const keys={};
+
+
+window.addEventListener(
+  "keydown",
+  event=>{
+
+    keys[event.code]=true;
+
+
+    if(
+      event.code==="KeyR"
+    ){
+
+      reload();
+
+    }
+
+
+    if(
+      event.code==="Space"
+    ){
+
+      if(
+        camera.position.y<=1.75
+      ){
+
+        camera.cameraDirection.y=
+          0.18;
+
+      }
+
+    }
+
+  }
+);
+
+
+window.addEventListener(
+  "keyup",
+  event=>{
+    keys[event.code]=false;
+  }
+);
+
+
+function updateMovement(){
+
+  if(
+    !gameStarted ||
+    gameOver
+  )
+    return;
+
+
+  const dt =
+    engine.getDeltaTime()/1000;
+
+
+  let forward=0;
+  let strafe=0;
+
+
+  if(keys["KeyW"])
+    forward+=1;
+
+  if(keys["KeyS"])
+    forward-=1;
+
+  if(keys["KeyD"])
+    strafe+=1;
+
+  if(keys["KeyA"])
+    strafe-=1;
+
+
+  if(
+    joystickX!==0 ||
+    joystickY!==0
+  ){
+
+    strafe+=joystickX;
+
+    forward+=
+      -joystickY;
+
+  }
+
+
+  const length=
+    Math.sqrt(
+      forward*forward+
+      strafe*strafe
+    );
+
+
+  if(length>1){
+
+    forward/=length;
+    strafe/=length;
+
+  }
+
+
+  let speed=5;
+
+  if(
+    keys["ShiftLeft"] ||
+    sprinting
+  ){
+
+    speed=8;
+
+  }
+
+
+  const direction=
+    new BABYLON.Vector3(
+      strafe,
+      0,
+      forward
+    );
+
+
+  const rotation =
+    camera.rotation.y;
+
+
+  const rotated =
+    new BABYLON.Vector3(
+      direction.x*
+        Math.cos(rotation)+
+        direction.z*
+        Math.sin(rotation),
+
+      0,
+
+      direction.z*
+        Math.cos(rotation)-
+        direction.x*
+        Math.sin(rotation)
+    );
+
+
+  camera.cameraDirection.x =
+    rotated.x*
+    speed*
+    dt;
+
+  camera.cameraDirection.z =
+    rotated.z*
+    speed*
+    dt;
+
+}
+
+
+/* ==========================================================
+   PC MOUSE
+========================================================== */
+
+canvas.addEventListener(
+  "click",
+  ()=>{
+
+    if(
+      gameStarted &&
+      !gameOver
+    ){
+
+      if(
+        !isMobile()
+      ){
+
+        canvas.requestPointerLock?.();
+
+      }
+
+    }
+
+  }
+);
+
+
+document.addEventListener(
+  "mousemove",
+  event=>{
+
+    if(
+      !gameStarted ||
+      gameOver
+    )
+      return;
+
+
+    if(
+      document.pointerLockElement !==
+      canvas
+    )
+      return;
+
+
+    camera.rotation.y -=
+      event.movementX*
+      0.0025;
+
+
+    camera.rotation.x -=
+      event.movementY*
+      0.0025;
+
+
+    camera.rotation.x =
+      Math.max(
+        -1.45,
+        Math.min(
+          1.45,
+          camera.rotation.x
+        )
+      );
+
+  }
+);
+
+
+/* ==========================================================
+   PC FIRE
+========================================================== */
+
+window.addEventListener(
+  "mousedown",
+  event=>{
+
+    if(
+      event.button===0 &&
+      gameStarted
+    ){
+
+      firing=true;
+
+      shoot();
+
+    }
+
+  }
+);
+
+
+window.addEventListener(
+  "mouseup",
+  event=>{
+
+    if(event.button===0){
+
+      firing=false;
+
+    }
+
+  }
+);
+
+
+/* ==========================================================
+   MOBILE DETECTION
+========================================================== */
+
+function isMobile(){
+
+  return (
+    "ontouchstart" in window ||
+    navigator.maxTouchPoints>0
+  );
+
+}
+
+
+/* ==========================================================
+   MOBILE LOOK
+========================================================== */
+
+let lookTouchId=null;
+let lookX=0;
+let lookY=0;
+
+
+canvas.addEventListener(
+  "touchstart",
+  event=>{
+
+    if(!gameStarted)
+      return;
+
+
+    for(
+      const touch of event.changedTouches
+    ){
+
+      if(
+        touch.clientX >
+        window.innerWidth*0.35
+      ){
+
+        lookTouchId=
+          touch.identifier;
+
+        lookX=
+          touch.clientX;
+
+        lookY=
+          touch.clientY;
+
+        break;
+
+      }
+
+    }
+
+  },
+  {passive:false}
+);
+
+
+canvas.addEventListener(
+  "touchmove",
+  event=>{
+
+    if(
+      lookTouchId===null
+    )
+      return;
+
+
+    for(
+      const touch of event.changedTouches
+    ){
+
+      if(
+        touch.identifier===
+        lookTouchId
+      ){
+
+        const dx=
+          touch.clientX-lookX;
+
+        const dy=
+          touch.clientY-lookY;
+
+
+        camera.rotation.y -=
+          dx*0.004;
+
+
+        camera.rotation.x -=
+          dy*0.004;
+
+
+        camera.rotation.x =
+          Math.max(
+            -1.45,
+            Math.min(
+              1.45,
+              camera.rotation.x
+            )
+          );
+
+
+        lookX=
+          touch.clientX;
+
+        lookY=
+          touch.clientY;
+
+      }
+
+    }
+
+  },
+  {passive:false}
+);
+
+
+canvas.addEventListener(
+  "touchend",
+  event=>{
+
+    for(
+      const touch of event.changedTouches
+    ){
+
+      if(
+        touch.identifier===
+        lookTouchId
+      ){
+
+        lookTouchId=null;
+
+      }
+
+    }
+
+  }
+);
+
+
+/* ==========================================================
+   JOYSTICK
+========================================================== */
+
+const joystick=
+  document.getElementById(
+    "joystick"
+  );
+
+const knob=
+  document.getElementById(
+    "joystickKnob"
+  );
+
+let joystickX=0;
+let joystickY=0;
+
+let joystickTouch=null;
+
+
+joystick.addEventListener(
+  "touchstart",
+  event=>{
+
+    event.preventDefault();
+
+    const touch=
+      event.changedTouches[0];
+
+    joystickTouch=
+      touch.identifier;
+
+  },
+  {passive:false}
+);
+
+
+joystick.addEventListener(
+  "touchmove",
+  event=>{
+
+    event.preventDefault();
+
+
+    for(
+      const touch of event.changedTouches
+    ){
+
+      if(
+        touch.identifier===
+        joystickTouch
+      ){
+
+        const rect=
+          joystick.getBoundingClientRect();
+
+
+        let dx=
+          touch.clientX-
+          (rect.left+
+           rect.width/2);
+
+
+        let dy=
+          touch.clientY-
+          (rect.top+
+           rect.height/2);
+
+
+        const radius=45;
+
+        const distance=
+          Math.sqrt(
+            dx*dx+
+            dy*dy
+          );
+
+
+        if(distance>radius){
+
+          dx=
+            dx/distance*
+            radius;
+
+          dy=
+            dy/distance*
+            radius;
+
+        }
+
+
+        joystickX=
+          dx/radius;
+
+        joystickY=
+          dy/radius;
+
+
+        knob.style.transform=
+          `translate(${dx}px,${dy}px)`;
+
+      }
+
+    }
+
+  },
+  {passive:false}
+);
+
+
+joystick.addEventListener(
+  "touchend",
+  event=>{
+
+    joystickX=0;
+    joystickY=0;
+
+    knob.style.transform=
+      "translate(0,0)";
+
+    joystickTouch=null;
+
+  }
+);
+
+
+/* ==========================================================
+   MOBILE FIRE
+========================================================== */
+
+const fireButton=
+  document.getElementById(
+    "fireButton"
+  );
+
+
+fireButton.addEventListener(
+  "touchstart",
+  event=>{
+
+    event.preventDefault();
+
+    firing=true;
+
+    shoot();
+
+  },
+  {passive:false}
+);
+
+
+fireButton.addEventListener(
+  "touchend",
+  event=>{
+
+    event.preventDefault();
+
+    firing=false;
+
+  },
+  {passive:false}
+);
+
+
+/* ==========================================================
+   MOBILE RELOAD
+========================================================== */
+
+document
+  .getElementById(
+    "reloadButton"
+  )
+  .addEventListener(
+    "touchstart",
+    event=>{
+
+      event.preventDefault();
+
+      reload();
+
+    },
+    {passive:false}
+  );
+
+
+/* ==========================================================
+   SPRINT
+========================================================== */
+
+let sprinting=false;
+
+
+const sprintButton=
+  document.getElementById(
+    "sprintButton"
+  );
+
+
+sprintButton.addEventListener(
+  "touchstart",
+  event=>{
+
+    event.preventDefault();
+
+    sprinting=true;
+
+  },
+  {passive:false}
+);
+
+
+sprintButton.addEventListener(
+  "touchend",
+  event=>{
+
+    event.preventDefault();
+
+    sprinting=false;
+
+  },
+  {passive:false}
+);
+
+
+/* ==========================================================
+   JUMP
+========================================================== */
+
+document
+  .getElementById(
+    "jumpButton"
+  )
+  .addEventListener(
+    "touchstart",
+    event=>{
+
+      event.preventDefault();
+
+      camera.cameraDirection.y=
+        0.18;
+
+    },
+    {passive:false}
+  );
+
+
+/* ==========================================================
+   GAME START
+========================================================== */
+
+function startGame(){
+
+  gameStarted=true;
+
+  gameOver=false;
+
+  hp=100;
+
+  magazine=12;
+
+  reserve=60;
+
+  kills=0;
+
+  camera.position=
+    new BABYLON.Vector3(
+      0,
+      1.7,
+      25
+    );
+
+  camera.rotation=
+    new BABYLON.Vector3(
+      0,
+      0,
+      0
+    );
+
+  resetEnemies();
+
+  document.getElementById(
+    "menu"
+  ).style.display="none";
+
+  document.getElementById(
+    "endScreen"
+  ).style.display="none";
+
+  document.getElementById(
+    "hud"
+  ).style.display="block";
+
+  updateHUD();
+
+
+  if(!isMobile()){
+
+    setTimeout(
+      ()=>{
+        canvas.requestPointerLock?.();
+      },
+      100
+    );
+
+  }
+
+}
+
+
+/* ==========================================================
+   END GAME
+========================================================== */
+
+function endGame(victory){
+
+  gameOver=true;
+
+  gameStarted=false;
+
+  firing=false;
+
+  document.exitPointerLock?.();
+
+
+  const screen=
+    document.getElementById(
+      "endScreen"
+    );
+
+
+  const title=
+    document.getElementById(
+      "endTitle"
+    );
+
+
+  const score=
+    document.getElementById(
+      "endScore"
+    );
+
+
+  if(victory){
+
+    title.textContent=
+      "VICTORY";
+
+  }else{
+
+    title.textContent=
+      "ELIMINATED";
+
+  }
+
+
+  score.textContent=
+    kills+
+    " KILLS";
+
+
+  screen.style.display=
+    "flex";
+
+}
+
+
+/* ==========================================================
+   BUTTON EVENTS
+========================================================== */
+
+document
+  .getElementById(
+    "startButton"
+  )
+  .addEventListener(
+    "click",
+    startGame
+  );
+
+
+document
+  .getElementById(
+    "restartButton"
+  )
+  .addEventListener(
+    "click",
+    startGame
+  );
+
+
+/* ==========================================================
+   RENDER LOOP
+========================================================== */
+
+engine.runRenderLoop(
+  ()=>{
+
+    if(
+      gameStarted &&
+      !gameOver
+    ){
+
+      updateMovement();
+
+      updateEnemies();
+
+      if(firing){
+
+        shoot();
+
+      }
+
+    }
+
+
+    engine.resize();
+
+    scene.render();
+
+  }
+);
+
+
+/* ==========================================================
+   RESIZE
+========================================================== */
+
+window.addEventListener(
+  "resize",
+  ()=>{
+    engine.resize();
+  }
+);
+
+
+/* ==========================================================
+   INITIAL HUD
+========================================================== */
+
+updateHUD();
 
 </script>
 
