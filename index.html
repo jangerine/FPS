@@ -634,10 +634,17 @@ let running=false;
    WEAPON
 ========================================================= */
 
+/*
+   연사 속도
+   145ms = 약 6.9발/초
+*/
 const FIRE_DELAY=145;
 
 let lastShot=0;
 
+/*
+   FIRE 버튼/마우스를 누르고 있는 동안 true
+*/
 let firing=false;
 
 let reloading=false;
@@ -690,7 +697,7 @@ window.addEventListener(
 
 
 /* =========================================================
-   PC MOUSE
+   PC MOUSE LOOK
 ========================================================= */
 
 canvas.addEventListener(
@@ -733,7 +740,7 @@ document.addEventListener(
 
 /* =========================================================
    PC FIRE
-   ★ 연사 핵심
+   ★ 마우스를 누르고 있는 동안 연사
 ========================================================= */
 
 document.addEventListener(
@@ -746,6 +753,9 @@ document.addEventListener(
 
     firing=true;
 
+    /*
+      첫 발은 즉시 발사
+    */
     shoot();
 
   }
@@ -785,7 +795,7 @@ function jump(){
 
 /* =========================================================
    MOBILE FIRE
-   ★ 누르고 있는 동안 연사
+   ★ FIRE 버튼을 누르고 있는 동안 연사
 ========================================================= */
 
 const fireBtn=
@@ -801,6 +811,9 @@ fireBtn.addEventListener(
 
     firing=true;
 
+    /*
+      첫 발은 즉시 발사
+    */
     shoot();
 
   },
@@ -878,6 +891,17 @@ document
 
     },
     {passive:false}
+  );
+
+document
+  .getElementById("runBtn")
+  .addEventListener(
+    "touchcancel",
+    e=>{
+
+      running=false;
+
+    }
   );
 
 
@@ -981,6 +1005,21 @@ joystick.addEventListener(
       }
 
     }
+
+  }
+);
+
+joystick.addEventListener(
+  "touchcancel",
+  ()=>{
+    
+    joystickTouchId=null;
+
+    joyX=0;
+    joyY=0;
+
+    knob.style.left="40px";
+    knob.style.top="40px";
 
   }
 );
@@ -1129,6 +1168,28 @@ canvas.addEventListener(
   }
 );
 
+canvas.addEventListener(
+  "touchcancel",
+  e=>{
+
+    for(
+      const t of e.changedTouches
+    ){
+
+      if(
+        t.identifier===
+        lookTouchId
+      ){
+
+        lookTouchId=null;
+
+      }
+
+    }
+
+  }
+);
+
 
 /* =========================================================
    RELOAD
@@ -1146,8 +1207,15 @@ function reload(){
 
   reloading=true;
 
+  /*
+    재장전 중에는 발사 중지
+  */
+  firing=false;
+
   setTimeout(
     ()=>{
+
+      if(ended) return;
 
       const need=
         MAG_SIZE-ammo;
@@ -1174,7 +1242,7 @@ function reload(){
 
 /* =========================================================
    SHOOT
-   ★ 연사 시스템
+   ★ 실제 발사
 ========================================================= */
 
 function shoot(){
@@ -1185,11 +1253,17 @@ function shoot(){
 
   const now=performance.now();
 
+  /*
+    FIRE_DELAY보다 빠르게 발사하지 않음
+  */
   if(
     now-lastShot <
     FIRE_DELAY
   ) return;
 
+  /*
+    탄약 없음
+  */
   if(ammo<=0){
 
     firing=false;
@@ -1213,7 +1287,7 @@ function shoot(){
 
 /* =========================================================
    CONTINUOUS FIRE LOOP
-   ★ FIRE를 누르고 있는 동안 자동 반복
+   ★ 연사 핵심
 ========================================================= */
 
 function fireLoop(){
@@ -1357,6 +1431,11 @@ function performShot(){
     if(enemy){
 
       let damage=34;
+
+      /*
+        머리 = 한 방
+        몸통 = 34
+      */
 
       if(
         part.metadata.enemyPart===
@@ -1907,6 +1986,8 @@ function startGame(){
 
   jumpVelocity=0;
 
+  lastShot=0;
+
   camera.position=
     new BABYLON.Vector3(
       0,
@@ -1984,7 +2065,10 @@ engine.runRenderLoop(
     updateEnemies(dt);
 
 
-    /* ★ 연사 */
+    /*
+      ★ FIRE 버튼/마우스를 누르고 있으면
+      매 프레임 shoot()을 확인한다.
+    */
 
     fireLoop();
 
