@@ -324,11 +324,43 @@ h1{
 }
 
 #weaponOpenBtn{
- right:28px;
- bottom:155px;
+ right:105px;
+ bottom:230px;
  width:62px;
  height:62px
 }
+
+#gameSettingsBtn{
+ position:fixed;
+ top:72px;
+ right:12px;
+ z-index:25;
+ width:48px;
+ height:42px;
+ border:1px solid rgba(255,255,255,.28);
+ border-radius:8px;
+ background:rgba(0,0,0,.48);
+ color:#fff;
+ font-weight:bold;
+ display:none
+}
+
+#gameSettingsPanel{
+ position:fixed;
+ top:120px;
+ right:12px;
+ z-index:26;
+ width:min(88vw,300px);
+ padding:14px;
+ background:rgba(8,12,18,.94);
+ border:1px solid rgba(255,255,255,.22);
+ border-radius:10px;
+ color:#fff;
+ display:none;
+ box-shadow:0 12px 40px rgba(0,0,0,.55)
+}
+
+#gameSensitivityRange{ width:100% }
 
 #settingsBox{
  margin-top:14px;
@@ -410,6 +442,10 @@ h1{
 @media(pointer:coarse),(max-width:900px){
 
  #mobile{
+  display:block
+ }
+
+ #gameSettingsBtn{
   display:block
  }
 
@@ -640,6 +676,17 @@ h1{
  <div id="scopeLabel">SCOPE</div>
 </div>
 
+<button id="gameSettingsBtn" type="button">⚙</button>
+
+<div id="gameSettingsPanel">
+ <div style="display:flex;justify-content:space-between;gap:12px;margin-bottom:8px">
+  <span>감도</span>
+  <span id="gameSensitivityValue">1.00x</span>
+ </div>
+ <input id="gameSensitivityRange" type="range" min="0.50" max="2.00" step="0.05" value="1.00">
+ <button id="gameSettingsClose" type="button" style="margin-top:10px;width:100%;padding:9px;border-radius:7px;border:1px solid #555;background:#171b22;color:#fff">닫기</button>
+</div>
+
 <div id="mobile">
 
  <div id="lookZone"></div>
@@ -831,7 +878,7 @@ const RUN_SPEED=4.9;
 
 const GROUND_Y=1.7;
 
-const JUMP_POWER=3.6;
+const JUMP_POWER=5.0;
 
 const GRAVITY=14;
 
@@ -1477,21 +1524,23 @@ function createScene(){
     HIGH GROUND / STAIRS
  ===================================================== */
  function highPlatform(x,z){
-  const base=BABYLON.MeshBuilder.CreateBox("highPlatform",{width:12,height:2,depth:10},scene);
-  base.position.set(x,5,z);
+  const base=BABYLON.MeshBuilder.CreateBox("highPlatform",{width:12,height:1,depth:10},scene);
+  base.position.set(x,3.5,z);
   base.material=coverMat;
   base.checkCollisions=true;
   collisionMeshes.push(base);
 
-  // 1m씩 올라가는 4단 계단: 마지막 단의 높이를 플랫폼 바닥(4m)에 맞춥니다.
-  const steps=[[-8,1],[-6,2],[-4,3],[-2,4]];
-  steps.forEach((step,i)=>{
-   const mesh=BABYLON.MeshBuilder.CreateBox(`highStep${i}`,{width:3,height:step[1],depth:4},scene);
-   mesh.position.set(x+step[0],step[1]/2,z);
+  // 낮은 0.5m 단 계단 8개로 만들어 점프/이동으로 자연스럽게 올라갈 수 있게 합니다.
+  for(let i=0;i<8;i++){
+   const h=.5*(i+1);
+   const mesh=BABYLON.MeshBuilder.CreateBox(`highStep${i}`,{width:1.5,height:h,depth:4},scene);
+   mesh.position.set(x-12+i*1.5+h*0,z-h/2+4-h/2,z);
+   mesh.position.y=h/2;
+   mesh.position.x=x-12+i*1.5+.75;
    mesh.material=coverMat;
    mesh.checkCollisions=true;
    collisionMeshes.push(mesh);
-  });
+  }
  }
  highPlatform(-28,22);
  highPlatform(28,-22);
@@ -3699,7 +3748,7 @@ function updateMovement(
  let platformTop=null;
  for(const z of highZones){
   if(Math.abs(camera.position.x-z[0])<=z[2] && Math.abs(camera.position.z-z[1])<=z[3]){
-   platformTop=6; break;
+   platformTop=4; break;
   }
  }
  velocityY-=GRAVITY*dt;
@@ -4307,13 +4356,10 @@ function checkRound(){
   roundTransition
  )return;
 
- const alive=
-  enemies.filter(
-   e=>!e.dead
-  ).length;
+ const alive=enemies.some(e=>!e.dead);
 
  if(
-  alive===0 &&
+  !alive &&
   enemies.length>0
  ){
 
@@ -4686,6 +4732,7 @@ joinBtn.addEventListener(
 
 function startMatch(){
 
+ gameSettingsPanel.style.display="none";
  gameStarted=true;
 
  gameOver=false;
@@ -4765,6 +4812,7 @@ window.addEventListener(
    if(e.code==="Digit3"){setWeapon("shotgun");return;}
    if(e.code==="Digit4"){setWeapon("sniper");return;}
    if(e.code==="KeyQ"&&gameMode==="training"){showWeaponSelect();return;}
+   if(e.code==="KeyG"){gameSettingsPanel.style.display=gameSettingsPanel.style.display==="block"?"none":"block";return;}
   }
 
   switch(
@@ -5401,12 +5449,34 @@ jumpBtn.addEventListener(
 
 const sensitivityRange=document.getElementById("sensitivityRange");
 const sensitivityValue=document.getElementById("sensitivityValue");
-sensitivityRange.value=sensitivity.toFixed(2);
-sensitivityValue.textContent=sensitivity.toFixed(2)+"x";
-sensitivityRange.addEventListener("input",()=>{
- sensitivity=Number(sensitivityRange.value);
- sensitivityValue.textContent=sensitivity.toFixed(2)+"x";
+const gameSettingsBtn=document.getElementById("gameSettingsBtn");
+const gameSettingsPanel=document.getElementById("gameSettingsPanel");
+const gameSettingsClose=document.getElementById("gameSettingsClose");
+const gameSensitivityRange=document.getElementById("gameSensitivityRange");
+const gameSensitivityValue=document.getElementById("gameSensitivityValue");
+
+function applySensitivityValue(value){
+ sensitivity=Number(value);
+ const label=sensitivity.toFixed(2)+"x";
+ sensitivityValue.textContent=label;
+ gameSensitivityValue.textContent=label;
+ sensitivityRange.value=sensitivity.toFixed(2);
+ gameSensitivityRange.value=sensitivity.toFixed(2);
  localStorage.setItem("vectorSensitivity",String(sensitivity));
+}
+
+applySensitivityValue(sensitivity);
+sensitivityRange.addEventListener("input",()=>applySensitivityValue(sensitivityRange.value));
+gameSensitivityRange.addEventListener("input",()=>applySensitivityValue(gameSensitivityRange.value));
+
+gameSettingsBtn.addEventListener("pointerdown",e=>{
+ e.preventDefault(); e.stopPropagation();
+ if(!gameStarted)return;
+ gameSettingsPanel.style.display=gameSettingsPanel.style.display==="block"?"none":"block";
+});
+gameSettingsClose.addEventListener("pointerdown",e=>{
+ e.preventDefault(); e.stopPropagation();
+ gameSettingsPanel.style.display="none";
 });
 
 document.querySelectorAll(".weaponBtn").forEach(btn=>{
@@ -5417,6 +5487,7 @@ document.querySelectorAll(".weaponBtn").forEach(btn=>{
    hideWeaponSelect();
    round++;
    startRound();
+   updateHUD();
    return;
   }
 
