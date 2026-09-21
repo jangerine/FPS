@@ -2,10 +2,22 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+
+<meta
+  name="viewport"
+  content="width=device-width,
+           initial-scale=1,
+           maximum-scale=1,
+           user-scalable=no">
+
 <title>VECTOR FPS</title>
 
 <style>
+
+/* =========================================================
+   BASE
+========================================================= */
+
 *{
   box-sizing:border-box;
   user-select:none;
@@ -13,7 +25,8 @@
   -webkit-touch-callout:none;
 }
 
-html,body{
+html,
+body{
   margin:0;
   width:100%;
   height:100%;
@@ -25,59 +38,88 @@ html,body{
 #renderCanvas{
   position:fixed;
   inset:0;
+
   width:100%;
   height:100%;
+
   display:block;
+
   touch-action:none;
 }
 
-/* =========================
-   MENU
-========================= */
 
-#menu,
-#endScreen{
+/* =========================================================
+   START MENU
+========================================================= */
+
+#menu{
   position:fixed;
   inset:0;
+
   z-index:100;
+
   display:flex;
   flex-direction:column;
+
   justify-content:center;
   align-items:center;
+
   text-align:center;
+
   color:white;
+
   background:
-    radial-gradient(circle at center,#1d3448 0%,#09121c 48%,#020407 100%);
+    radial-gradient(
+      circle at center,
+      #1d3448 0%,
+      #09121c 48%,
+      #020407 100%
+    );
 }
 
 #menu h1{
   margin:0;
-  font-size:clamp(55px,13vw,110px);
+
+  font-size:
+    clamp(55px,13vw,110px);
+
   letter-spacing:16px;
+
   font-weight:900;
 }
 
 .line{
   width:180px;
   height:3px;
+
   background:#e8edf2;
+
   margin:18px 0;
 }
 
 .sub{
   color:#8ea0b5;
+
   letter-spacing:7px;
+
   font-size:13px;
+
   margin-bottom:42px;
 }
 
 .mainButton{
   border:0;
+
   border-radius:3px;
+
   padding:17px 60px;
+
   background:#e8edf2;
+
   color:#081019;
+
   font-size:17px;
+
   font-weight:900;
 }
 
@@ -87,37 +129,53 @@ html,body{
 
 .help{
   margin-top:30px;
+
   color:#8192a5;
+
   font-size:12px;
+
   line-height:1.9;
 }
 
-/* =========================
+
+/* =========================================================
    HUD
-========================= */
+========================================================= */
 
 #hud{
   position:fixed;
   inset:0;
+
   z-index:20;
+
   display:none;
+
   pointer-events:none;
+
   color:#fff;
 }
 
 .info{
   position:absolute;
+
   top:16px;
+
   min-width:100px;
+
   padding:9px 14px;
+
   background:#07111cdd;
+
   border:1px solid #455568;
 }
 
 .info small{
   display:block;
+
   color:#8091a5;
+
   font-size:9px;
+
   letter-spacing:2px;
 }
 
@@ -131,33 +189,50 @@ html,body{
 
 #roundBox{
   left:50%;
-  transform:translateX(-50%);
+
+  transform:
+    translateX(-50%);
+
   text-align:center;
 }
 
 #ammo{
   right:16px;
+
   text-align:right;
 }
 
+
+/* =========================================================
+   CROSSHAIR
+========================================================= */
+
 #crosshair{
   position:absolute;
+
   left:50%;
   top:50%;
+
   width:30px;
   height:30px;
-  transform:translate(-50%,-50%);
+
+  transform:
+    translate(-50%,-50%);
 }
 
 .ch{
   position:absolute;
+
   background:#fff;
-  box-shadow:0 0 4px #000;
+
+  box-shadow:
+    0 0 4px #000;
 }
 
 .ch1{
   width:2px;
   height:9px;
+
   left:14px;
   top:0;
 }
@@ -165,6 +240,7 @@ html,body{
 .ch2{
   width:2px;
   height:9px;
+
   left:14px;
   bottom:0;
 }
@@ -172,6 +248,7 @@ html,body{
 .ch3{
   width:9px;
   height:2px;
+
   left:0;
   top:14px;
 }
@@ -179,227 +256,451 @@ html,body{
 .ch4{
   width:9px;
   height:2px;
+
   right:0;
   top:14px;
 }
 
-#healthBox{
-  position:absolute;
-  left:18px;
-  bottom:20px;
-  width:280px;
-}
 
-#healthBar{
-  height:14px;
-  background:#17212c;
-  border:1px solid #607083;
-}
-
-#healthFill{
-  height:100%;
-  width:100%;
-  background:#e8edf2;
-  transition:.15s;
-}
-
-#healthText{
-  margin-top:5px;
-  color:#cbd4dd;
-  font-size:13px;
-}
-
-#weaponName{
-  position:absolute;
-  right:18px;
-  bottom:20px;
-  color:#b8c4d0;
-  font-size:12px;
-  letter-spacing:3px;
-}
-
-#message{
-  position:absolute;
-  top:34%;
-  left:0;
-  right:0;
-  text-align:center;
-  font-size:30px;
-  font-weight:900;
-  letter-spacing:6px;
-  text-shadow:0 2px 10px #000;
-  opacity:0;
-}
+/* =========================================================
+   HIT MARKER
+========================================================= */
 
 #hitMarker{
   position:absolute;
+
   left:50%;
   top:50%;
+
   width:28px;
   height:28px;
-  transform:translate(-50%,-50%);
+
+  transform:
+    translate(-50%,-50%);
+
   opacity:0;
 }
 
 .hm{
   position:absolute;
+
   width:2px;
   height:8px;
+
   background:white;
 }
 
 .hm1{
   left:5px;
   top:3px;
+
   transform:rotate(45deg);
 }
 
 .hm2{
   right:5px;
   top:3px;
+
   transform:rotate(-45deg);
 }
 
 .hm3{
   left:5px;
   bottom:3px;
+
   transform:rotate(-45deg);
 }
 
 .hm4{
   right:5px;
   bottom:3px;
+
   transform:rotate(45deg);
 }
 
-/* =========================
+
+/* =========================================================
+   HEALTH
+========================================================= */
+
+#healthBox{
+  position:absolute;
+
+  left:18px;
+  bottom:20px;
+
+  width:280px;
+}
+
+#healthBar{
+  height:14px;
+
+  background:#17212c;
+
+  border:1px solid #607083;
+}
+
+#healthFill{
+  height:100%;
+
+  width:100%;
+
+  background:#e8edf2;
+
+  transition:.15s;
+}
+
+#healthText{
+  margin-top:5px;
+
+  color:#cbd4dd;
+
+  font-size:13px;
+}
+
+#weaponName{
+  position:absolute;
+
+  right:18px;
+  bottom:20px;
+
+  color:#b8c4d0;
+
+  font-size:12px;
+
+  letter-spacing:3px;
+}
+
+
+/* =========================================================
+   MESSAGE
+========================================================= */
+
+#message{
+  position:absolute;
+
+  top:34%;
+
+  left:0;
+  right:0;
+
+  text-align:center;
+
+  font-size:30px;
+
+  font-weight:900;
+
+  letter-spacing:6px;
+
+  text-shadow:
+    0 2px 10px #000;
+
+  opacity:0;
+}
+
+
+/* =========================================================
    DAMAGE
-========================= */
+========================================================= */
 
 #damage{
   position:fixed;
+
   inset:0;
+
   z-index:21;
+
   pointer-events:none;
+
   opacity:0;
+
   background:
-    radial-gradient(circle,transparent 35%,#ff142855 100%);
+    radial-gradient(
+      circle,
+      transparent 35%,
+      #ff142855 100%
+    );
 }
 
-/* =========================
-   MOBILE
-========================= */
+
+/* =========================================================
+   MOBILE CONTROLS
+========================================================= */
 
 #mobile{
   position:fixed;
+
   inset:0;
-  z-index:30;
+
+  z-index:200;
+
   display:none;
+
   pointer-events:none;
 }
 
+
+/* =========================================================
+   MOBILE BUTTON
+========================================================= */
+
 .mbtn{
   position:absolute;
+
   width:68px;
   height:68px;
+
   border-radius:50%;
-  border:1px solid #ffffff55;
-  background:#101b28aa;
+
+  border:
+    2px solid
+    rgba(255,255,255,.55);
+
+  background:
+    rgba(15,25,38,.78);
+
   color:white;
+
   display:flex;
+
   align-items:center;
   justify-content:center;
+
   font-size:11px;
+
   font-weight:900;
+
   pointer-events:auto;
+
+  box-shadow:
+    0 3px 12px
+    rgba(0,0,0,.5),
+
+    inset 0 0 12px
+    rgba(255,255,255,.05);
 }
 
+
+/* FIRE */
+
 #fire{
-  right:28px;
+  right:25px;
   bottom:105px;
+
   width:82px;
   height:82px;
+
+  border-color:
+    rgba(255,255,255,.75);
 }
+
+
+/* RELOAD */
 
 #reload{
   right:125px;
-  bottom:34px;
+  bottom:30px;
 }
+
+
+/* RUN */
 
 #run{
-  left:28px;
-  bottom:34px;
+  left:185px;
+  bottom:30px;
 }
 
+
+/* JUMP */
+
 #jump{
-  right:28px;
-  bottom:200px;
+  right:25px;
+  bottom:205px;
 }
+
+
+/* =========================================================
+   JOYSTICK
+========================================================= */
 
 #joystick{
   position:absolute;
-  left:22px;
-  bottom:95px;
+
+  left:25px;
+  bottom:25px;
+
   width:135px;
   height:135px;
-  border:1px solid #ffffff25;
-  background:#ffffff08;
+
   border-radius:50%;
+
+  border:
+    3px solid
+    rgba(255,255,255,.55);
+
+  background:
+    radial-gradient(
+      circle,
+      rgba(255,255,255,.10),
+      rgba(255,255,255,.025)
+    );
+
+  box-shadow:
+    0 4px 20px
+    rgba(0,0,0,.6),
+
+    inset 0 0 25px
+    rgba(255,255,255,.04);
+
   pointer-events:auto;
+
+  touch-action:none;
+
+  display:block;
+
+  visibility:visible;
+
+  opacity:1;
 }
+
+
+/* =========================================================
+   JOYSTICK KNOB
+========================================================= */
 
 #knob{
   position:absolute;
+
   left:40px;
   top:40px;
+
   width:55px;
   height:55px;
+
   border-radius:50%;
-  border:1px solid #ffffff55;
-  background:#ffffff20;
+
+  border:
+    2px solid
+    rgba(255,255,255,.75);
+
+  background:
+    radial-gradient(
+      circle,
+      rgba(255,255,255,.30),
+      rgba(255,255,255,.10)
+    );
+
+  box-shadow:
+    0 3px 12px
+    rgba(0,0,0,.6);
+
+  pointer-events:none;
+
+  transition:
+    transform .03s linear;
 }
 
-/* =========================
-   END
-========================= */
+
+/* =========================================================
+   END SCREEN
+========================================================= */
 
 #endScreen{
+  position:fixed;
+
+  inset:0;
+
+  z-index:100;
+
   display:none;
+
+  flex-direction:column;
+
+  justify-content:center;
+  align-items:center;
+
+  text-align:center;
+
+  color:white;
+
+  background:#03070bcc;
 }
 
 #endTitle{
   margin:0;
-  font-size:clamp(48px,10vw,90px);
+
+  font-size:
+    clamp(48px,10vw,90px);
+
   letter-spacing:10px;
 }
 
 #endScore{
   color:#94a5b8;
-  margin:15px 0 35px;
+
+  margin:
+    15px 0 35px;
+
   letter-spacing:4px;
 }
 
-/* =========================
-   MOBILE
-========================= */
 
-@media(max-width:900px){
+/* =========================================================
+   TABLET
+========================================================= */
+
+@media(max-width:1100px){
+
   #mobile{
-    display:block;
+    display:block !important;
   }
 
   #healthBox{
     width:220px;
   }
+
 }
+
+
+/* =========================================================
+   MOBILE SAFETY
+========================================================= */
+
+@media(max-width:900px){
+
+  #mobile{
+    display:block !important;
+
+    pointer-events:none;
+  }
+
+  #joystick{
+    display:block !important;
+
+    visibility:visible !important;
+
+    opacity:1 !important;
+  }
+
+}
+
 </style>
 </head>
 
+
 <body>
+
+
+<!-- =======================================================
+     CANVAS
+======================================================= -->
 
 <canvas id="renderCanvas"></canvas>
 
-<!-- MENU -->
+
+<!-- =======================================================
+     MENU
+======================================================= -->
 
 <div id="menu">
 
@@ -411,99 +712,205 @@ html,body{
     TACTICAL FPS
   </div>
 
-  <button id="start" class="mainButton">
+  <button
+    id="start"
+    class="mainButton">
+
     START GAME
+
   </button>
 
   <div class="help">
-    PC : WASD / SHIFT / SPACE / R / MOUSE<br>
-    GALAXY TAB : 왼쪽 조이스틱 / 오른쪽 드래그 / FIRE
+
+    PC : WASD / SHIFT / SPACE / R / MOUSE
+    <br>
+
+    GALAXY TAB :
+    왼쪽 조이스틱 / 오른쪽 드래그 / FIRE
+
   </div>
 
 </div>
 
 
-<!-- HUD -->
+<!-- =======================================================
+     HUD
+======================================================= -->
 
 <div id="hud">
 
-  <div id="hostile" class="info">
-    <small>HOSTILES</small>
-    <strong id="enemyCount">0</strong>
-  </div>
 
-  <div id="roundBox" class="info">
-    <small>ROUND</small>
-    <strong id="round">1</strong>
-  </div>
+  <div
+    id="hostile"
+    class="info">
 
-  <div id="ammo" class="info">
-    <small>AMMO</small>
-    <strong>
-      <span id="mag">12</span>/<span id="reserve">60</span>
+    <small>
+      HOSTILES
+    </small>
+
+    <strong id="enemyCount">
+      0
     </strong>
+
   </div>
+
+
+  <div
+    id="roundBox"
+    class="info">
+
+    <small>
+      ROUND
+    </small>
+
+    <strong id="round">
+      1
+    </strong>
+
+  </div>
+
+
+  <div
+    id="ammo"
+    class="info">
+
+    <small>
+      AMMO
+    </small>
+
+    <strong>
+
+      <span id="mag">
+        12
+      </span>
+
+      /
+
+      <span id="reserve">
+        60
+      </span>
+
+    </strong>
+
+  </div>
+
 
   <div id="crosshair">
+
     <div class="ch ch1"></div>
     <div class="ch ch2"></div>
     <div class="ch ch3"></div>
     <div class="ch ch4"></div>
+
   </div>
 
+
   <div id="hitMarker">
+
     <div class="hm hm1"></div>
     <div class="hm hm2"></div>
     <div class="hm hm3"></div>
     <div class="hm hm4"></div>
+
   </div>
 
+
   <div id="healthBox">
+
     <div id="healthBar">
+
       <div id="healthFill"></div>
+
     </div>
-    <div id="healthText">100 HP</div>
+
+    <div id="healthText">
+      100 HP
+    </div>
+
   </div>
+
 
   <div id="weaponName">
     VECTOR RIFLE
   </div>
 
+
   <div id="message"></div>
 
 </div>
 
+
+<!-- DAMAGE -->
+
 <div id="damage"></div>
 
 
-<!-- MOBILE -->
+<!-- =======================================================
+     MOBILE
+======================================================= -->
 
 <div id="mobile">
 
+
+  <!-- JOYSTICK -->
+
   <div id="joystick">
+
     <div id="knob"></div>
+
   </div>
 
-  <div id="fire" class="mbtn">
+
+  <!-- FIRE -->
+
+  <div
+    id="fire"
+    class="mbtn">
+
     FIRE
+
   </div>
 
-  <div id="reload" class="mbtn">
+
+  <!-- RELOAD -->
+
+  <div
+    id="reload"
+    class="mbtn">
+
     R
+
   </div>
 
-  <div id="run" class="mbtn">
+
+  <!-- RUN -->
+
+  <div
+    id="run"
+    class="mbtn">
+
     RUN
+
   </div>
 
-  <div id="jump" class="mbtn">
+
+  <!-- JUMP -->
+
+  <div
+    id="jump"
+    class="mbtn">
+
     JUMP
+
   </div>
+
 
 </div>
 
 
-<!-- END -->
+<!-- =======================================================
+     END
+======================================================= -->
 
 <div id="endScreen">
 
@@ -515,24 +922,37 @@ html,body{
     0 KILLS
   </div>
 
-  <button id="restart" class="mainButton">
+  <button
+    id="restart"
+    class="mainButton">
+
     RESTART
+
   </button>
 
 </div>
 
 
-<script src="https://cdn.babylonjs.com/babylon.js"></script>
+<!-- =======================================================
+     BABYLON
+======================================================= -->
+
+<script
+src="https://cdn.babylonjs.com/babylon.js">
+</script>
+
 
 <script>
 
 /* =========================================================
-   VECTOR FPS
-   BABYLON.JS
+   ENGINE
 ========================================================= */
 
 const canvas =
-  document.getElementById("renderCanvas");
+  document.getElementById(
+    "renderCanvas"
+  );
+
 
 const engine =
   new BABYLON.Engine(
@@ -544,8 +964,12 @@ const engine =
     }
   );
 
+
 const scene =
-  new BABYLON.Scene(engine);
+  new BABYLON.Scene(
+    engine
+  );
+
 
 scene.clearColor =
   new BABYLON.Color4(
@@ -571,11 +995,15 @@ const camera =
     scene
   );
 
+
 camera.minZ=.05;
+
 camera.fov=1.12;
 
 camera.applyGravity=true;
+
 camera.checkCollisions=true;
+
 
 camera.ellipsoid =
   new BABYLON.Vector3(
@@ -584,11 +1012,13 @@ camera.ellipsoid =
     .42
   );
 
-scene.activeCamera=camera;
+
+scene.activeCamera=
+  camera;
 
 
 /* =========================================================
-   WORLD
+   GRAVITY
 ========================================================= */
 
 scene.gravity =
@@ -597,6 +1027,7 @@ scene.gravity =
     -9.81,
     0
   );
+
 
 scene.collisionsEnabled=true;
 
@@ -616,7 +1047,9 @@ const light =
     scene
   );
 
+
 light.intensity=1.1;
+
 
 const sun =
   new BABYLON.DirectionalLight(
@@ -629,12 +1062,14 @@ const sun =
     scene
   );
 
+
 sun.position =
   new BABYLON.Vector3(
     20,
     40,
     20
   );
+
 
 sun.intensity=1.2;
 
@@ -643,7 +1078,10 @@ sun.intensity=1.2;
    MATERIAL
 ========================================================= */
 
-function mat(name,hex){
+function mat(
+  name,
+  hex
+){
 
   const m =
     new BABYLON.StandardMaterial(
@@ -651,54 +1089,72 @@ function mat(name,hex){
       scene
     );
 
+
   m.diffuseColor =
-    BABYLON.Color3.FromHexString(hex);
+    BABYLON.Color3.FromHexString(
+      hex
+    );
+
 
   m.specularColor =
-    new BABYLON.Color3(.15,.15,.15);
+    new BABYLON.Color3(
+      .15,
+      .15,
+      .15
+    );
+
 
   return m;
 }
 
-const floorMat=mat(
-  "Floor",
-  "#28333E"
-);
 
-const wallMat=mat(
-  "Wall",
-  "#536271"
-);
+const floorMat=
+  mat(
+    "Floor",
+    "#28333E"
+  );
 
-const coverMat=mat(
-  "Cover",
-  "#697887"
-);
 
-const enemyMat=mat(
-  "Enemy",
-  "#C43D4D"
-);
+const wallMat=
+  mat(
+    "Wall",
+    "#536271"
+  );
 
-const headMat=mat(
-  "Head",
-  "#E5A28E"
-);
 
-const gunMat=mat(
-  "Gun",
-  "#11171D"
-);
+const coverMat=
+  mat(
+    "Cover",
+    "#697887"
+  );
 
-const muzzleMat=mat(
-  "Muzzle",
-  "#FFD45C"
-);
 
-const bulletMat=mat(
-  "Bullet",
-  "#FFD36A"
-);
+const enemyMat=
+  mat(
+    "Enemy",
+    "#C43D4D"
+  );
+
+
+const headMat=
+  mat(
+    "Head",
+    "#E5A28E"
+  );
+
+
+const gunMat=
+  mat(
+    "Gun",
+    "#11171D"
+  );
+
+
+const muzzleMat=
+  mat(
+    "Muzzle",
+    "#FFD45C"
+  );
 
 
 /* =========================================================
@@ -715,8 +1171,13 @@ const floor =
     scene
   );
 
-floor.material=floorMat;
-floor.checkCollisions=true;
+
+floor.material=
+  floorMat;
+
+
+floor.checkCollisions=
+  true;
 
 
 /* =========================================================
@@ -731,59 +1192,81 @@ for(
 
   const a =
     BABYLON.MeshBuilder.CreateLines(
-      "grid",
+      "gridA",
       {
         points:[
           new BABYLON.Vector3(
-            i,.015,-45
+            i,
+            .015,
+            -45
           ),
+
           new BABYLON.Vector3(
-            i,.015,45
+            i,
+            .015,
+            45
           )
         ]
       },
       scene
     );
 
+
   a.color =
     new BABYLON.Color3(
-      .22,.27,.32
+      .22,
+      .27,
+      .32
     );
 
 
   const b =
     BABYLON.MeshBuilder.CreateLines(
-      "grid",
+      "gridB",
       {
         points:[
           new BABYLON.Vector3(
-            -45,.016,i
+            -45,
+            .016,
+            i
           ),
+
           new BABYLON.Vector3(
-            45,.016,i
+            45,
+            .016,
+            i
           )
         ]
       },
       scene
     );
 
+
   b.color =
     new BABYLON.Color3(
-      .22,.27,.32
+      .22,
+      .27,
+      .32
     );
+
 }
 
 
 /* =========================================================
-   BOX
+   BOX HELPER
 ========================================================= */
 
 const obstacles=[];
 
+
 function box(
   name,
-  w,h,d,
-  x,y,z,
+  w,
+  h,
+  d,
+  x,
+  y,
+  z,
   material
 ){
 
@@ -798,18 +1281,28 @@ function box(
       scene
     );
 
+
   b.position =
     new BABYLON.Vector3(
-      x,y,z
+      x,
+      y,
+      z
     );
 
-  b.material=material;
 
-  b.checkCollisions=true;
+  b.material=
+    material;
+
+
+  b.checkCollisions=
+    true;
+
 
   obstacles.push(b);
 
+
   return b;
+
 }
 
 
@@ -824,6 +1317,7 @@ box(
   wallMat
 );
 
+
 box(
   "South",
   100,8,2,
@@ -831,12 +1325,14 @@ box(
   wallMat
 );
 
+
 box(
   "West",
   2,8,100,
   -48,4,0,
   wallMat
 );
+
 
 box(
   "East",
@@ -846,7 +1342,7 @@ box(
 );
 
 
-/* central */
+/* CENTRAL COVER */
 
 box(
   "Center1",
@@ -854,6 +1350,7 @@ box(
   0,1.5,0,
   coverMat
 );
+
 
 box(
   "Center2",
@@ -863,7 +1360,7 @@ box(
 );
 
 
-/* covers */
+/* SIDE COVER */
 
 box(
   "Cover1",
@@ -872,12 +1369,14 @@ box(
   coverMat
 );
 
+
 box(
   "Cover2",
   10,3,3,
   23,1.5,-13,
   coverMat
 );
+
 
 box(
   "Cover3",
@@ -886,6 +1385,7 @@ box(
   coverMat
 );
 
+
 box(
   "Cover4",
   10,3,3,
@@ -893,12 +1393,16 @@ box(
   coverMat
 );
 
+
+/* FRONT */
+
 box(
   "Cover5",
   3,3,10,
   -11,1.5,27,
   coverMat
 );
+
 
 box(
   "Cover6",
@@ -918,7 +1422,10 @@ const gun =
     scene
   );
 
-gun.parent=camera;
+
+gun.parent=
+  camera;
+
 
 gun.position =
   new BABYLON.Vector3(
@@ -939,8 +1446,13 @@ const gunBody =
     scene
   );
 
-gunBody.parent=gun;
-gunBody.material=gunMat;
+
+gunBody.parent=
+  gun;
+
+
+gunBody.material=
+  gunMat;
 
 
 const barrel =
@@ -954,14 +1466,21 @@ const barrel =
     scene
   );
 
-barrel.parent=gun;
+
+barrel.parent=
+  gun;
+
 
 barrel.rotation.x=
   Math.PI/2;
 
-barrel.position.z=.52;
 
-barrel.material=gunMat;
+barrel.position.z=
+  .52;
+
+
+barrel.material=
+  gunMat;
 
 
 const grip =
@@ -975,7 +1494,10 @@ const grip =
     scene
   );
 
-grip.parent=gun;
+
+grip.parent=
+  gun;
+
 
 grip.position =
   new BABYLON.Vector3(
@@ -984,9 +1506,13 @@ grip.position =
     .1
   );
 
-grip.rotation.x=-.2;
 
-grip.material=gunMat;
+grip.rotation.x=
+  -.2;
+
+
+grip.material=
+  gunMat;
 
 
 /* =========================================================
@@ -1003,30 +1529,41 @@ const muzzle =
     scene
   );
 
-muzzle.parent=gun;
 
-muzzle.position.z=.78;
+muzzle.parent=
+  gun;
 
-muzzle.material=muzzleMat;
 
-muzzle.isVisible=false;
+muzzle.position.z=
+  .78;
+
+
+muzzle.material=
+  muzzleMat;
+
+
+muzzle.isVisible=
+  false;
 
 
 /* =========================================================
-   GAME STATE
+   GAME VARIABLES
 ========================================================= */
 
 let started=false;
+
 let ended=false;
 
 let hp=100;
 
 let magazine=12;
+
 let reserve=60;
 
 const MAG_SIZE=12;
 
 let kills=0;
+
 let round=1;
 
 let reloadLock=false;
@@ -1039,18 +1576,27 @@ const enemies=[];
 
 
 /* =========================================================
-   ENEMY POSITIONS
+   ENEMY SPAWN
 ========================================================= */
 
 const spawnPoints=[
+
   [-22,-25],
+
   [22,-25],
+
   [-28,0],
+
   [28,0],
+
   [-20,23],
+
   [20,23],
+
   [0,-32],
+
   [0,32]
+
 ];
 
 
@@ -1058,13 +1604,17 @@ const spawnPoints=[
    CREATE ENEMY
 ========================================================= */
 
-function createEnemy(x,z){
+function createEnemy(
+  x,
+  z
+){
 
   const root =
     new BABYLON.TransformNode(
       "EnemyRoot",
       scene
     );
+
 
   root.position =
     new BABYLON.Vector3(
@@ -1073,19 +1623,23 @@ function createEnemy(x,z){
       z
     );
 
+
   root.metadata={
     alive:true,
+
     hp:100,
+
     speed:
-      1.3+
-      Math.random()*.8,
+      1.0+
+      Math.random()*.5,
+
     cooldown:
       .5+
       Math.random()*1.5
   };
 
 
-  /* body */
+  /* BODY */
 
   const body =
     BABYLON.MeshBuilder.CreateBox(
@@ -1098,11 +1652,18 @@ function createEnemy(x,z){
       scene
     );
 
-  body.parent=root;
 
-  body.position.y=1;
+  body.parent=
+    root;
 
-  body.material=enemyMat;
+
+  body.position.y=
+    1;
+
+
+  body.material=
+    enemyMat;
+
 
   body.metadata={
     enemy:root,
@@ -1110,7 +1671,7 @@ function createEnemy(x,z){
   };
 
 
-  /* head */
+  /* HEAD */
 
   const head =
     BABYLON.MeshBuilder.CreateSphere(
@@ -1122,11 +1683,18 @@ function createEnemy(x,z){
       scene
     );
 
-  head.parent=root;
 
-  head.position.y=2.15;
+  head.parent=
+    root;
 
-  head.material=headMat;
+
+  head.position.y=
+    2.15;
+
+
+  head.material=
+    headMat;
+
 
   head.metadata={
     enemy:root,
@@ -1134,7 +1702,7 @@ function createEnemy(x,z){
   };
 
 
-  /* weapon */
+  /* WEAPON */
 
   const weapon =
     BABYLON.MeshBuilder.CreateBox(
@@ -1147,7 +1715,10 @@ function createEnemy(x,z){
       scene
     );
 
-  weapon.parent=root;
+
+  weapon.parent=
+    root;
+
 
   weapon.position =
     new BABYLON.Vector3(
@@ -1156,10 +1727,15 @@ function createEnemy(x,z){
       .25
     );
 
-  weapon.material=gunMat;
+
+  weapon.material=
+    gunMat;
 
 
-  enemies.push(root);
+  enemies.push(
+    root
+  );
+
 }
 
 
@@ -1170,8 +1746,11 @@ function createEnemy(x,z){
 function startRound(){
 
   enemies.forEach(
-    e=>e.dispose()
+    e=>{
+      e.dispose();
+    }
   );
+
 
   enemies.length=0;
 
@@ -1199,6 +1778,7 @@ function startRound(){
 
   updateHUD();
 
+
   showMessage(
     "ROUND "+round
   );
@@ -1207,7 +1787,7 @@ function startRound(){
 
 
 /* =========================================================
-   HUD
+   HUD UPDATE
 ========================================================= */
 
 function updateHUD(){
@@ -1222,22 +1802,26 @@ function updateHUD(){
 
   document.getElementById(
     "enemyCount"
-  ).textContent=alive;
+  ).textContent=
+    alive;
 
 
   document.getElementById(
     "round"
-  ).textContent=round;
+  ).textContent=
+    round;
 
 
   document.getElementById(
     "mag"
-  ).textContent=magazine;
+  ).textContent=
+    magazine;
 
 
   document.getElementById(
     "reserve"
-  ).textContent=reserve;
+  ).textContent=
+    reserve;
 
 
   document.getElementById(
@@ -1258,28 +1842,41 @@ function updateHUD(){
    MESSAGE
 ========================================================= */
 
-let msgTimer;
+let messageTimer;
 
-function showMessage(text){
+
+function showMessage(
+  text
+){
 
   const el=
     document.getElementById(
       "message"
     );
 
-  el.textContent=text;
 
-  el.style.opacity=1;
+  el.textContent=
+    text;
 
-  clearTimeout(msgTimer);
 
-  msgTimer=
+  el.style.opacity=
+    "1";
+
+
+  clearTimeout(
+    messageTimer
+  );
+
+
+  messageTimer=
     setTimeout(
       ()=>{
-        el.style.opacity=0;
+        el.style.opacity=
+          "0";
       },
       850
     );
+
 }
 
 
@@ -1289,6 +1886,7 @@ function showMessage(text){
 
 let hitTimer;
 
+
 function hitMarker(){
 
   const el=
@@ -1296,25 +1894,35 @@ function hitMarker(){
       "hitMarker"
     );
 
-  el.style.opacity=1;
 
-  clearTimeout(hitTimer);
+  el.style.opacity=
+    "1";
+
+
+  clearTimeout(
+    hitTimer
+  );
+
 
   hitTimer=
     setTimeout(
       ()=>{
-        el.style.opacity=0;
+        el.style.opacity=
+          "0";
       },
       90
     );
+
 }
 
 
 /* =========================================================
-   PLAYER DAMAGE
+   DAMAGE PLAYER
 ========================================================= */
 
-function damagePlayer(amount){
+function damagePlayer(
+  amount
+){
 
   if(
     !started ||
@@ -1325,22 +1933,28 @@ function damagePlayer(amount){
 
   hp-=amount;
 
-  hp=Math.max(
-    0,
-    hp
-  );
+
+  hp=
+    Math.max(
+      0,
+      hp
+    );
 
 
-  const d=
+  const damage=
     document.getElementById(
       "damage"
     );
 
-  d.style.opacity=1;
+
+  damage.style.opacity=
+    "1";
+
 
   setTimeout(
     ()=>{
-      d.style.opacity=0;
+      damage.style.opacity=
+        "0";
     },
     120
   );
@@ -1351,7 +1965,9 @@ function damagePlayer(amount){
 
   if(hp<=0){
 
-    finish(false);
+    finish(
+      false
+    );
 
   }
 
@@ -1383,7 +1999,9 @@ function shoot(){
     return;
 
 
-  if(magazine<=0){
+  if(
+    magazine<=0
+  ){
 
     reload();
 
@@ -1392,32 +2010,43 @@ function shoot(){
   }
 
 
-  lastShot=now;
+  lastShot=
+    now;
+
 
   magazine--;
+
 
   updateHUD();
 
 
-  /* recoil */
+  /* RECOIL */
 
-  camera.rotation.x+=.018;
+  camera.rotation.x+=
+    .018;
 
-  gun.position.z+=.06;
 
-  muzzle.isVisible=true;
+  gun.position.z+=
+    .06;
+
+
+  muzzle.isVisible=
+    true;
 
 
   setTimeout(
     ()=>{
-      muzzle.isVisible=false;
-      gun.position.z-=.06;
+      muzzle.isVisible=
+        false;
+
+      gun.position.z-=
+        .06;
     },
     65
   );
 
 
-  /* ray */
+  /* RAY */
 
   const ray=
     scene.createPickingRay(
@@ -1432,10 +2061,12 @@ function shoot(){
     scene.pickWithRay(
       ray,
       mesh=>{
+
         return !!(
           mesh.metadata &&
           mesh.metadata.enemy
         );
+
       }
     );
 
@@ -1448,6 +2079,7 @@ function shoot(){
 
     const mesh=
       result.pickedMesh;
+
 
     const enemy=
       mesh.metadata.enemy;
@@ -1466,16 +2098,20 @@ function shoot(){
 
     const damage=
       type==="head"
-      ? 100
-      : 34;
+      ?100
+      :34;
 
 
-    enemy.metadata.hp-=damage;
+    enemy.metadata.hp-=
+      damage;
+
 
     hitMarker();
 
 
-    if(type==="head"){
+    if(
+      type==="head"
+    ){
 
       showMessage(
         "HEADSHOT"
@@ -1488,7 +2124,9 @@ function shoot(){
       enemy.metadata.hp<=0
     ){
 
-      killEnemy(enemy);
+      killEnemy(
+        enemy
+      );
 
     }
 
@@ -1498,10 +2136,12 @@ function shoot(){
 
 
 /* =========================================================
-   KILL
+   KILL ENEMY
 ========================================================= */
 
-function killEnemy(enemy){
+function killEnemy(
+  enemy
+){
 
   if(
     !enemy.metadata.alive
@@ -1509,7 +2149,9 @@ function killEnemy(enemy){
     return;
 
 
-  enemy.metadata.alive=false;
+  enemy.metadata.alive=
+    false;
+
 
   kills++;
 
@@ -1528,11 +2170,13 @@ function killEnemy(enemy){
 
         t+=.08;
 
+
         enemy.rotation.x=
           -Math.min(
             t,
             Math.PI/2
           );
+
 
         enemy.position.y=
           Math.max(
@@ -1541,15 +2185,22 @@ function killEnemy(enemy){
           );
 
 
-        if(t>=Math.PI/2){
+        if(
+          t>=Math.PI/2
+        ){
 
           clearInterval(
             animation
           );
 
-          enemy.setEnabled(false);
+
+          enemy.setEnabled(
+            false
+          );
+
 
           updateHUD();
+
 
           checkRound();
 
@@ -1566,7 +2217,7 @@ function killEnemy(enemy){
 
 
 /* =========================================================
-   ROUND CHECK
+   CHECK ROUND
 ========================================================= */
 
 function checkRound(){
@@ -1578,7 +2229,9 @@ function checkRound(){
     ).length;
 
 
-  if(alive!==0)
+  if(
+    alive!==0
+  )
     return;
 
 
@@ -1594,13 +2247,17 @@ function checkRound(){
 
       round++;
 
-      magazine=MAG_SIZE;
+
+      magazine=
+        MAG_SIZE;
+
 
       reserve=
         Math.min(
           120,
           reserve+24
         );
+
 
       hp=
         Math.min(
@@ -1632,7 +2289,9 @@ function reload(){
     return;
 
 
-  reloadLock=true;
+  reloadLock=
+    true;
+
 
   showMessage(
     "RELOADING"
@@ -1645,84 +2304,30 @@ function reload(){
       const need=
         MAG_SIZE-magazine;
 
+
       const amount=
         Math.min(
           need,
           reserve
         );
 
-      magazine+=amount;
 
-      reserve-=amount;
+      magazine+=
+        amount;
 
-      reloadLock=false;
+
+      reserve-=
+        amount;
+
+
+      reloadLock=
+        false;
+
 
       updateHUD();
 
     },
     850
-  );
-
-}
-
-
-/* =========================================================
-   ENEMY LINE OF SIGHT
-========================================================= */
-
-function canSeePlayer(enemy){
-
-  const origin=
-    enemy.position.clone();
-
-  origin.y=1.6;
-
-
-  const target=
-    camera.position.clone();
-
-
-  const direction=
-    target.subtract(origin);
-
-
-  const length=
-    direction.length();
-
-
-  direction.normalize();
-
-
-  const ray=
-    new BABYLON.Ray(
-      origin,
-      direction,
-      length
-    );
-
-
-  const hit=
-    scene.pickWithRay(
-      ray,
-      mesh=>{
-        return (
-          mesh!==enemy &&
-          mesh!==floor &&
-          mesh.metadata===undefined
-        );
-      }
-    );
-
-
-  if(
-    !hit ||
-    !hit.hit
-  )
-    return true;
-
-
-  return (
-    hit.pickedMesh===undefined
   );
 
 }
@@ -1758,6 +2363,7 @@ function updateEnemies(){
         camera.position.x-
         enemy.position.x;
 
+
       const dz=
         camera.position.z-
         enemy.position.z;
@@ -1770,7 +2376,7 @@ function updateEnemies(){
         );
 
 
-      /* face player */
+      /* FACE PLAYER */
 
       enemy.rotation.y=
         Math.atan2(
@@ -1779,7 +2385,7 @@ function updateEnemies(){
         );
 
 
-      /* move */
+      /* MOVE */
 
       if(
         distance>8
@@ -1792,12 +2398,15 @@ function updateEnemies(){
           );
 
 
-        if(len>.1){
+        if(
+          len>.1
+        ){
 
           enemy.position.x+=
             dx/len*
             enemy.metadata.speed*
             dt;
+
 
           enemy.position.z+=
             dz/len*
@@ -1809,9 +2418,10 @@ function updateEnemies(){
       }
 
 
-      /* attack */
+      /* ATTACK */
 
-      enemy.metadata.cooldown-=dt;
+      enemy.metadata.cooldown-=
+        dt;
 
 
       if(
@@ -1832,7 +2442,8 @@ function updateEnemies(){
 
 
         if(
-          Math.random()<hitChance
+          Math.random()<
+          hitChance
         ){
 
           damagePlayer(
@@ -1851,21 +2462,28 @@ function updateEnemies(){
 
 
 /* =========================================================
-   INPUT
+   KEYBOARD
 ========================================================= */
 
 const keys={};
+
 
 window.addEventListener(
   "keydown",
   e=>{
 
-    keys[e.code]=true;
+    keys[e.code]=
+      true;
+
 
     if(
       e.code==="KeyR"
-    )
+    ){
+
       reload();
+
+    }
+
 
     if(
       e.code==="Space"
@@ -1885,10 +2503,14 @@ window.addEventListener(
   }
 );
 
+
 window.addEventListener(
   "keyup",
   e=>{
-    keys[e.code]=false;
+
+    keys[e.code]=
+      false;
+
   }
 );
 
@@ -1898,8 +2520,12 @@ window.addEventListener(
 ========================================================= */
 
 let joyX=0;
+
 let joyY=0;
-let sprinting=false;
+
+let sprinting=
+  false;
+
 
 function updateMovement(){
 
@@ -1915,24 +2541,40 @@ function updateMovement(){
 
 
   let forward=0;
+
   let side=0;
 
 
-  if(keys.KeyW)
+  if(
+    keys.KeyW
+  )
     forward+=1;
 
-  if(keys.KeyS)
+
+  if(
+    keys.KeyS
+  )
     forward-=1;
 
-  if(keys.KeyD)
+
+  if(
+    keys.KeyD
+  )
     side+=1;
 
-  if(keys.KeyA)
+
+  if(
+    keys.KeyA
+  )
     side-=1;
 
 
-  forward+=-joyY;
-  side+=joyX;
+  forward+=
+    -joyY;
+
+
+  side+=
+    joyX;
 
 
   const len=
@@ -1942,19 +2584,27 @@ function updateMovement(){
     );
 
 
-  if(len>1){
+  if(
+    len>1
+  ){
 
     forward/=len;
+
     side/=len;
 
   }
 
 
+  /*
+    WALK = 2.8
+    RUN  = 4.5
+  */
+
   let speed=
     sprinting ||
     keys.ShiftLeft
-    ? 8
-    : 5;
+      ?4.5
+      :2.8;
 
 
   const yaw=
@@ -1962,20 +2612,29 @@ function updateMovement(){
 
 
   const x=
-    side*Math.cos(yaw)+
-    forward*Math.sin(yaw);
+    side*
+    Math.cos(yaw)+
+    forward*
+    Math.sin(yaw);
 
 
   const z=
-    forward*Math.cos(yaw)-
-    side*Math.sin(yaw);
+    forward*
+    Math.cos(yaw)-
+    side*
+    Math.sin(yaw);
 
 
   camera.cameraDirection.x=
-    x*speed*dt;
+    x*
+    speed*
+    dt;
+
 
   camera.cameraDirection.z=
-    z*speed*dt;
+    z*
+    speed*
+    dt;
 
 }
 
@@ -2009,16 +2668,20 @@ document.addEventListener(
     if(
       !started ||
       ended ||
-      document.pointerLockElement!==canvas
+      document.pointerLockElement!==
+      canvas
     )
       return;
 
 
     camera.rotation.y-=
-      e.movementX*.0025;
+      e.movementX*
+      .0025;
+
 
     camera.rotation.x-=
-      e.movementY*.0025;
+      e.movementY*
+      .0025;
 
 
     camera.rotation.x=
@@ -2041,8 +2704,11 @@ window.addEventListener(
     if(
       e.button===0 &&
       started
-    )
+    ){
+
       shoot();
+
+    }
 
   }
 );
@@ -2053,7 +2719,9 @@ window.addEventListener(
 ========================================================= */
 
 let lookId=null;
+
 let lookX=0;
+
 let lookY=0;
 
 
@@ -2061,12 +2729,15 @@ canvas.addEventListener(
   "touchstart",
   e=>{
 
-    if(!started)
+    if(
+      !started
+    )
       return;
 
 
     for(
-      const t of e.changedTouches
+      const t of
+      e.changedTouches
     ){
 
       if(
@@ -2074,10 +2745,17 @@ canvas.addEventListener(
         innerWidth*.35
       ){
 
-        lookId=t.identifier;
+        lookId=
+          t.identifier;
 
-        lookX=t.clientX;
-        lookY=t.clientY;
+
+        lookX=
+          t.clientX;
+
+
+        lookY=
+          t.clientY;
+
 
         break;
 
@@ -2086,7 +2764,9 @@ canvas.addEventListener(
     }
 
   },
-  {passive:false}
+  {
+    passive:false
+  }
 );
 
 
@@ -2094,30 +2774,40 @@ canvas.addEventListener(
   "touchmove",
   e=>{
 
-    if(lookId===null)
+    if(
+      lookId===null
+    )
       return;
 
 
     for(
-      const t of e.changedTouches
+      const t of
+      e.changedTouches
     ){
 
       if(
-        t.identifier===lookId
+        t.identifier===
+        lookId
       ){
 
         const dx=
-          t.clientX-lookX;
+          t.clientX-
+          lookX;
+
 
         const dy=
-          t.clientY-lookY;
+          t.clientY-
+          lookY;
 
 
         camera.rotation.y-=
-          dx*.004;
+          dx*
+          .004;
+
 
         camera.rotation.x-=
-          dy*.004;
+          dy*
+          .004;
 
 
         camera.rotation.x=
@@ -2130,15 +2820,21 @@ canvas.addEventListener(
           );
 
 
-        lookX=t.clientX;
-        lookY=t.clientY;
+        lookX=
+          t.clientX;
+
+
+        lookY=
+          t.clientY;
 
       }
 
     }
 
   },
-  {passive:false}
+  {
+    passive:false
+  }
 );
 
 
@@ -2147,13 +2843,19 @@ canvas.addEventListener(
   e=>{
 
     for(
-      const t of e.changedTouches
+      const t of
+      e.changedTouches
     ){
 
       if(
-        t.identifier===lookId
-      )
-        lookId=null;
+        t.identifier===
+        lookId
+      ){
+
+        lookId=
+          null;
+
+      }
 
     }
 
@@ -2170,12 +2872,15 @@ const joystick=
     "joystick"
   );
 
+
 const knob=
   document.getElementById(
     "knob"
   );
 
-let joyId=null;
+
+let joyId=
+  null;
 
 
 joystick.addEventListener(
@@ -2184,11 +2889,15 @@ joystick.addEventListener(
 
     e.preventDefault();
 
+
     joyId=
-      e.changedTouches[0].identifier;
+      e.changedTouches[0]
+      .identifier;
 
   },
-  {passive:false}
+  {
+    passive:false
+  }
 );
 
 
@@ -2200,50 +2909,67 @@ joystick.addEventListener(
 
 
     for(
-      const t of e.changedTouches
+      const t of
+      e.changedTouches
     ){
 
       if(
-        t.identifier!==joyId
+        t.identifier!==
+        joyId
       )
         continue;
 
 
       const r=
-        joystick.getBoundingClientRect();
+        joystick
+        .getBoundingClientRect();
 
 
       let dx=
         t.clientX-
-        (r.left+r.width/2);
+        (r.left+
+        r.width/2);
+
 
       let dy=
         t.clientY-
-        (r.top+r.height/2);
+        (r.top+
+        r.height/2);
 
 
-      const radius=45;
+      const radius=
+        45;
 
-      const dist=
+
+      const distance=
         Math.sqrt(
           dx*dx+
           dy*dy
         );
 
 
-      if(dist>radius){
+      if(
+        distance>radius
+      ){
 
         dx=
-          dx/dist*radius;
+          dx/distance*
+          radius;
+
 
         dy=
-          dy/dist*radius;
+          dy/distance*
+          radius;
 
       }
 
 
-      joyX=dx/radius;
-      joyY=dy/radius;
+      joyX=
+        dx/radius;
+
+
+      joyY=
+        dy/radius;
 
 
       knob.style.transform=
@@ -2252,16 +2978,20 @@ joystick.addEventListener(
     }
 
   },
-  {passive:false}
+  {
+    passive:false
+  }
 );
 
 
 joystick.addEventListener(
   "touchend",
   ()=>{
-
+    
     joyX=0;
+
     joyY=0;
+
     joyId=null;
 
     knob.style.transform=
@@ -2272,26 +3002,29 @@ joystick.addEventListener(
 
 
 /* =========================================================
-   MOBILE BUTTONS
+   FIRE BUTTON
 ========================================================= */
 
-const fire=
-  document.getElementById(
-    "fire"
+document
+  .getElementById("fire")
+  .addEventListener(
+    "touchstart",
+    e=>{
+
+      e.preventDefault();
+
+      shoot();
+
+    },
+    {
+      passive:false
+    }
   );
 
-fire.addEventListener(
-  "touchstart",
-  e=>{
 
-    e.preventDefault();
-
-    shoot();
-
-  },
-  {passive:false}
-);
-
+/* =========================================================
+   RELOAD BUTTON
+========================================================= */
 
 document
   .getElementById("reload")
@@ -2304,16 +3037,23 @@ document
       reload();
 
     },
-    {passive:false}
+    {
+      passive:false
+    }
   );
 
 
-const run=
+/* =========================================================
+   RUN BUTTON
+========================================================= */
+
+const runButton=
   document.getElementById(
     "run"
   );
 
-run.addEventListener(
+
+runButton.addEventListener(
   "touchstart",
   e=>{
 
@@ -2322,10 +3062,13 @@ run.addEventListener(
     sprinting=true;
 
   },
-  {passive:false}
+  {
+    passive:false
+  }
 );
 
-run.addEventListener(
+
+runButton.addEventListener(
   "touchend",
   e=>{
 
@@ -2334,9 +3077,15 @@ run.addEventListener(
     sprinting=false;
 
   },
-  {passive:false}
+  {
+    passive:false
+  }
 );
 
+
+/* =========================================================
+   JUMP BUTTON
+========================================================= */
 
 document
   .getElementById("jump")
@@ -2350,12 +3099,14 @@ document
         .22;
 
     },
-    {passive:false}
+    {
+      passive:false
+    }
   );
 
 
 /* =========================================================
-   TOUCH DETECTION
+   TOUCH CHECK
 ========================================================= */
 
 function isTouch(){
@@ -2369,20 +3120,41 @@ function isTouch(){
 
 
 /* =========================================================
-   START
+   FORCE MOBILE UI
+========================================================= */
+
+if(
+  isTouch()
+){
+
+  document
+    .getElementById(
+      "mobile"
+    )
+    .style.display=
+      "block";
+
+}
+
+
+/* =========================================================
+   START GAME
 ========================================================= */
 
 function startGame(){
 
   started=true;
+
   ended=false;
 
   hp=100;
 
   magazine=12;
+
   reserve=60;
 
   kills=0;
+
   round=1;
 
   reloadLock=false;
@@ -2395,6 +3167,7 @@ function startGame(){
       28
     );
 
+
   camera.rotation=
     new BABYLON.Vector3(
       0,
@@ -2403,19 +3176,42 @@ function startGame(){
     );
 
 
-  document.getElementById(
-    "menu"
-  ).style.display="none";
+  document
+    .getElementById(
+      "menu"
+    )
+    .style.display=
+      "none";
 
 
-  document.getElementById(
-    "endScreen"
-  ).style.display="none";
+  document
+    .getElementById(
+      "endScreen"
+    )
+    .style.display=
+      "none";
 
 
-  document.getElementById(
-    "hud"
-  ).style.display="block";
+  document
+    .getElementById(
+      "hud"
+    )
+    .style.display=
+      "block";
+
+
+  if(
+    isTouch()
+  ){
+
+    document
+      .getElementById(
+        "mobile"
+      )
+      .style.display=
+        "block";
+
+  }
 
 
   startRound();
@@ -2423,11 +3219,14 @@ function startGame(){
   updateHUD();
 
 
-  if(!isTouch()){
+  if(
+    !isTouch()
+  ){
 
     setTimeout(
       ()=>{
-        canvas.requestPointerLock?.();
+        canvas
+          .requestPointerLock?.();
       },
       150
     );
@@ -2438,39 +3237,50 @@ function startGame(){
 
 
 /* =========================================================
-   END
+   END GAME
 ========================================================= */
 
-function finish(victory){
+function finish(
+  victory
+){
 
   ended=true;
+
   started=false;
 
-  document.exitPointerLock?.();
+
+  document
+    .exitPointerLock?.();
 
 
-  document.getElementById(
-    "endTitle"
-  ).textContent=
-    victory
-    ? "VICTORY"
-    : "ELIMINATED";
+  document
+    .getElementById(
+      "endTitle"
+    )
+    .textContent=
+      victory
+      ? "VICTORY"
+      : "ELIMINATED";
 
 
-  document.getElementById(
-    "endScore"
-  ).textContent=
-    "ROUND "+
-    round+
-    "  /  "+
-    kills+
-    " KILLS";
+  document
+    .getElementById(
+      "endScore"
+    )
+    .textContent=
+      "ROUND "+
+      round+
+      "  /  "+
+      kills+
+      " KILLS";
 
 
-  document.getElementById(
-    "endScreen"
-  ).style.display=
-    "flex";
+  document
+    .getElementById(
+      "endScreen"
+    )
+    .style.display=
+      "flex";
 
 }
 
@@ -2480,14 +3290,19 @@ function finish(victory){
 ========================================================= */
 
 document
-  .getElementById("start")
+  .getElementById(
+    "start"
+  )
   .addEventListener(
     "click",
     startGame
   );
 
+
 document
-  .getElementById("restart")
+  .getElementById(
+    "restart"
+  )
   .addEventListener(
     "click",
     startGame
@@ -2495,7 +3310,7 @@ document
 
 
 /* =========================================================
-   LOOP
+   GAME LOOP
 ========================================================= */
 
 engine.runRenderLoop(
@@ -2512,11 +3327,16 @@ engine.runRenderLoop(
 
     }
 
+
     scene.render();
 
   }
 );
 
+
+/* =========================================================
+   RESIZE
+========================================================= */
 
 window.addEventListener(
   "resize",
@@ -2525,6 +3345,10 @@ window.addEventListener(
   }
 );
 
+
+/* =========================================================
+   INITIAL
+========================================================= */
 
 updateHUD();
 
