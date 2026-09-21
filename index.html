@@ -34,6 +34,7 @@ html,body{
   width:100%;
   height:100%;
   display:block;
+  touch-action:none;
 }
 
 #hud{
@@ -242,6 +243,7 @@ html,body{
   background:rgba(255,255,255,.14);
   border:2px solid rgba(255,255,255,.35);
   pointer-events:auto;
+  touch-action:none;
 }
 
 #joystickKnob{
@@ -267,6 +269,7 @@ html,body{
   display:flex;
   align-items:center;
   justify-content:center;
+  touch-action:none;
 }
 
 #fireBtn{
@@ -275,6 +278,11 @@ html,body{
   width:82px;
   height:82px;
   background:rgba(180,40,40,.6);
+}
+
+#fireBtn:active{
+  background:rgba(230,55,55,.8);
+  transform:scale(.96);
 }
 
 #reloadBtn{
@@ -634,20 +642,63 @@ let running=false;
    WEAPON
 ========================================================= */
 
-/*
-   연사 속도
-   145ms = 약 6.9발/초
-*/
 const FIRE_DELAY=145;
 
 let lastShot=0;
 
-/*
-   FIRE 버튼/마우스를 누르고 있는 동안 true
-*/
 let firing=false;
 
 let reloading=false;
+
+
+/* =========================================================
+   RECOIL SYSTEM
+   ★ 새로 추가
+========================================================= */
+
+/*
+  recoilPitch
+
+  현재 화면에 적용되고 있는 반동값.
+  Babylon 카메라 rotation.x에 더해진다.
+*/
+let recoilPitch=0;
+
+/*
+  recoilTarget
+
+  연사하면서 누적되는 반동 목표값.
+*/
+let recoilTarget=0;
+
+/*
+  recoilYaw
+
+  아주 약한 좌우 반동.
+*/
+let recoilYaw=0;
+
+/*
+  반동 세기
+
+  값이 클수록 한 발마다 화면이 더 위로 올라간다.
+*/
+const RECOIL_PER_SHOT=.035;
+
+/*
+  최대 누적 반동.
+*/
+const MAX_RECOIL=.24;
+
+/*
+  반동이 돌아오는 속도.
+*/
+const RECOIL_RETURN_SPEED=8;
+
+/*
+  좌우 반동.
+*/
+const RECOIL_SIDE=.008;
 
 
 /* =========================================================
@@ -718,6 +769,15 @@ document.addEventListener(
     if(
       document.pointerLockElement!==canvas
     ) return;
+
+    /*
+      반동은 camera.rotation.x에 직접
+      영구적으로 더하지 않고 recoilPitch를
+      별도로 관리한다.
+
+      따라서 마우스 조준과 반동이 서로
+      충돌하지 않는다.
+    */
 
     camera.rotation.y +=
       e.movementX*.0025;
@@ -801,6 +861,21 @@ function jump(){
 const fireBtn=
   document.getElementById("fireBtn");
 
+
+/*
+  pointer-events 대신 touch 이벤트를 사용하되
+  touch identifier를 기억한다.
+
+  이 덕분에:
+
+  손가락 1 = FIRE
+  손가락 2 = 화면 조준
+
+  형태의 멀티터치가 가능하다.
+*/
+
+let fireTouchId=null;
+
 fireBtn.addEventListener(
   "touchstart",
   e=>{
@@ -808,6 +883,10 @@ fireBtn.addEventListener(
     e.preventDefault();
 
     if(!started || ended) return;
+
+    const t=e.changedTouches[0];
+
+    fireTouchId=t.identifier;
 
     firing=true;
 
@@ -826,7 +905,21 @@ fireBtn.addEventListener(
 
     e.preventDefault();
 
-    firing=false;
+    for(
+      const t of e.changedTouches
+    ){
+
+      if(
+        t.identifier===
+        fireTouchId
+      ){
+
+        fireTouchId=null;
+        firing=false;
+
+      }
+
+    }
 
   },
   {passive:false}
@@ -836,9 +929,24 @@ fireBtn.addEventListener(
   "touchcancel",
   e=>{
 
-    firing=false;
+    for(
+      const t of e.changedTouches
+    ){
 
-  }
+      if(
+        t.identifier===
+        fireTouchId
+      ){
+
+        fireTouchId=null;
+        firing=false;
+
+      }
+
+    }
+
+  },
+  {passive:false}
 );
 
 
@@ -1067,7 +1175,20 @@ function updateJoystick(x,y){
 
 /* =========================================================
    MOBILE LOOK
+   ★ 멀티터치 조준
 ========================================================= */
+
+/*
+  FIRE 버튼은 #mobile 영역에 있기 때문에
+  canvas의 touch 이벤트를 막지 않는다.
+
+  따라서:
+
+  손가락 1 → FIRE
+  손가락 2 → canvas 오른쪽 → AIM
+
+  동시 사용 가능.
+*/
 
 canvas.addEventListener(
   "touchstart",
@@ -1079,17 +1200,36 @@ canvas.addEventListener(
       const t of e.changedTouches
     ){
 
+      /*
+        왼쪽 조이스틱 영역은 제외
+      */
+
       if(
-        t.clientX >
+        t.clientX <
         window.innerWidth*.42
       ){
 
-        lookTouchId=t.identifier;
-
-        lastLookX=t.clientX;
-        lastLookY=t.clientY;
+        continue;
 
       }
+
+      /*
+        이미 다른 조준 손가락이 있으면
+        새 손가락으로 덮어쓰지 않는다.
+      */
+
+      if(
+        lookTouchId!==null
+      ){
+
+        continue;
+
+      }
+
+      lookTouchId=t.identifier;
+
+      lastLookX=t.clientX;
+      lastLookY=t.clientY;
 
     }
 
@@ -1120,8 +1260,16 @@ canvas.addEventListener(
         const dy=
           t.clientY-lastLookY;
 
+        /*
+          좌우 시야
+        */
+
         camera.rotation.y +=
           dx*.004;
+
+        /*
+          위아래 시야
+        */
 
         camera.rotation.x +=
           dy*.004;
@@ -1192,6 +1340,219 @@ canvas.addEventListener(
 
 
 /* =========================================================
+   RECOIL
+   ★ 새로 추가
+========================================================= */
+
+function applyRecoil(){
+
+  /*
+    연사 중 한 발마다 위쪽 반동을 누적한다.
+  */
+
+  recoilTarget +=
+    RECOIL_PER_SHOT;
+
+  recoilTarget=
+    Math.min(
+      recoilTarget,
+      MAX_RECOIL
+    );
+
+  /*
+    좌우는 아주 조금만 랜덤하게 흔든다.
+  */
+
+  recoilYaw +=
+    (Math.random()-.5)*
+    RECOIL_SIDE;
+
+}
+
+
+/*
+  매 프레임 호출.
+*/
+function updateRecoil(dt){
+
+  /*
+    목표 반동으로 부드럽게 이동
+  */
+
+  const difference=
+    recoilTarget-recoilPitch;
+
+  recoilPitch +=
+    difference*
+    Math.min(
+      1,
+      RECOIL_RETURN_SPEED*dt
+    );
+
+
+  /*
+    발사를 멈추면 목표 반동을
+    천천히 0으로 되돌린다.
+  */
+
+  if(!firing){
+
+    recoilTarget=
+      Math.max(
+        0,
+        recoilTarget-
+        2.8*dt
+      );
+
+  }
+
+
+  /*
+    좌우 반동도 천천히 복귀
+  */
+
+  recoilYaw +=
+    (0-recoilYaw)*
+    Math.min(
+      1,
+      12*dt
+    );
+
+
+  /*
+    중요한 부분.
+
+    camera.rotation.x 자체를 계속 누적시키지 않고
+    이번 프레임의 반동값을 적용한다.
+
+    Babylon에서는 화면을 위로 올리기 위해
+    rotation.x에서 recoilPitch를 빼준다.
+  */
+
+  /*
+    이전 프레임에서 적용했던 반동을 먼저 제거하고
+    현재 반동을 다시 적용해야 한다.
+  */
+
+  camera.rotation.x +=
+    -recoilPitch;
+
+
+  /*
+    위 코드는 매 프레임 누적 문제가 생길 수 있으므로
+    아래에서 다시 현재 반동을 기준으로 보정한다.
+
+    실제 조준 입력과 반동을 분리하기 위해
+    recoilApplied 값을 사용한다.
+  */
+
+}
+
+
+/* =========================================================
+   RECOIL STATE
+   ★ 실제 적용용
+========================================================= */
+
+let recoilAppliedPitch=0;
+let recoilAppliedYaw=0;
+
+
+/*
+  updateRecoil을 실제 안정적인 방식으로
+  다시 정의한다.
+
+  camera.rotation에는 항상
+  "플레이어 조준 + 현재 반동"이 들어간다.
+*/
+
+function updateRecoilStable(dt){
+
+  /*
+    이전 프레임 반동을 제거한다.
+  */
+
+  camera.rotation.x -=
+    recoilAppliedPitch;
+
+  camera.rotation.y -=
+    recoilAppliedYaw;
+
+
+  /*
+    새로운 반동 계산
+  */
+
+  recoilPitch +=
+    (recoilTarget-recoilPitch)*
+    Math.min(
+      1,
+      RECOIL_RETURN_SPEED*dt
+    );
+
+
+  /*
+    발사하지 않는 동안 반동 복귀
+  */
+
+  if(!firing){
+
+    recoilTarget=
+      Math.max(
+        0,
+        recoilTarget-
+        2.8*dt
+      );
+
+  }
+
+
+  /*
+    좌우 반동 복귀
+  */
+
+  recoilYaw +=
+    (0-recoilYaw)*
+    Math.min(
+      1,
+      12*dt
+    );
+
+
+  /*
+    현재 반동 적용
+  */
+
+  recoilAppliedPitch=
+    -recoilPitch;
+
+  recoilAppliedYaw=
+    recoilYaw;
+
+  camera.rotation.x +=
+    recoilAppliedPitch;
+
+  camera.rotation.y +=
+    recoilAppliedYaw;
+
+
+  /*
+    카메라 상하 한계
+  */
+
+  camera.rotation.x =
+    Math.max(
+      -1.45,
+      Math.min(
+        1.45,
+        camera.rotation.x
+      )
+    );
+
+}
+
+
+/* =========================================================
    RELOAD
 ========================================================= */
 
@@ -1210,6 +1571,7 @@ function reload(){
   /*
     재장전 중에는 발사 중지
   */
+
   firing=false;
 
   setTimeout(
@@ -1256,6 +1618,7 @@ function shoot(){
   /*
     FIRE_DELAY보다 빠르게 발사하지 않음
   */
+
   if(
     now-lastShot <
     FIRE_DELAY
@@ -1264,6 +1627,7 @@ function shoot(){
   /*
     탄약 없음
   */
+
   if(ammo<=0){
 
     firing=false;
@@ -1277,6 +1641,12 @@ function shoot(){
   ammo--;
 
   updateHUD();
+
+  /*
+    ★ 발사할 때마다 반동
+  */
+
+  applyRecoil();
 
   muzzleFlash();
 
@@ -1934,6 +2304,16 @@ function finish(victory){
 
   firing=false;
 
+  /*
+    반동도 초기화
+  */
+
+  recoilPitch=0;
+  recoilTarget=0;
+  recoilYaw=0;
+  recoilAppliedPitch=0;
+  recoilAppliedYaw=0;
+
   const screen=
     document.getElementById(
       "endScreen"
@@ -1987,6 +2367,16 @@ function startGame(){
   jumpVelocity=0;
 
   lastShot=0;
+
+  /*
+    ★ 반동 초기화
+  */
+
+  recoilPitch=0;
+  recoilTarget=0;
+  recoilYaw=0;
+  recoilAppliedPitch=0;
+  recoilAppliedYaw=0;
 
   camera.position=
     new BABYLON.Vector3(
@@ -2066,11 +2456,20 @@ engine.runRenderLoop(
 
 
     /*
-      ★ FIRE 버튼/마우스를 누르고 있으면
-      매 프레임 shoot()을 확인한다.
+      ★ 연사
     */
 
     fireLoop();
+
+
+    /*
+      ★ 반동
+
+      반드시 카메라 입력과 함께 매 프레임
+      갱신한다.
+    */
+
+    updateRecoilStable(dt);
 
 
     /* render */
