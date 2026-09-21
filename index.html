@@ -323,6 +323,13 @@ h1{
  height:62px
 }
 
+#weaponOpenBtn{
+ right:28px;
+ bottom:155px;
+ width:62px;
+ height:62px
+}
+
 #settingsBox{
  margin-top:14px;
  width:min(92vw,460px);
@@ -440,6 +447,13 @@ h1{
    class="modeBtn"
   >
    DEATHMATCH
+  </button>
+
+  <button
+   id="trainingMode"
+   class="modeBtn"
+  >
+   TRAINING
   </button>
 
  </div>
@@ -673,6 +687,13 @@ h1{
   SCOPE
  </button>
 
+ <button
+  id="weaponOpenBtn"
+  class="mobileBtn"
+ >
+  WEAPON
+ </button>
+
 </div>
 
 <div id="weaponSelect">
@@ -737,6 +758,7 @@ let respawnTimer=0;
 
 const DEATHMATCH_TIME=300;
 const DEATHMATCH_KILLS=30;
+const TRAINING_BOT_COUNT=6;
 
 /* =========================================================
    MULTIPLAYER
@@ -919,31 +941,19 @@ const startBtn=
  document.getElementById(
   "startBtn"
  );
+const trainingModeButton=document.getElementById("trainingMode");
+const roundModeButton=document.getElementById("roundMode");
+const deathmatchModeButton=document.getElementById("deathmatchMode");
+const modeDescription=document.getElementById("modeDescription");
+const mpPanel=document.getElementById("mpPanel");
 
 const restartBtn=
  document.getElementById(
   "restartBtn"
  );
 
-const roundModeButton=
- document.getElementById(
-  "roundMode"
- );
 
-const deathmatchModeButton=
- document.getElementById(
-  "deathmatchMode"
- );
 
-const modeDescription=
- document.getElementById(
-  "modeDescription"
- );
-
-const mpPanel=
- document.getElementById(
-  "mpPanel"
- );
 
 const hostBtn=
  document.getElementById(
@@ -1065,7 +1075,9 @@ function updateHUD(){
  ).textContent=
   gameMode==="deathmatch"
    ?formatTime(deathmatchTime)
-   :"--:--";
+   :gameMode==="training"
+    ?"∞"
+    :"--:--";
 
  document.getElementById(
   "hp"
@@ -1319,8 +1331,8 @@ function createScene(){
   "southWall",
   0,
   3,
-  -34,
-  68,
+  -49,
+  98,
   6,
   1
  );
@@ -1468,12 +1480,18 @@ function createScene(){
   const base=BABYLON.MeshBuilder.CreateBox("highPlatform",{width:12,height:2,depth:10},scene);
   base.position.set(x,5,z);
   base.material=coverMat;
-  const step1=BABYLON.MeshBuilder.CreateBox("highStep1",{width:5,height:1,depth:3},scene);
-  step1.position.set(x-7,0.5,z); step1.material=coverMat; collisionMeshes.push(step1);
-  const step2=BABYLON.MeshBuilder.CreateBox("highStep2",{width:5,height:2,depth:3},scene);
-  step2.position.set(x-4,1,z); step2.material=coverMat; collisionMeshes.push(step2);
-  const step3=BABYLON.MeshBuilder.CreateBox("highStep3",{width:5,height:3,depth:3},scene);
-  step3.position.set(x-1,1.5,z); step3.material=coverMat; collisionMeshes.push(step3);
+  base.checkCollisions=true;
+  collisionMeshes.push(base);
+
+  // 1m씩 올라가는 4단 계단: 마지막 단의 높이를 플랫폼 바닥(4m)에 맞춥니다.
+  const steps=[[-8,1],[-6,2],[-4,3],[-2,4]];
+  steps.forEach((step,i)=>{
+   const mesh=BABYLON.MeshBuilder.CreateBox(`highStep${i}`,{width:3,height:step[1],depth:4},scene);
+   mesh.position.set(x+step[0],step[1]/2,z);
+   mesh.material=coverMat;
+   mesh.checkCollisions=true;
+   collisionMeshes.push(mesh);
+  });
  }
  highPlatform(-28,22);
  highPlatform(28,-22);
@@ -3444,6 +3462,22 @@ function spawnRoundEnemies(){
 
 }
 
+function getTrainingSpawnPoint(){
+ const points=[[-30,-28],[-10,-28],[10,-28],[30,-28],[-30,28],[-10,28],[10,28],[30,28],[-30,0],[30,0]];
+ let best=points[0], bestDist=-1;
+ for(const p of points){
+  const d=Math.hypot(p[0]-camera.position.x,p[1]-camera.position.z);
+  if(d>bestDist){bestDist=d;best=p;}
+ }
+ return best;
+}
+
+function spawnTrainingBots(){
+ clearEnemies();
+ const points=[[-30,-28],[-10,-28],[10,-28],[30,-28],[-30,28],[-10,28]];
+ for(const p of points) createEnemy(p[0],p[1]);
+}
+
 /* =========================================================
    PLAYER DAMAGE
 ========================================================= */
@@ -3857,6 +3891,10 @@ function showWeaponSelect(){
   kicker.textContent="ROUND COMPLETE";
   title.textContent=`ROUND ${round} COMPLETE`;
   desc.textContent="다음 라운드에 사용할 총을 선택하세요.";
+ }else if(gameMode==="training"){
+  kicker.textContent="TRAINING LOADOUT";
+  title.textContent="CHOOSE WEAPON";
+  desc.textContent="훈련 중 언제든 총기를 바꿀 수 있습니다.";
  }else{
   kicker.textContent="RESPAWN LOADOUT";
   title.textContent="CHOOSE WEAPON";
@@ -4042,6 +4080,7 @@ function killEnemy(
  enemy.dead=true;
 
  enemy.deathTimer=0;
+ enemy.trainingRespawnQueued=(gameMode==="training");
 
  kills++;
 
@@ -4062,11 +4101,13 @@ function updateEnemies(
  */
 
  if(
-  gameMode!=="round" ||
   !gameStarted ||
   gameOver ||
   playerDead
  )return;
+
+ if(gameMode==="training")return;
+ if(gameMode!=="round")return;
 
  for(
   const enemy of enemies
@@ -4187,6 +4228,13 @@ function updateDeaths(
 
    enemy.root.dispose();
 
+   if(gameMode==="training" && enemy.trainingRespawnQueued){
+    const p=getTrainingSpawnPoint();
+    const idx=enemies.indexOf(enemy);
+    if(idx>=0) enemies.splice(idx,1);
+    createEnemy(p[0],p[1]);
+   }
+
   }
 
  }
@@ -4239,6 +4287,15 @@ function startRound(){
 
  updateHUD();
 
+}
+
+function startTraining(){
+ clearEnemies();
+ playerHP=100; ammo=MAG_SIZE; reserve=999; kills=0; playerDead=false; roundTransition=false; velocityY=0; onGround=true;
+ camera.position.set(0,GROUND_Y,-40);
+ camera.rotation.x=0; camera.rotation.z=0;
+ spawnTrainingBots();
+ updateHUD();
 }
 
 function checkRound(){
@@ -4513,6 +4570,7 @@ roundModeButton.addEventListener(
   deathmatchModeButton.classList.remove(
    "selected"
   );
+  trainingModeButton.classList.remove("selected");
 
   modeDescription.textContent=
    "적을 모두 처치하면 다음 라운드로 진행합니다.";
@@ -4539,6 +4597,7 @@ deathmatchModeButton.addEventListener(
   roundModeButton.classList.remove(
    "selected"
   );
+  trainingModeButton.classList.remove("selected");
 
   modeDescription.textContent=
    "봇 없이 사람끼리 싸웁니다. 5분 동안 30킬을 먼저 달성하면 목표를 완료합니다.";
@@ -4550,6 +4609,16 @@ deathmatchModeButton.addEventListener(
 
  }
 );
+
+trainingModeButton.addEventListener("click",()=>{
+ gameMode="training";
+ trainingModeButton.classList.add("selected");
+ roundModeButton.classList.remove("selected");
+ deathmatchModeButton.classList.remove("selected");
+ modeDescription.textContent="계속 생성되는 고정 봇을 사격하는 훈련장입니다. 언제든 총기를 바꿀 수 있습니다.";
+ startBtn.textContent="START TRAINING";
+ mpPanel.style.display="none";
+});
 
 /* =========================================================
    HOST / JOIN
@@ -4662,7 +4731,8 @@ function startMatch(){
 
   cleanupMultiplayer();
 
-  startRound();
+  if(gameMode==="training") startTraining();
+  else startRound();
 
  }
 
@@ -4688,6 +4758,14 @@ window.addEventListener(
   if(
    !gameStarted
   )return;
+
+  if(gameStarted&&!gameOver&&!playerDead){
+   if(e.code==="Digit1"){setWeapon("rifle");return;}
+   if(e.code==="Digit2"){setWeapon("smg");return;}
+   if(e.code==="Digit3"){setWeapon("shotgun");return;}
+   if(e.code==="Digit4"){setWeapon("sniper");return;}
+   if(e.code==="KeyQ"&&gameMode==="training"){showWeaponSelect();return;}
+  }
 
   switch(
    e.code
@@ -5348,6 +5426,8 @@ document.querySelectorAll(".weaponBtn").forEach(btn=>{
 
 const zoomBtn=document.getElementById("zoomBtn");
 zoomBtn.addEventListener("pointerdown",e=>{e.preventDefault();e.stopPropagation();toggleZoom();});
+const weaponOpenBtn=document.getElementById("weaponOpenBtn");
+weaponOpenBtn.addEventListener("pointerdown",e=>{e.preventDefault();e.stopPropagation();if(gameStarted&&!gameOver&&!playerDead)showWeaponSelect();});
 
 canvas.addEventListener("contextmenu",e=>e.preventDefault());
 window.addEventListener("mousedown",e=>{if(e.button===2&&gameStarted&&!gameOver&&!playerDead)setZoom(true);});
