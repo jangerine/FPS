@@ -351,10 +351,11 @@ h1{
 #weaponSelectBox{
  width:min(92vw,430px);
  padding:22px;
- background:#10141c;
- border:1px solid rgba(255,255,255,.25);
- border-radius:12px;
- text-align:center
+ background:linear-gradient(145deg,#101823,#080c12);
+ border:1px solid rgba(90,190,230,.35);
+ border-radius:16px;
+ text-align:center;
+ box-shadow:0 18px 60px rgba(0,0,0,.65)
 }
 
 .weaponGrid{
@@ -676,9 +677,9 @@ h1{
 
 <div id="weaponSelect">
  <div id="weaponSelectBox">
-  <div style="font-size:12px;opacity:.65">RESPAWN LOADOUT</div>
-  <h2 style="margin:7px 0">CHOOSE WEAPON</h2>
-  <div style="font-size:12px;opacity:.65">죽을 때마다 다음 무기를 선택할 수 있습니다.</div>
+  <div id="weaponSelectKicker" style="font-size:12px;opacity:.65">LOADOUT</div>
+  <h2 id="weaponSelectTitle" style="margin:7px 0">CHOOSE WEAPON</h2>
+  <div id="weaponSelectDesc" style="font-size:12px;opacity:.65">다음 라운드에 사용할 총을 선택하세요.</div>
   <div class="weaponGrid">
    <button class="weaponBtn" data-weapon="rifle">RIFLE<br><small>균형형</small></button>
    <button class="weaponBtn" data-weapon="smg">SMG<br><small>빠른 연사</small></button>
@@ -1478,6 +1479,92 @@ function createScene(){
  highPlatform(28,-22);
  highPlatform(28,22);
  highPlatform(-28,-22);
+
+ /* =====================================================
+    MAP DECORATION / ATMOSPHERE
+    외부 에셋 없이 Babylon 기본 도형만 사용합니다.
+ ===================================================== */
+ const trimMat=mat("mapTrim",[.06,.32,.42],new BABYLON.Color3(.08,.7,.95));
+ const warmMat=mat("mapWarm",[.32,.18,.06],new BABYLON.Color3(1,.38,.08));
+ const darkMat=mat("mapDark",[.045,.055,.07]);
+ const plantMat=mat("mapPlant",[.08,.22,.13],new BABYLON.Color3(.08,.5,.18));
+ const sandMat=mat("mapSand",[.22,.20,.16]);
+
+ function decoBox(name,x,y,z,w,h,d,material,collide=false){
+  const m=BABYLON.MeshBuilder.CreateBox(name,{width:w,height:h,depth:d},scene);
+  m.position.set(x,y,z);
+  m.material=material;
+  m.isPickable=false;
+  if(collide){ m.checkCollisions=true; collisionMeshes.push(m); }
+  return m;
+ }
+
+ function pillar(x,z,accent=true){
+  decoBox("pillar",x,3,z,1.2,6,1.2,darkMat,true);
+  if(accent) decoBox("pillarAccent",x,3,z-.66,.18,5.2,.08,trimMat,false);
+ }
+
+ function lamp(x,z){
+  decoBox("lampPole",x,2.1,z,.16,4.2,.16,darkMat,false);
+  decoBox("lampHead",x,4.25,z,.55,.16,.55,warmMat,false);
+  const glow=BABYLON.MeshBuilder.CreateSphere("lampGlow",{diameter:.22,segments:8},scene);
+  glow.position.set(x,4.05,z);
+  glow.material=warmMat;
+  glow.isPickable=false;
+ }
+
+ function planter(x,z){
+  decoBox("planter",x,.45,z,2.2,.9,2.2,darkMat,true);
+  const stem=BABYLON.MeshBuilder.CreateCylinder("plant",{height:1.5,diameter:.8,tessellation:8},scene);
+  stem.position.set(x,1.55,z);
+  stem.material=plantMat;
+  stem.isPickable=false;
+ }
+
+ function crateStack(x,z,rot=0){
+  const a=decoBox("crateA",x,.65,z,1.3,1.3,1.3,sandMat,true); a.rotation.y=rot;
+  const b=decoBox("crateB",x+.15,1.95,z+.1,1.1,1.1,1.1,sandMat,true); b.rotation.y=rot+.12;
+ }
+
+ // 중앙 보행로: 바닥에 얇은 패널을 깔아 공간을 구분합니다.
+ for(let i=-4;i<=4;i++){
+  decoBox("centerTile",i*3.2,.012,0,2.7,.025,7,darkMat,false);
+ }
+ decoBox("centerStripe",0,.018,0,1.2,.035,34,trimMat,false);
+ decoBox("centerStripe2",0,.02,0,34,.035,1.2,trimMat,false);
+
+ // 네 모서리와 교차로에 산업형 기둥/등을 배치합니다.
+ [[-40,-40],[-40,40],[40,-40],[40,40],[-18,18],[18,18],[-18,-18],[18,-18]].forEach((q,i)=>pillar(q[0],q[1],i%2===0));
+ [[-38,-10],[-38,10],[38,-10],[38,10],[-10,-38],[10,-38],[-10,38],[10,38]].forEach(q=>lamp(q[0],q[1]));
+
+ // 낮은 엄폐물 주변에 화분과 상자를 추가해 단조로운 공간을 줄입니다.
+ planter(-31,0); planter(31,0);
+ crateStack(-20,27,.18); crateStack(20,-27,-.22);
+ crateStack(-20,-27,.28); crateStack(20,27,-.18);
+
+ // 고지대 플랫폼 가장자리에 청색/주황색 포인트 라인.
+ [[-28,22],[28,22],[-28,-22],[28,-22]].forEach(q=>{
+  decoBox("platformTrim",q[0],5.98,q[1],12.3,.08,.16,trimMat,false);
+  decoBox("platformTrim2",q[0],5.98,q[1],.16,.08,10.3,trimMat,false);
+ });
+
+ // 외곽 벽 하단의 반복 패널
+ for(let x=-42;x<=42;x+=7){
+  decoBox("northPanel",x,.65,48.35,5,.9,.08,darkMat,false);
+  decoBox("southPanel",x,.65,-33.35,5,.9,.08,darkMat,false);
+ }
+ for(let z=-42;z<=42;z+=7){
+  decoBox("westPanel",-48.35,.65,z,.08,.9,5,darkMat,false);
+  decoBox("eastPanel",48.35,.65,z,.08,.9,5,darkMat,false);
+ }
+
+ // 작은 포인트 조명으로 밤/실내형 전술 맵 분위기를 만듭니다.
+ [[-34,-34],[34,-34],[-34,34],[34,34],[0,31],[0,-31]].forEach(q=>{
+  const point=new BABYLON.PointLight("mapPoint",new BABYLON.Vector3(q[0],4,q[1]),scene);
+  point.diffuse=new BABYLON.Color3(.08,.5,.8);
+  point.intensity=.45;
+  point.range=12;
+ });
 
  return scene;
 
@@ -3688,8 +3775,20 @@ function updateWeaponButtons(){
 }
 
 function showWeaponSelect(){
- if(gameMode!=="deathmatch")return;
+ if(gameOver)return;
  weaponSelectionOpen=true;
+ const kicker=document.getElementById("weaponSelectKicker");
+ const title=document.getElementById("weaponSelectTitle");
+ const desc=document.getElementById("weaponSelectDesc");
+ if(gameMode==="round"){
+  kicker.textContent="ROUND COMPLETE";
+  title.textContent=`ROUND ${round} COMPLETE`;
+  desc.textContent="다음 라운드에 사용할 총을 선택하세요.";
+ }else{
+  kicker.textContent="RESPAWN LOADOUT";
+  title.textContent="CHOOSE WEAPON";
+  desc.textContent="부활 후 사용할 총을 선택하세요.";
+ }
  document.getElementById("weaponSelect").style.display="flex";
  updateWeaponButtons();
 }
@@ -4111,12 +4210,11 @@ function checkRound(){
 
     }
 
-    round++;
-
-    startRound();
+    // 라운드가 끝날 때마다 다음 총을 직접 선택합니다.
+    showWeaponSelect();
 
    },
-   1200
+   700
   );
 
  }
@@ -5170,6 +5268,14 @@ sensitivityRange.addEventListener("input",()=>{
 document.querySelectorAll(".weaponBtn").forEach(btn=>{
  btn.addEventListener("click",()=>{
   setWeapon(btn.dataset.weapon);
+
+  if(gameMode==="round" && roundTransition){
+   hideWeaponSelect();
+   round++;
+   startRound();
+   return;
+  }
+
   hideWeaponSelect();
  });
 });
