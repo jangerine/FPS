@@ -159,6 +159,74 @@ h1{
  height:2px
 }
 
+#scopeOverlay{
+ position:fixed;
+ inset:0;
+ z-index:8;
+ display:none;
+ pointer-events:none;
+ background:rgba(0,0,0,.72);
+ overflow:hidden
+}
+
+#scopeOverlay.active{display:block}
+
+#scopeCircle{
+ position:absolute;
+ left:50%;
+ top:50%;
+ width:min(78vw,78vh);
+ height:min(78vw,78vh);
+ transform:translate(-50%,-50%);
+ border:3px solid rgba(255,255,255,.9);
+ border-radius:50%;
+ box-shadow:0 0 0 9999px rgba(0,0,0,.72);
+ background:transparent
+}
+
+#scopeCircle:before{
+ content:"";
+ position:absolute;
+ left:50%;
+ top:0;
+ width:2px;
+ height:100%;
+ transform:translateX(-50%);
+ background:rgba(255,255,255,.8)
+}
+
+#scopeCircle:after{
+ content:"";
+ position:absolute;
+ left:0;
+ top:50%;
+ width:100%;
+ height:2px;
+ transform:translateY(-50%);
+ background:rgba(255,255,255,.8)
+}
+
+#scopeDot{
+ position:absolute;
+ left:50%;
+ top:50%;
+ width:5px;
+ height:5px;
+ transform:translate(-50%,-50%);
+ border-radius:50%;
+ background:#fff
+}
+
+#scopeLabel{
+ position:absolute;
+ left:50%;
+ top:calc(50% + min(39vw,39vh) + 12px);
+ transform:translateX(-50%);
+ font-size:11px;
+ letter-spacing:2px;
+ color:rgba(255,255,255,.7)
+}
+
 #hitMarker{
  position:absolute;
  left:50%;
@@ -550,6 +618,13 @@ h1{
 
 </div>
 
+<div id="scopeOverlay">
+ <div id="scopeCircle">
+  <div id="scopeDot"></div>
+ </div>
+ <div id="scopeLabel">SCOPE</div>
+</div>
+
 <div id="mobile">
 
  <div id="lookZone"></div>
@@ -594,7 +669,7 @@ h1{
   id="zoomBtn"
   class="mobileBtn"
  >
-  ZOOM
+  SCOPE
  </button>
 
 </div>
@@ -999,15 +1074,14 @@ function updateHUD(){
  document.getElementById(
   "ammo"
  ).textContent=
-  `${WEAPONS[currentWeapon].name}${zoomed?" [ADS]":""}  `+
-  (reloading
+  reloading
    ?"RELOAD"
    :
    `${ammo} / ${
     gameMode==="deathmatch"
      ?"∞"
      :reserve
-   }`);
+   }`;
 
 }
 
@@ -1244,8 +1318,8 @@ function createScene(){
   "southWall",
   0,
   3,
-  -49,
-  98,
+  -34,
+  68,
   6,
   1
  );
@@ -1394,11 +1468,11 @@ function createScene(){
   base.position.set(x,5,z);
   base.material=coverMat;
   const step1=BABYLON.MeshBuilder.CreateBox("highStep1",{width:5,height:1,depth:3},scene);
-  step1.position.set(x-7,0.5,z); step1.material=coverMat;
+  step1.position.set(x-7,0.5,z); step1.material=coverMat; collisionMeshes.push(step1);
   const step2=BABYLON.MeshBuilder.CreateBox("highStep2",{width:5,height:2,depth:3},scene);
-  step2.position.set(x-4,1,z); step2.material=coverMat;
+  step2.position.set(x-4,1,z); step2.material=coverMat; collisionMeshes.push(step2);
   const step3=BABYLON.MeshBuilder.CreateBox("highStep3",{width:5,height:3,depth:3},scene);
-  step3.position.set(x-1,1.5,z); step3.material=coverMat;
+  step3.position.set(x-1,1.5,z); step3.material=coverMat; collisionMeshes.push(step3);
  }
  highPlatform(-28,22);
  highPlatform(28,-22);
@@ -3425,26 +3499,13 @@ function updateMovement(
  );
 
  const highZones=[
-  [-28,22,6,5,6], [28,-22,6,5,6],
-  [28,22,6,5,6], [-28,-22,6,5,6]
- ];
- const stairZones=[
-  [-35,22,3,2,1],[-32,22,3,2,2],[-29,22,3,2,3],
-  [35,-22,3,2,1],[32,-22,3,2,2],[29,-22,3,2,3],
-  [35,22,3,2,1],[32,22,3,2,2],[29,22,3,2,3],
-  [-35,-22,3,2,1],[-32,-22,3,2,2],[-29,-22,3,2,3]
+  [-28,22,6,5], [28,-22,6,5],
+  [28,22,6,5], [-28,-22,6,5]
  ];
  let platformTop=null;
  for(const z of highZones){
   if(Math.abs(camera.position.x-z[0])<=z[2] && Math.abs(camera.position.z-z[1])<=z[3]){
-   platformTop=z[4]; break;
-  }
- }
- if(platformTop===null){
-  for(const z of stairZones){
-   if(Math.abs(camera.position.x-z[0])<=z[2] && Math.abs(camera.position.z-z[1])<=z[3]){
-    platformTop=z[4]; break;
-   }
+   platformTop=6; break;
   }
  }
  velocityY-=GRAVITY*dt;
@@ -3613,6 +3674,7 @@ function muzzleFlash(){
 function setWeapon(id){
  if(!WEAPONS[id])return;
  currentWeapon=id;
+ setZoom(false);
  ammo=MAG_SIZE;
  reloading=false;
  updateWeaponButtons();
@@ -3639,10 +3701,20 @@ function hideWeaponSelect(){
 
 function setZoom(active){
  zoomed=!!active;
+ const scope=document.getElementById("scopeOverlay");
+ // 스코프는 저격총에서만 실제로 열립니다.
+ if(currentWeapon!=="sniper"){
+  zoomed=false;
+ }
  camera.fov=zoomed?WEAPONS[currentWeapon].zoom:.9;
+ scope.classList.toggle("active",zoomed);
 }
 
 function toggleZoom(){
+ if(currentWeapon!=="sniper"){
+  showHitMarker();
+  return;
+ }
  setZoom(!zoomed);
 }
 
@@ -5233,92 +5305,5 @@ engine.runRenderLoop(
 
 </script>
 
-
-
-<!-- =========================================================
-     VECTOR FPS UPDATE NOTES
-     This section documents the additive controls and systems.
-     The original game systems remain above this section.
-========================================================= -->
-<!-- Update detail 01: additive feature retained from the original FPS structure. -->
-<!-- Update detail 02: additive feature retained from the original FPS structure. -->
-<!-- Update detail 03: additive feature retained from the original FPS structure. -->
-<!-- Update detail 04: additive feature retained from the original FPS structure. -->
-<!-- Update detail 05: additive feature retained from the original FPS structure. -->
-<!-- Update detail 06: additive feature retained from the original FPS structure. -->
-<!-- Update detail 07: additive feature retained from the original FPS structure. -->
-<!-- Update detail 08: additive feature retained from the original FPS structure. -->
-<!-- Update detail 09: additive feature retained from the original FPS structure. -->
-<!-- Update detail 10: additive feature retained from the original FPS structure. -->
-<!-- Update detail 11: additive feature retained from the original FPS structure. -->
-<!-- Update detail 12: additive feature retained from the original FPS structure. -->
-<!-- Update detail 13: additive feature retained from the original FPS structure. -->
-<!-- Update detail 14: additive feature retained from the original FPS structure. -->
-<!-- Update detail 15: additive feature retained from the original FPS structure. -->
-<!-- Update detail 16: additive feature retained from the original FPS structure. -->
-<!-- Update detail 17: additive feature retained from the original FPS structure. -->
-<!-- Update detail 18: additive feature retained from the original FPS structure. -->
-<!-- Update detail 19: additive feature retained from the original FPS structure. -->
-<!-- Update detail 20: additive feature retained from the original FPS structure. -->
-<!-- Update detail 21: additive feature retained from the original FPS structure. -->
-<!-- Update detail 22: additive feature retained from the original FPS structure. -->
-<!-- Update detail 23: additive feature retained from the original FPS structure. -->
-<!-- Update detail 24: additive feature retained from the original FPS structure. -->
-<!-- Update detail 25: additive feature retained from the original FPS structure. -->
-<!-- Update detail 26: additive feature retained from the original FPS structure. -->
-<!-- Update detail 27: additive feature retained from the original FPS structure. -->
-<!-- Update detail 28: additive feature retained from the original FPS structure. -->
-<!-- Update detail 29: additive feature retained from the original FPS structure. -->
-<!-- Update detail 30: additive feature retained from the original FPS structure. -->
-<!-- Update detail 31: additive feature retained from the original FPS structure. -->
-<!-- Update detail 32: additive feature retained from the original FPS structure. -->
-<!-- Update detail 33: additive feature retained from the original FPS structure. -->
-<!-- Update detail 34: additive feature retained from the original FPS structure. -->
-<!-- Update detail 35: additive feature retained from the original FPS structure. -->
-<!-- Update detail 36: additive feature retained from the original FPS structure. -->
-<!-- Update detail 37: additive feature retained from the original FPS structure. -->
-<!-- Update detail 38: additive feature retained from the original FPS structure. -->
-<!-- Update detail 39: additive feature retained from the original FPS structure. -->
-<!-- Update detail 40: additive feature retained from the original FPS structure. -->
-<!-- Update detail 41: additive feature retained from the original FPS structure. -->
-<!-- Update detail 42: additive feature retained from the original FPS structure. -->
-<!-- Update detail 43: additive feature retained from the original FPS structure. -->
-<!-- Update detail 44: additive feature retained from the original FPS structure. -->
-<!-- Update detail 45: additive feature retained from the original FPS structure. -->
-<!-- Update detail 46: additive feature retained from the original FPS structure. -->
-<!-- Update detail 47: additive feature retained from the original FPS structure. -->
-<!-- Update detail 48: additive feature retained from the original FPS structure. -->
-<!-- Update detail 49: additive feature retained from the original FPS structure. -->
-<!-- Update detail 50: additive feature retained from the original FPS structure. -->
-<!-- Update detail 51: additive feature retained from the original FPS structure. -->
-<!-- Update detail 52: additive feature retained from the original FPS structure. -->
-<!-- Update detail 53: additive feature retained from the original FPS structure. -->
-<!-- Update detail 54: additive feature retained from the original FPS structure. -->
-<!-- Update detail 55: additive feature retained from the original FPS structure. -->
-<!-- Update detail 56: additive feature retained from the original FPS structure. -->
-<!-- Update detail 57: additive feature retained from the original FPS structure. -->
-<!-- Update detail 58: additive feature retained from the original FPS structure. -->
-<!-- Update detail 59: additive feature retained from the original FPS structure. -->
-<!-- Update detail 60: additive feature retained from the original FPS structure. -->
-<!-- Update detail 61: additive feature retained from the original FPS structure. -->
-<!-- Update detail 62: additive feature retained from the original FPS structure. -->
-<!-- Update detail 63: additive feature retained from the original FPS structure. -->
-<!-- Update detail 64: additive feature retained from the original FPS structure. -->
-<!-- Update detail 65: additive feature retained from the original FPS structure. -->
-<!-- Update detail 66: additive feature retained from the original FPS structure. -->
-<!-- Update detail 67: additive feature retained from the original FPS structure. -->
-<!-- Update detail 68: additive feature retained from the original FPS structure. -->
-<!-- Update detail 69: additive feature retained from the original FPS structure. -->
-<!-- Update detail 70: additive feature retained from the original FPS structure. -->
-<!-- Update detail 71: additive feature retained from the original FPS structure. -->
-<!-- Update detail 72: additive feature retained from the original FPS structure. -->
-<!-- Update detail 73: additive feature retained from the original FPS structure. -->
-<!-- Update detail 74: additive feature retained from the original FPS structure. -->
-<!-- Update detail 75: additive feature retained from the original FPS structure. -->
-<!-- Update detail 76: additive feature retained from the original FPS structure. -->
-<!-- Update detail 77: additive feature retained from the original FPS structure. -->
-<!-- Update detail 78: additive feature retained from the original FPS structure. -->
-<!-- Update detail 79: additive feature retained from the original FPS structure. -->
-<!-- Update detail 80: additive feature retained from the original FPS structure. -->
 </body>
 </html>
