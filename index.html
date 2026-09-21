@@ -699,19 +699,11 @@ let gameOver=false;
 
 let gameMode="round";
 
-/*
-  Deathmatch 설정
-*/
-
 const DEATHMATCH_TIME=300;
 const DEATHMATCH_KILLS=30;
 
 let deathmatchTime=DEATHMATCH_TIME;
 let kills=0;
-
-/*
-  플레이어 사망 상태
-*/
 
 let playerDead=false;
 let respawnTimer=0;
@@ -721,6 +713,12 @@ let respawnTimer=0;
 ========================================================= */
 
 let round=1;
+
+/*
+  ROUND 전환 예약 중복 방지
+*/
+
+let roundTransitionPending=false;
 
 /* =========================================================
    PLAYER
@@ -743,14 +741,10 @@ let reloading=false;
    MOVEMENT
 ========================================================= */
 
-const WALK_SPEED=1.6;
-const RUN_SPEED=2.7;
+const WALK_SPEED=2.1;
+const RUN_SPEED=3.4;
 
 const GROUND_Y=1.7;
-
-/*
-  낮춘 점프 높이
-*/
 
 const JUMP_POWER=3.6;
 const GRAVITY=14;
@@ -764,6 +758,15 @@ let moveLeft=false;
 let moveRight=false;
 
 let running=false;
+
+/* =========================================================
+   COLLISION
+========================================================= */
+
+const collisionMeshes=[];
+
+const PLAYER_RADIUS=.42;
+const ENEMY_RADIUS=.42;
 
 /* =========================================================
    MOBILE
@@ -794,10 +797,6 @@ const RECOIL_SIDE=.008;
 ========================================================= */
 
 let enemies=[];
-
-/*
-  DEATHMATCH에서는 동시에 존재하는 적 수
-*/
 
 const DEATHMATCH_ENEMY_COUNT=5;
 
@@ -844,6 +843,177 @@ function mat(name,color){
 }
 
 /* =========================================================
+   COLLISION HELPERS
+========================================================= */
+
+function circleHitsMesh(
+  x,
+  z,
+  radius,
+  mesh
+){
+
+  if(
+    !mesh ||
+    mesh.isDisposed()
+  ){
+    return false;
+  }
+
+  const halfX=
+    mesh.getBoundingInfo()
+      .boundingBox
+      .extendSizeWorld.x;
+
+  const halfZ=
+    mesh.getBoundingInfo()
+      .boundingBox
+      .extendSizeWorld.z;
+
+  const centerX=
+    mesh.getBoundingInfo()
+      .boundingBox
+      .centerWorld.x;
+
+  const centerZ=
+    mesh.getBoundingInfo()
+      .boundingBox
+      .centerWorld.z;
+
+  const closestX=
+    Math.max(
+      centerX-halfX,
+      Math.min(
+        x,
+        centerX+halfX
+      )
+    );
+
+  const closestZ=
+    Math.max(
+      centerZ-halfZ,
+      Math.min(
+        z,
+        centerZ+halfZ
+      )
+    );
+
+  const dx=x-closestX;
+  const dz=z-closestZ;
+
+  return(
+    dx*dx+
+    dz*dz
+    <
+    radius*radius
+  );
+}
+
+/* =========================================================
+   CHECK POSITION
+========================================================= */
+
+function blockedAt(
+  x,
+  z,
+  radius
+){
+
+  for(
+    const mesh of collisionMeshes
+  ){
+
+    if(
+      circleHitsMesh(
+        x,
+        z,
+        radius,
+        mesh
+      )
+    ){
+
+      return true;
+
+    }
+
+  }
+
+  return false;
+}
+
+/* =========================================================
+   MOVE WITH COLLISION
+========================================================= */
+
+function moveWithCollision(
+  position,
+  dx,
+  dz,
+  radius
+){
+
+  const nextX=
+    position.x+dx;
+
+  const nextZ=
+    position.z+dz;
+
+  /*
+    X와 Z를 따로 검사해서
+    벽에 부딪히면 옆으로 미끄러지게 한다.
+  */
+
+  if(
+    !blockedAt(
+      nextX,
+      position.z,
+      radius
+    )
+  ){
+
+    position.x=
+      nextX;
+
+  }
+
+  if(
+    !blockedAt(
+      position.x,
+      nextZ,
+      radius
+    )
+  ){
+
+    position.z=
+      nextZ;
+
+  }
+
+  /*
+    맵 외곽 안전 제한
+  */
+
+  position.x=
+    Math.max(
+      -32,
+      Math.min(
+        32,
+        position.x
+      )
+    );
+
+  position.z=
+    Math.max(
+      -32,
+      Math.min(
+        32,
+        position.z
+      )
+    );
+
+}
+
+/* =========================================================
    CREATE SCENE
 ========================================================= */
 
@@ -882,6 +1052,13 @@ function createScene(){
   camera.fov=.9;
 
   camera.speed=0;
+
+  /*
+    카메라 관성 제거.
+    손가락/마우스 움직임을 즉시 반영.
+  */
+
+  camera.inertia=0;
 
   camera.attachControl(
     canvas,
@@ -934,10 +1111,6 @@ function createScene(){
       "floor",
       [.13,.15,.18]
     );
-
-  /*
-    벽 = 흰색
-  */
 
   const wallMat=
     mat(
@@ -1011,6 +1184,16 @@ function createScene(){
     );
 
     mesh.material=wallMat;
+
+    /*
+      직접 만든 충돌 시스템에 등록
+    */
+
+    mesh.checkCollisions=true;
+
+    collisionMeshes.push(
+      mesh
+    );
 
     return mesh;
   }
@@ -1154,6 +1337,16 @@ function createScene(){
 
     mesh.material=coverMat;
 
+    /*
+      엄폐물도 충돌체로 등록
+    */
+
+    mesh.checkCollisions=true;
+
+    collisionMeshes.push(
+      mesh
+    );
+
     return mesh;
   }
 
@@ -1282,10 +1475,6 @@ function createEnemy(x,z){
 
 function getSpawnPoint(){
 
-  /*
-    가능한 한 플레이어와 먼 위치 선택
-  */
-
   const available=
     spawnPoints
       .map(p=>({
@@ -1303,10 +1492,6 @@ function getSpawnPoint(){
         (a,b)=>
           b.distance-a.distance
       );
-
-  /*
-    먼 위치들 중 랜덤
-  */
 
   const candidates=
     available.slice(
@@ -1335,6 +1520,8 @@ function getSpawnPoint(){
 function startRound(){
 
   if(gameOver)return;
+
+  roundTransitionPending=false;
 
   playerHP=100;
 
@@ -1409,10 +1596,6 @@ function startDeathmatch(){
 
   enemies=[];
 
-  /*
-    처음부터 일정 수의 적 생성
-  */
-
   for(
     let i=0;
     i<DEATHMATCH_ENEMY_COUNT;
@@ -1445,6 +1628,8 @@ function startMatch(){
 
   respawnTimer=0;
 
+  roundTransitionPending=false;
+
   round=1;
 
   kills=0;
@@ -1462,6 +1647,13 @@ function startMatch(){
   velocityY=0;
 
   onGround=true;
+
+  running=false;
+
+  moveForward=false;
+  moveBackward=false;
+  moveLeft=false;
+  moveRight=false;
 
   joystickX=0;
   joystickY=0;
@@ -1555,7 +1747,7 @@ function updateMovement(dt){
   const rightZ=
     -Math.sin(yaw);
 
-  camera.position.x+=
+  const moveX=
     (
       forwardX*forward+
       rightX*strafe
@@ -1563,7 +1755,7 @@ function updateMovement(dt){
     speed*
     dt;
 
-  camera.position.z+=
+  const moveZ=
     (
       forwardZ*forward+
       rightZ*strafe
@@ -1571,7 +1763,20 @@ function updateMovement(dt){
     speed*
     dt;
 
-  /* GRAVITY */
+  /*
+    벽/엄폐물 충돌 이동
+  */
+
+  moveWithCollision(
+    camera.position,
+    moveX,
+    moveZ,
+    PLAYER_RADIUS
+  );
+
+  /* =====================================================
+     GRAVITY
+  ===================================================== */
 
   velocityY-=
     GRAVITY*dt;
@@ -1591,8 +1796,6 @@ function updateMovement(dt){
 
     onGround=true;
   }
-
-  /* MAP BOUNDS */
 
   camera.position.x=
     Math.max(
@@ -1639,9 +1842,11 @@ function jump(){
 function applyRecoil(){
 
   /*
-    반동은 실제 카메라 회전값에 적용.
-
     자동 복귀 없음.
+
+    따라서 연사 중에
+    마우스/터치로 화면을 아래로 움직이면
+    플레이어가 직접 반동을 잡을 수 있다.
   */
 
   camera.rotation.x-=
@@ -1696,10 +1901,6 @@ function shoot(){
   applyRecoil();
 
   muzzleFlash();
-
-  /* =====================================================
-     RAY
-  ===================================================== */
 
   const ray=
     scene.createPickingRay(
@@ -1874,6 +2075,8 @@ function reload(){
 
   reloading=true;
 
+  updateHUD();
+
   setTimeout(
     ()=>{
 
@@ -1927,10 +2130,6 @@ function killEnemy(enemy){
 
     kills++;
 
-    /*
-      목표 킬 달성
-    */
-
     if(
       kills>=DEATHMATCH_KILLS
     ){
@@ -1946,11 +2145,6 @@ function killEnemy(enemy){
 
       return;
     }
-
-    /*
-      죽은 적은 짧은 시간 뒤
-      새로운 위치에서 부활
-    */
 
     setTimeout(
       ()=>{
@@ -1984,10 +2178,48 @@ function respawnEnemy(enemy){
   const p=
     getSpawnPoint();
 
+  /*
+    스폰 지점이 충돌체 안에 들어가지 않도록
+    가능한 위치를 찾는다.
+  */
+
+  let spawnX=p[0];
+  let spawnZ=p[1];
+
+  if(
+    blockedAt(
+      spawnX,
+      spawnZ,
+      ENEMY_RADIUS
+    )
+  ){
+
+    for(
+      const candidate of spawnPoints
+    ){
+
+      if(
+        !blockedAt(
+          candidate[0],
+          candidate[1],
+          ENEMY_RADIUS
+        )
+      ){
+
+        spawnX=candidate[0];
+        spawnZ=candidate[1];
+
+        break;
+      }
+
+    }
+
+  }
+
   enemy.root.position.set(
-    p[0],
+    spawnX,
     0,
-    p[1]
+    spawnZ
   );
 
   enemy.root.rotation.set(
@@ -2007,11 +2239,6 @@ function respawnEnemy(enemy){
   enemy.speed=
     1+
     Math.random()*.5;
-
-  /*
-    죽음 애니메이션에서
-    내려갔던 위치 복구
-  */
 
   enemy.body.isVisible=true;
   enemy.head.isVisible=true;
@@ -2062,15 +2289,26 @@ function updateEnemies(dt){
         const dirZ=
           dz/dist;
 
-        pos.x+=
+        const enemyMoveX=
           dirX*
           enemy.speed*
           dt;
 
-        pos.z+=
+        const enemyMoveZ=
           dirZ*
           enemy.speed*
           dt;
+
+        /*
+          적도 벽/엄폐물을 통과하지 못한다.
+        */
+
+        moveWithCollision(
+          pos,
+          enemyMoveX,
+          enemyMoveZ,
+          ENEMY_RADIUS
+        );
 
       }else{
 
@@ -2115,12 +2353,6 @@ function updateDeaths(dt){
         !enemy.root
       )return;
 
-      /*
-        Deathmatch에서는
-        죽자마자 새 위치로 이동시킬 예정이므로
-        짧은 죽음 애니메이션만 표시.
-      */
-
       enemy.deathTimer+=dt;
 
       enemy.root.rotation.z=
@@ -2136,11 +2368,6 @@ function updateDeaths(dt){
           dt*.7
         );
 
-      /*
-        ROUND 모드에서는
-        죽은 적을 완전히 제거.
-      */
-
       if(
         gameMode==="round" &&
         enemy.deathTimer>1.2
@@ -2152,10 +2379,6 @@ function updateDeaths(dt){
 
     }
   );
-
-  /*
-    ROUND 모드에서만 제거
-  */
 
   if(
     gameMode==="round"
@@ -2249,11 +2472,6 @@ function playerDeath(){
 
   respawnTimer=3;
 
-  /*
-    시야를 약간 기울여
-    사망 느낌
-  */
-
   camera.rotation.z=.15;
 
 }
@@ -2276,17 +2494,46 @@ function respawnPlayer(){
 
   onGround=true;
 
-  /*
-    랜덤 스폰
-  */
-
   const p=
     getSpawnPoint();
 
+  let spawnX=p[0];
+  let spawnZ=p[1];
+
+  if(
+    blockedAt(
+      spawnX,
+      spawnZ,
+      PLAYER_RADIUS
+    )
+  ){
+
+    for(
+      const candidate of spawnPoints
+    ){
+
+      if(
+        !blockedAt(
+          candidate[0],
+          candidate[1],
+          PLAYER_RADIUS
+        )
+      ){
+
+        spawnX=candidate[0];
+        spawnZ=candidate[1];
+
+        break;
+      }
+
+    }
+
+  }
+
   camera.position.set(
-    p[0],
+    spawnX,
     GROUND_Y,
-    p[1]
+    spawnZ
   );
 
   camera.rotation.x=0;
@@ -2413,7 +2660,9 @@ function finishDeathmatch(reason){
 function checkRound(){
 
   if(
-    gameMode!=="round"
+    gameMode!=="round" ||
+    gameOver ||
+    roundTransitionPending
   )return;
 
   const alive=
@@ -2426,10 +2675,20 @@ function checkRound(){
     enemies.length>0
   ){
 
+    roundTransitionPending=true;
+
     setTimeout(
       ()=>{
 
-        if(gameOver)return;
+        if(
+          gameOver ||
+          gameMode!=="round"
+        ){
+
+          roundTransitionPending=false;
+          return;
+
+        }
 
         round++;
 
@@ -2806,6 +3065,11 @@ document.addEventListener(
       !mouseLocked
     )return;
 
+    /*
+      마우스 움직임을 즉시 적용.
+      반동 자동 복귀 없음.
+    */
+
     camera.rotation.y+=
       e.movementX*.0025;
 
@@ -2881,6 +3145,8 @@ joystickZone.addEventListener(
   "pointerdown",
   e=>{
 
+    e.stopPropagation();
+
     if(playerDead)return;
 
     joystickActive=true;
@@ -2903,6 +3169,8 @@ joystickZone.addEventListener(
 joystickZone.addEventListener(
   "pointermove",
   e=>{
+
+    e.stopPropagation();
 
     if(
       !joystickActive ||
@@ -3007,6 +3275,8 @@ lookZone.addEventListener(
   "pointerdown",
   e=>{
 
+    e.stopPropagation();
+
     if(
       !gameStarted ||
       gameOver ||
@@ -3033,6 +3303,8 @@ lookZone.addEventListener(
   "pointermove",
   e=>{
 
+    e.stopPropagation();
+
     if(
       !lookActive ||
       e.pointerId!==lookPointerId
@@ -3047,6 +3319,14 @@ lookZone.addEventListener(
     lastLookX=e.clientX;
 
     lastLookY=e.clientY;
+
+    /*
+      화면을 아래로 움직이면
+      카메라가 아래를 보게 된다.
+
+      따라서 연사 반동을
+      손가락으로 직접 잡을 수 있다.
+    */
 
     camera.rotation.y+=
       dx*.004;
@@ -3132,15 +3412,23 @@ fireButton.addEventListener(
 
 fireButton.addEventListener(
   "pointercancel",
-  ()=>{
+  e=>{
+
+    e.stopPropagation();
+
     firing=false;
+
   }
 );
 
 fireButton.addEventListener(
   "pointerleave",
-  ()=>{
+  e=>{
+
+    e.stopPropagation();
+
     firing=false;
+
   }
 );
 
@@ -3194,8 +3482,23 @@ runButton.addEventListener(
 
 runButton.addEventListener(
   "pointercancel",
-  ()=>{
+  e=>{
+
+    e.stopPropagation();
+
     running=false;
+
+  }
+);
+
+runButton.addEventListener(
+  "pointerleave",
+  e=>{
+
+    e.stopPropagation();
+
+    running=false;
+
   }
 );
 
@@ -3225,7 +3528,9 @@ document.getElementById(
 ).addEventListener(
   "click",
   ()=>{
+
     startMatch();
+
   }
 );
 
@@ -3245,6 +3550,15 @@ document.getElementById(
       "endScreen"
     ).style.display="none";
 
+    try{
+
+      camera.attachControl(
+        canvas,
+        false
+      );
+
+    }catch(e){}
+
     startMatch();
 
   }
@@ -3257,7 +3571,9 @@ document.getElementById(
 window.addEventListener(
   "resize",
   ()=>{
+
     engine.resize();
+
   }
 );
 
