@@ -3,20 +3,15 @@
 <head>
 <meta charset="UTF-8">
 
-<meta
-  name="viewport"
-  content="width=device-width,
-           initial-scale=1,
-           maximum-scale=1,
-           user-scalable=no">
+<meta name="viewport"
+      content="width=device-width,
+               initial-scale=1,
+               maximum-scale=1,
+               user-scalable=no">
 
 <title>VECTOR FPS</title>
 
 <style>
-
-/* =========================================================
-   BASE
-========================================================= */
 
 *{
   box-sizing:border-box;
@@ -38,29 +33,24 @@ body{
 #renderCanvas{
   position:fixed;
   inset:0;
-
   width:100%;
   height:100%;
-
   display:block;
-
   touch-action:none;
 }
 
 
 /* =========================================================
-   START MENU
+   MENU
 ========================================================= */
 
 #menu{
   position:fixed;
   inset:0;
-
   z-index:100;
 
   display:flex;
   flex-direction:column;
-
   justify-content:center;
   align-items:center;
 
@@ -109,7 +99,6 @@ body{
 
 .mainButton{
   border:0;
-
   border-radius:3px;
 
   padding:17px 60px;
@@ -190,8 +179,7 @@ body{
 #roundBox{
   left:50%;
 
-  transform:
-    translateX(-50%);
+  transform:translateX(-50%);
 
   text-align:center;
 }
@@ -293,28 +281,24 @@ body{
 .hm1{
   left:5px;
   top:3px;
-
   transform:rotate(45deg);
 }
 
 .hm2{
   right:5px;
   top:3px;
-
   transform:rotate(-45deg);
 }
 
 .hm3{
   left:5px;
   bottom:3px;
-
   transform:rotate(-45deg);
 }
 
 .hm4{
   right:5px;
   bottom:3px;
-
   transform:rotate(45deg);
 }
 
@@ -439,11 +423,6 @@ body{
   pointer-events:none;
 }
 
-
-/* =========================================================
-   MOBILE BUTTON
-========================================================= */
-
 .mbtn{
   position:absolute;
 
@@ -457,7 +436,7 @@ body{
     rgba(255,255,255,.55);
 
   background:
-    rgba(15,25,38,.78);
+    rgba(15,25,38,.82);
 
   color:white;
 
@@ -473,15 +452,14 @@ body{
   pointer-events:auto;
 
   box-shadow:
-    0 3px 12px
-    rgba(0,0,0,.5),
-
-    inset 0 0 12px
-    rgba(255,255,255,.05);
+    0 3px 12px rgba(0,0,0,.5),
+    inset 0 0 12px rgba(255,255,255,.05);
 }
 
-
-/* FIRE */
+.mbtn:active{
+  background:rgba(100,120,140,.8);
+  transform:scale(.94);
+}
 
 #fire{
   right:25px;
@@ -494,24 +472,15 @@ body{
     rgba(255,255,255,.75);
 }
 
-
-/* RELOAD */
-
 #reload{
   right:125px;
   bottom:30px;
 }
 
-
-/* RUN */
-
 #run{
   left:185px;
   bottom:30px;
 }
-
-
-/* JUMP */
 
 #jump{
   right:25px;
@@ -546,27 +515,17 @@ body{
     );
 
   box-shadow:
-    0 4px 20px
-    rgba(0,0,0,.6),
-
-    inset 0 0 25px
-    rgba(255,255,255,.04);
+    0 4px 20px rgba(0,0,0,.6),
+    inset 0 0 25px rgba(255,255,255,.04);
 
   pointer-events:auto;
 
   touch-action:none;
 
   display:block;
-
   visibility:visible;
-
   opacity:1;
 }
-
-
-/* =========================================================
-   JOYSTICK KNOB
-========================================================= */
 
 #knob{
   position:absolute;
@@ -591,8 +550,7 @@ body{
     );
 
   box-shadow:
-    0 3px 12px
-    rgba(0,0,0,.6);
+    0 3px 12px rgba(0,0,0,.6);
 
   pointer-events:none;
 
@@ -602,7 +560,7 @@ body{
 
 
 /* =========================================================
-   END SCREEN
+   END
 ========================================================= */
 
 #endScreen{
@@ -646,7 +604,7 @@ body{
 
 
 /* =========================================================
-   TABLET
+   TABLET / MOBILE
 ========================================================= */
 
 @media(max-width:1100px){
@@ -661,24 +619,16 @@ body{
 
 }
 
-
-/* =========================================================
-   MOBILE SAFETY
-========================================================= */
-
 @media(max-width:900px){
 
   #mobile{
     display:block !important;
-
     pointer-events:none;
   }
 
   #joystick{
     display:block !important;
-
     visibility:visible !important;
-
     opacity:1 !important;
   }
 
@@ -686,7 +636,6 @@ body{
 
 </style>
 </head>
-
 
 <body>
 
@@ -739,14 +688,11 @@ body{
 
 <div id="hud">
 
-
   <div
     id="hostile"
     class="info">
 
-    <small>
-      HOSTILES
-    </small>
+    <small>HOSTILES</small>
 
     <strong id="enemyCount">
       0
@@ -759,9 +705,7 @@ body{
     id="roundBox"
     class="info">
 
-    <small>
-      ROUND
-    </small>
+    <small>ROUND</small>
 
     <strong id="round">
       1
@@ -774,9 +718,7 @@ body{
     id="ammo"
     class="info">
 
-    <small>
-      AMMO
-    </small>
+    <small>AMMO</small>
 
     <strong>
 
@@ -840,8 +782,6 @@ body{
 </div>
 
 
-<!-- DAMAGE -->
-
 <div id="damage"></div>
 
 
@@ -851,17 +791,12 @@ body{
 
 <div id="mobile">
 
-
-  <!-- JOYSTICK -->
-
   <div id="joystick">
 
     <div id="knob"></div>
 
   </div>
 
-
-  <!-- FIRE -->
 
   <div
     id="fire"
@@ -872,8 +807,6 @@ body{
   </div>
 
 
-  <!-- RELOAD -->
-
   <div
     id="reload"
     class="mbtn">
@@ -882,8 +815,6 @@ body{
 
   </div>
 
-
-  <!-- RUN -->
 
   <div
     id="run"
@@ -894,8 +825,6 @@ body{
   </div>
 
 
-  <!-- JUMP -->
-
   <div
     id="jump"
     class="mbtn">
@@ -904,12 +833,11 @@ body{
 
   </div>
 
-
 </div>
 
 
 <!-- =======================================================
-     END
+     END SCREEN
 ======================================================= -->
 
 <div id="endScreen">
@@ -934,12 +862,10 @@ body{
 
 
 <!-- =======================================================
-     BABYLON
+     BABYLON.JS
 ======================================================= -->
 
-<script
-src="https://cdn.babylonjs.com/babylon.js">
-</script>
+<script src="https://cdn.babylonjs.com/babylon.js"></script>
 
 
 <script>
@@ -953,7 +879,6 @@ const canvas =
     "renderCanvas"
   );
 
-
 const engine =
   new BABYLON.Engine(
     canvas,
@@ -964,12 +889,10 @@ const engine =
     }
   );
 
-
 const scene =
   new BABYLON.Scene(
     engine
   );
-
 
 scene.clearColor =
   new BABYLON.Color4(
@@ -995,15 +918,13 @@ const camera =
     scene
   );
 
-
 camera.minZ=.05;
 
 camera.fov=1.12;
 
-camera.applyGravity=true;
+camera.applyGravity=false;
 
 camera.checkCollisions=true;
-
 
 camera.ellipsoid =
   new BABYLON.Vector3(
@@ -1012,22 +933,8 @@ camera.ellipsoid =
     .42
   );
 
-
 scene.activeCamera=
   camera;
-
-
-/* =========================================================
-   GRAVITY
-========================================================= */
-
-scene.gravity =
-  new BABYLON.Vector3(
-    0,
-    -9.81,
-    0
-  );
-
 
 scene.collisionsEnabled=true;
 
@@ -1047,7 +954,6 @@ const light =
     scene
   );
 
-
 light.intensity=1.1;
 
 
@@ -1062,14 +968,12 @@ const sun =
     scene
   );
 
-
 sun.position =
   new BABYLON.Vector3(
     20,
     40,
     20
   );
-
 
 sun.intensity=1.2;
 
@@ -1078,10 +982,7 @@ sun.intensity=1.2;
    MATERIAL
 ========================================================= */
 
-function mat(
-  name,
-  hex
-){
+function mat(name,hex){
 
   const m =
     new BABYLON.StandardMaterial(
@@ -1089,12 +990,10 @@ function mat(
       scene
     );
 
-
   m.diffuseColor =
     BABYLON.Color3.FromHexString(
       hex
     );
-
 
   m.specularColor =
     new BABYLON.Color3(
@@ -1103,54 +1002,48 @@ function mat(
       .15
     );
 
-
   return m;
+
 }
 
 
-const floorMat=
+const floorMat =
   mat(
     "Floor",
     "#28333E"
   );
 
-
-const wallMat=
+const wallMat =
   mat(
     "Wall",
     "#536271"
   );
 
-
-const coverMat=
+const coverMat =
   mat(
     "Cover",
     "#697887"
   );
 
-
-const enemyMat=
+const enemyMat =
   mat(
     "Enemy",
     "#C43D4D"
   );
 
-
-const headMat=
+const headMat =
   mat(
     "Head",
     "#E5A28E"
   );
 
-
-const gunMat=
+const gunMat =
   mat(
     "Gun",
     "#11171D"
   );
 
-
-const muzzleMat=
+const muzzleMat =
   mat(
     "Muzzle",
     "#FFD45C"
@@ -1171,10 +1064,8 @@ const floor =
     scene
   );
 
-
 floor.material=
   floorMat;
-
 
 floor.checkCollisions=
   true;
@@ -1200,7 +1091,6 @@ for(
             .015,
             -45
           ),
-
           new BABYLON.Vector3(
             i,
             .015,
@@ -1210,7 +1100,6 @@ for(
       },
       scene
     );
-
 
   a.color =
     new BABYLON.Color3(
@@ -1230,7 +1119,6 @@ for(
             .016,
             i
           ),
-
           new BABYLON.Vector3(
             45,
             .016,
@@ -1240,7 +1128,6 @@ for(
       },
       scene
     );
-
 
   b.color =
     new BABYLON.Color3(
@@ -1253,7 +1140,7 @@ for(
 
 
 /* =========================================================
-   BOX HELPER
+   MAP BOX
 ========================================================= */
 
 const obstacles=[];
@@ -1281,7 +1168,6 @@ function box(
       scene
     );
 
-
   b.position =
     new BABYLON.Vector3(
       x,
@@ -1289,17 +1175,13 @@ function box(
       z
     );
 
-
   b.material=
     material;
-
 
   b.checkCollisions=
     true;
 
-
   obstacles.push(b);
-
 
   return b;
 
@@ -1317,7 +1199,6 @@ box(
   wallMat
 );
 
-
 box(
   "South",
   100,8,2,
@@ -1325,14 +1206,12 @@ box(
   wallMat
 );
 
-
 box(
   "West",
   2,8,100,
   -48,4,0,
   wallMat
 );
-
 
 box(
   "East",
@@ -1342,15 +1221,12 @@ box(
 );
 
 
-/* CENTRAL COVER */
-
 box(
   "Center1",
   17,3,3,
   0,1.5,0,
   coverMat
 );
-
 
 box(
   "Center2",
@@ -1360,15 +1236,12 @@ box(
 );
 
 
-/* SIDE COVER */
-
 box(
   "Cover1",
   10,3,3,
   -23,1.5,-13,
   coverMat
 );
-
 
 box(
   "Cover2",
@@ -1377,14 +1250,12 @@ box(
   coverMat
 );
 
-
 box(
   "Cover3",
   10,3,3,
   -23,1.5,13,
   coverMat
 );
-
 
 box(
   "Cover4",
@@ -1394,15 +1265,12 @@ box(
 );
 
 
-/* FRONT */
-
 box(
   "Cover5",
   3,3,10,
   -11,1.5,27,
   coverMat
 );
-
 
 box(
   "Cover6",
@@ -1422,10 +1290,8 @@ const gun =
     scene
   );
 
-
 gun.parent=
   camera;
-
 
 gun.position =
   new BABYLON.Vector3(
@@ -1446,10 +1312,8 @@ const gunBody =
     scene
   );
 
-
 gunBody.parent=
   gun;
-
 
 gunBody.material=
   gunMat;
@@ -1466,18 +1330,14 @@ const barrel =
     scene
   );
 
-
 barrel.parent=
   gun;
-
 
 barrel.rotation.x=
   Math.PI/2;
 
-
 barrel.position.z=
   .52;
-
 
 barrel.material=
   gunMat;
@@ -1494,10 +1354,8 @@ const grip =
     scene
   );
 
-
 grip.parent=
   gun;
-
 
 grip.position =
   new BABYLON.Vector3(
@@ -1506,17 +1364,15 @@ grip.position =
     .1
   );
 
-
 grip.rotation.x=
   -.2;
-
 
 grip.material=
   gunMat;
 
 
 /* =========================================================
-   MUZZLE FLASH
+   MUZZLE
 ========================================================= */
 
 const muzzle =
@@ -1529,25 +1385,21 @@ const muzzle =
     scene
   );
 
-
 muzzle.parent=
   gun;
-
 
 muzzle.position.z=
   .78;
 
-
 muzzle.material=
   muzzleMat;
-
 
 muzzle.isVisible=
   false;
 
 
 /* =========================================================
-   GAME VARIABLES
+   GAME STATE
 ========================================================= */
 
 let started=false;
@@ -1576,25 +1428,47 @@ const enemies=[];
 
 
 /* =========================================================
-   ENEMY SPAWN
+   MOVEMENT SETTINGS
+========================================================= */
+
+/*
+   이전보다 훨씬 느리게 설정
+
+   WALK = 1.6
+   RUN  = 2.7
+*/
+
+const WALK_SPEED=1.6;
+
+const RUN_SPEED=2.7;
+
+
+/* =========================================================
+   JUMP SETTINGS
+========================================================= */
+
+const GROUND_Y=1.7;
+
+const JUMP_POWER=5.5;
+
+const GRAVITY=14;
+
+let jumpVelocity=0;
+
+
+/* =========================================================
+   SPAWN POINTS
 ========================================================= */
 
 const spawnPoints=[
 
   [-22,-25],
-
   [22,-25],
-
   [-28,0],
-
   [28,0],
-
   [-20,23],
-
   [20,23],
-
   [0,-32],
-
   [0,32]
 
 ];
@@ -1604,17 +1478,13 @@ const spawnPoints=[
    CREATE ENEMY
 ========================================================= */
 
-function createEnemy(
-  x,
-  z
-){
+function createEnemy(x,z){
 
   const root =
     new BABYLON.TransformNode(
       "EnemyRoot",
       scene
     );
-
 
   root.position =
     new BABYLON.Vector3(
@@ -1623,8 +1493,8 @@ function createEnemy(
       z
     );
 
-
   root.metadata={
+
     alive:true,
 
     hp:100,
@@ -1636,10 +1506,9 @@ function createEnemy(
     cooldown:
       .5+
       Math.random()*1.5
+
   };
 
-
-  /* BODY */
 
   const body =
     BABYLON.MeshBuilder.CreateBox(
@@ -1652,26 +1521,20 @@ function createEnemy(
       scene
     );
 
-
   body.parent=
     root;
-
 
   body.position.y=
     1;
 
-
   body.material=
     enemyMat;
-
 
   body.metadata={
     enemy:root,
     type:"body"
   };
 
-
-  /* HEAD */
 
   const head =
     BABYLON.MeshBuilder.CreateSphere(
@@ -1683,26 +1546,20 @@ function createEnemy(
       scene
     );
 
-
   head.parent=
     root;
-
 
   head.position.y=
     2.15;
 
-
   head.material=
     headMat;
-
 
   head.metadata={
     enemy:root,
     type:"head"
   };
 
-
-  /* WEAPON */
 
   const weapon =
     BABYLON.MeshBuilder.CreateBox(
@@ -1715,10 +1572,8 @@ function createEnemy(
       scene
     );
 
-
   weapon.parent=
     root;
-
 
   weapon.position =
     new BABYLON.Vector3(
@@ -1727,20 +1582,17 @@ function createEnemy(
       .25
     );
 
-
   weapon.material=
     gunMat;
 
 
-  enemies.push(
-    root
-  );
+  enemies.push(root);
 
 }
 
 
 /* =========================================================
-   START ROUND
+   ROUND
 ========================================================= */
 
 function startRound(){
@@ -1750,7 +1602,6 @@ function startRound(){
       e.dispose();
     }
   );
-
 
   enemies.length=0;
 
@@ -1778,7 +1629,6 @@ function startRound(){
 
   updateHUD();
 
-
   showMessage(
     "ROUND "+round
   );
@@ -1787,7 +1637,7 @@ function startRound(){
 
 
 /* =========================================================
-   HUD UPDATE
+   HUD
 ========================================================= */
 
 function updateHUD(){
@@ -1845,30 +1695,24 @@ function updateHUD(){
 let messageTimer;
 
 
-function showMessage(
-  text
-){
+function showMessage(text){
 
-  const el=
+  const el =
     document.getElementById(
       "message"
     );
 
-
   el.textContent=
     text;
 
-
   el.style.opacity=
     "1";
-
 
   clearTimeout(
     messageTimer
   );
 
-
-  messageTimer=
+  messageTimer =
     setTimeout(
       ()=>{
         el.style.opacity=
@@ -1889,22 +1733,19 @@ let hitTimer;
 
 function hitMarker(){
 
-  const el=
+  const el =
     document.getElementById(
       "hitMarker"
     );
 
-
   el.style.opacity=
     "1";
-
 
   clearTimeout(
     hitTimer
   );
 
-
-  hitTimer=
+  hitTimer =
     setTimeout(
       ()=>{
         el.style.opacity=
@@ -1917,12 +1758,10 @@ function hitMarker(){
 
 
 /* =========================================================
-   DAMAGE PLAYER
+   PLAYER DAMAGE
 ========================================================= */
 
-function damagePlayer(
-  amount
-){
+function damagePlayer(amount){
 
   if(
     !started ||
@@ -1933,7 +1772,6 @@ function damagePlayer(
 
   hp-=amount;
 
-
   hp=
     Math.max(
       0,
@@ -1941,11 +1779,10 @@ function damagePlayer(
     );
 
 
-  const damage=
+  const damage =
     document.getElementById(
       "damage"
     );
-
 
   damage.style.opacity=
     "1";
@@ -1963,11 +1800,11 @@ function damagePlayer(
   updateHUD();
 
 
-  if(hp<=0){
+  if(
+    hp<=0
+  ){
 
-    finish(
-      false
-    );
+    finish(false);
 
   }
 
@@ -2013,14 +1850,10 @@ function shoot(){
   lastShot=
     now;
 
-
   magazine--;
-
 
   updateHUD();
 
-
-  /* RECOIL */
 
   camera.rotation.x+=
     .018;
@@ -2045,8 +1878,6 @@ function shoot(){
     65
   );
 
-
-  /* RAY */
 
   const ray=
     scene.createPickingRay(
@@ -2079,7 +1910,6 @@ function shoot(){
 
     const mesh=
       result.pickedMesh;
-
 
     const enemy=
       mesh.metadata.enemy;
@@ -2136,12 +1966,10 @@ function shoot(){
 
 
 /* =========================================================
-   KILL ENEMY
+   KILL
 ========================================================= */
 
-function killEnemy(
-  enemy
-){
+function killEnemy(enemy){
 
   if(
     !enemy.metadata.alive
@@ -2151,7 +1979,6 @@ function killEnemy(
 
   enemy.metadata.alive=
     false;
-
 
   kills++;
 
@@ -2193,14 +2020,11 @@ function killEnemy(
             animation
           );
 
-
           enemy.setEnabled(
             false
           );
 
-
           updateHUD();
-
 
           checkRound();
 
@@ -2315,7 +2139,6 @@ function reload(){
       magazine+=
         amount;
 
-
       reserve-=
         amount;
 
@@ -2376,16 +2199,12 @@ function updateEnemies(){
         );
 
 
-      /* FACE PLAYER */
-
       enemy.rotation.y=
         Math.atan2(
           dx,
           dz
         );
 
-
-      /* MOVE */
 
       if(
         distance>8
@@ -2417,8 +2236,6 @@ function updateEnemies(){
 
       }
 
-
-      /* ATTACK */
 
       enemy.metadata.cooldown-=
         dt;
@@ -2472,8 +2289,7 @@ window.addEventListener(
   "keydown",
   e=>{
 
-    keys[e.code]=
-      true;
+    keys[e.code]=true;
 
 
     if(
@@ -2485,18 +2301,16 @@ window.addEventListener(
     }
 
 
+    /*
+      Space는 jump()를 직접 호출
+    */
+
     if(
-      e.code==="Space"
+      e.code==="Space" &&
+      !e.repeat
     ){
 
-      if(
-        camera.position.y<=1.8
-      ){
-
-        camera.cameraDirection.y=
-          .22;
-
-      }
+      jump();
 
     }
 
@@ -2508,11 +2322,40 @@ window.addEventListener(
   "keyup",
   e=>{
 
-    keys[e.code]=
-      false;
+    keys[e.code]=false;
 
   }
 );
+
+
+/* =========================================================
+   JUMP
+========================================================= */
+
+function jump(){
+
+  if(
+    !started ||
+    ended
+  )
+    return;
+
+
+  /*
+    바닥에 있을 때만 점프
+  */
+
+  if(
+    camera.position.y<=
+    GROUND_Y+.08
+  ){
+
+    jumpVelocity=
+      JUMP_POWER;
+
+  }
+
+}
 
 
 /* =========================================================
@@ -2523,8 +2366,7 @@ let joyX=0;
 
 let joyY=0;
 
-let sprinting=
-  false;
+let sprinting=false;
 
 
 function updateMovement(){
@@ -2545,33 +2387,25 @@ function updateMovement(){
   let side=0;
 
 
-  if(
-    keys.KeyW
-  )
+  /* PC */
+
+  if(keys.KeyW)
     forward+=1;
 
-
-  if(
-    keys.KeyS
-  )
+  if(keys.KeyS)
     forward-=1;
 
-
-  if(
-    keys.KeyD
-  )
+  if(keys.KeyD)
     side+=1;
 
-
-  if(
-    keys.KeyA
-  )
+  if(keys.KeyA)
     side-=1;
 
 
+  /* MOBILE */
+
   forward+=
     -joyY;
-
 
   side+=
     joyX;
@@ -2589,52 +2423,84 @@ function updateMovement(){
   ){
 
     forward/=len;
-
     side/=len;
 
   }
 
 
   /*
-    WALK = 2.8
-    RUN  = 4.5
+    속도
   */
 
-  let speed=
+  const speed=
     sprinting ||
     keys.ShiftLeft
-      ?4.5
-      :2.8;
+      ?RUN_SPEED
+      :WALK_SPEED;
 
 
   const yaw=
     camera.rotation.y;
 
 
-  const x=
-    side*
-    Math.cos(yaw)+
-    forward*
-    Math.sin(yaw);
+  const moveX=
+    side*Math.cos(yaw)+
+    forward*Math.sin(yaw);
 
 
-  const z=
-    forward*
-    Math.cos(yaw)-
-    side*
-    Math.sin(yaw);
+  const moveZ=
+    forward*Math.cos(yaw)-
+    side*Math.sin(yaw);
 
 
   camera.cameraDirection.x=
-    x*
+    moveX*
     speed*
     dt;
 
 
   camera.cameraDirection.z=
-    z*
+    moveZ*
     speed*
     dt;
+
+
+  /* =======================================================
+     JUMP PHYSICS
+  ======================================================= */
+
+  jumpVelocity-=
+    GRAVITY*
+    dt;
+
+
+  camera.cameraDirection.y=
+    jumpVelocity*
+    dt;
+
+
+  /*
+    바닥 처리
+  */
+
+  if(
+    camera.position.y<=
+    GROUND_Y
+  ){
+
+    camera.position.y=
+      GROUND_Y;
+
+
+    if(
+      jumpVelocity<0
+    ){
+
+      jumpVelocity=0;
+
+    }
+
+  }
 
 }
 
@@ -2674,12 +2540,12 @@ document.addEventListener(
       return;
 
 
-    camera.rotation.y-=
+    camera.rotation.y+=
       e.movementX*
       .0025;
 
 
-    camera.rotation.x-=
+    camera.rotation.x+=
       e.movementY*
       .0025;
 
@@ -2715,6 +2581,20 @@ window.addEventListener(
 
 
 /* =========================================================
+   TOUCH CHECK
+========================================================= */
+
+function isTouch(){
+
+  return (
+    navigator.maxTouchPoints>0 ||
+    "ontouchstart" in window
+  );
+
+}
+
+
+/* =========================================================
    MOBILE LOOK
 ========================================================= */
 
@@ -2736,9 +2616,12 @@ canvas.addEventListener(
 
 
     for(
-      const t of
-      e.changedTouches
+      const t of e.changedTouches
     ){
+
+      /*
+        오른쪽 영역만 시점 조작
+      */
 
       if(
         t.clientX>
@@ -2748,14 +2631,11 @@ canvas.addEventListener(
         lookId=
           t.identifier;
 
-
         lookX=
           t.clientX;
 
-
         lookY=
           t.clientY;
-
 
         break;
 
@@ -2780,54 +2660,72 @@ canvas.addEventListener(
       return;
 
 
+    e.preventDefault();
+
+
     for(
-      const t of
-      e.changedTouches
+      const t of e.changedTouches
     ){
 
       if(
-        t.identifier===
+        t.identifier!==
         lookId
-      ){
-
-        const dx=
-          t.clientX-
-          lookX;
+      )
+        continue;
 
 
-        const dy=
-          t.clientY-
-          lookY;
+      const dx=
+        t.clientX-
+        lookX;
 
 
-        camera.rotation.y-=
-          dx*
-          .004;
+      const dy=
+        t.clientY-
+        lookY;
 
 
-        camera.rotation.x-=
-          dy*
-          .004;
+      /*
+        손가락 오른쪽
+        → 화면도 오른쪽
+
+        손가락 왼쪽
+        → 화면도 왼쪽
+      */
+
+      camera.rotation.y+=
+        dx*
+        .004;
 
 
-        camera.rotation.x=
-          Math.max(
-            -1.45,
-            Math.min(
-              1.45,
-              camera.rotation.x
-            )
-          );
+      /*
+        손가락 아래
+        → 아래 보기
+
+        손가락 위
+        → 위 보기
+      */
+
+      camera.rotation.x+=
+        dy*
+        .004;
 
 
-        lookX=
-          t.clientX;
+      camera.rotation.x=
+        Math.max(
+          -1.45,
+          Math.min(
+            1.45,
+            camera.rotation.x
+          )
+        );
 
 
-        lookY=
-          t.clientY;
+      lookX=
+        t.clientX;
 
-      }
+
+      lookY=
+        t.clientY;
 
     }
 
@@ -2843,8 +2741,7 @@ canvas.addEventListener(
   e=>{
 
     for(
-      const t of
-      e.changedTouches
+      const t of e.changedTouches
     ){
 
       if(
@@ -2852,8 +2749,7 @@ canvas.addEventListener(
         lookId
       ){
 
-        lookId=
-          null;
+        lookId=null;
 
       }
 
@@ -2879,8 +2775,7 @@ const knob=
   );
 
 
-let joyId=
-  null;
+let joyId=null;
 
 
 joystick.addEventListener(
@@ -2888,7 +2783,6 @@ joystick.addEventListener(
   e=>{
 
     e.preventDefault();
-
 
     joyId=
       e.changedTouches[0]
@@ -2909,8 +2803,7 @@ joystick.addEventListener(
 
 
     for(
-      const t of
-      e.changedTouches
+      const t of e.changedTouches
     ){
 
       if(
@@ -2921,24 +2814,20 @@ joystick.addEventListener(
 
 
       const r=
-        joystick
-        .getBoundingClientRect();
+        joystick.getBoundingClientRect();
 
 
       let dx=
         t.clientX-
-        (r.left+
-        r.width/2);
+        (r.left+r.width/2);
 
 
       let dy=
         t.clientY-
-        (r.top+
-        r.height/2);
+        (r.top+r.height/2);
 
 
-      const radius=
-        45;
+      const radius=45;
 
 
       const distance=
@@ -2955,7 +2844,6 @@ joystick.addEventListener(
         dx=
           dx/distance*
           radius;
-
 
         dy=
           dy/distance*
@@ -2987,7 +2875,7 @@ joystick.addEventListener(
 joystick.addEventListener(
   "touchend",
   ()=>{
-    
+
     joyX=0;
 
     joyY=0;
@@ -3002,7 +2890,7 @@ joystick.addEventListener(
 
 
 /* =========================================================
-   FIRE BUTTON
+   FIRE
 ========================================================= */
 
 document
@@ -3023,7 +2911,7 @@ document
 
 
 /* =========================================================
-   RELOAD BUTTON
+   RELOAD
 ========================================================= */
 
 document
@@ -3044,7 +2932,7 @@ document
 
 
 /* =========================================================
-   RUN BUTTON
+   RUN
 ========================================================= */
 
 const runButton=
@@ -3083,6 +2971,14 @@ runButton.addEventListener(
 );
 
 
+runButton.addEventListener(
+  "touchcancel",
+  ()=>{
+    sprinting=false;
+  }
+);
+
+
 /* =========================================================
    JUMP BUTTON
 ========================================================= */
@@ -3095,8 +2991,7 @@ document
 
       e.preventDefault();
 
-      camera.cameraDirection.y=
-        .22;
+      jump();
 
     },
     {
@@ -3106,21 +3001,7 @@ document
 
 
 /* =========================================================
-   TOUCH CHECK
-========================================================= */
-
-function isTouch(){
-
-  return (
-    navigator.maxTouchPoints>0 ||
-    "ontouchstart" in window
-  );
-
-}
-
-
-/* =========================================================
-   FORCE MOBILE UI
+   FORCE MOBILE CONTROLS
 ========================================================= */
 
 if(
@@ -3159,11 +3040,13 @@ function startGame(){
 
   reloadLock=false;
 
+  jumpVelocity=0;
+
 
   camera.position=
     new BABYLON.Vector3(
       0,
-      1.7,
+      GROUND_Y,
       28
     );
 
@@ -3237,16 +3120,16 @@ function startGame(){
 
 
 /* =========================================================
-   END GAME
+   END
 ========================================================= */
 
-function finish(
-  victory
-){
+function finish(victory){
 
   ended=true;
 
   started=false;
+
+  jumpVelocity=0;
 
 
   document
@@ -3290,9 +3173,7 @@ function finish(
 ========================================================= */
 
 document
-  .getElementById(
-    "start"
-  )
+  .getElementById("start")
   .addEventListener(
     "click",
     startGame
@@ -3300,9 +3181,7 @@ document
 
 
 document
-  .getElementById(
-    "restart"
-  )
+  .getElementById("restart")
   .addEventListener(
     "click",
     startGame
