@@ -8,6 +8,7 @@
 <title>VECTOR FPS</title>
 
 <style>
+
 *{
   box-sizing:border-box;
   -webkit-tap-highlight-color:transparent;
@@ -31,9 +32,9 @@ html,body{
   outline:none;
 }
 
-/* =========================
+/* =========================================================
    HUD
-========================= */
+========================================================= */
 
 #hud{
   position:fixed;
@@ -48,39 +49,17 @@ html,body{
   top:15px;
   left:15px;
   display:flex;
-  gap:12px;
+  gap:10px;
   flex-wrap:wrap;
 }
 
 .hudBox{
-  background:rgba(0,0,0,.55);
+  background:rgba(0,0,0,.58);
   border:1px solid rgba(255,255,255,.25);
   border-radius:8px;
   padding:7px 11px;
   font-weight:bold;
   text-shadow:0 2px 4px #000;
-}
-
-#ammoBox{
-  position:absolute;
-  right:18px;
-  bottom:18px;
-  background:rgba(0,0,0,.65);
-  border:1px solid rgba(255,255,255,.3);
-  border-radius:10px;
-  padding:10px 15px;
-  text-align:right;
-  text-shadow:0 2px 4px #000;
-}
-
-#ammo{
-  font-size:30px;
-  font-weight:bold;
-}
-
-#reserve{
-  font-size:15px;
-  opacity:.8;
 }
 
 #healthBox{
@@ -112,6 +91,32 @@ html,body{
   transition:width .15s;
 }
 
+#ammoBox{
+  position:absolute;
+  right:18px;
+  bottom:18px;
+  background:rgba(0,0,0,.65);
+  border:1px solid rgba(255,255,255,.3);
+  border-radius:10px;
+  padding:10px 15px;
+  text-align:right;
+  text-shadow:0 2px 4px #000;
+}
+
+#ammo{
+  font-size:30px;
+  font-weight:bold;
+}
+
+#reserve{
+  font-size:15px;
+  opacity:.8;
+}
+
+/* =========================================================
+   CROSSHAIR
+========================================================= */
+
 #crosshair{
   position:absolute;
   left:50%;
@@ -141,6 +146,10 @@ html,body{
   height:22px;
 }
 
+/* =========================================================
+   HIT MARKER
+========================================================= */
+
 #hitMarker{
   position:absolute;
   left:50%;
@@ -169,9 +178,9 @@ html,body{
   transform:rotate(-45deg);
 }
 
-/* =========================
+/* =========================================================
    START SCREEN
-========================= */
+========================================================= */
 
 #startScreen{
   position:fixed;
@@ -181,15 +190,19 @@ html,body{
   align-items:center;
   justify-content:center;
   background:
-    radial-gradient(circle at center,rgba(40,40,40,.4),rgba(0,0,0,.96));
+    radial-gradient(
+      circle at center,
+      rgba(40,40,40,.45),
+      rgba(0,0,0,.97)
+    );
   color:white;
 }
 
 .startPanel{
-  width:min(90%,430px);
-  padding:35px;
+  width:min(92%,460px);
+  padding:32px;
   text-align:center;
-  background:rgba(10,10,10,.9);
+  background:rgba(10,10,10,.93);
   border:1px solid rgba(255,255,255,.2);
   border-radius:16px;
   box-shadow:0 20px 80px rgba(0,0,0,.8);
@@ -199,12 +212,52 @@ html,body{
   font-size:42px;
   font-weight:900;
   letter-spacing:5px;
-  margin-bottom:8px;
+  margin-bottom:6px;
 }
 
 .subtitle{
+  opacity:.55;
+  margin-bottom:25px;
+}
+
+/* =========================================================
+   MODE SELECT
+========================================================= */
+
+.modeTitle{
+  font-size:13px;
   opacity:.65;
-  margin-bottom:30px;
+  margin-bottom:10px;
+}
+
+.modeButtons{
+  display:flex;
+  gap:10px;
+  margin-bottom:20px;
+}
+
+.modeButton{
+  flex:1;
+  padding:14px 8px;
+  border-radius:8px;
+  border:1px solid rgba(255,255,255,.25);
+  background:#222;
+  color:white;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+.modeButton.selected{
+  background:white;
+  color:#111;
+}
+
+.modeDescription{
+  min-height:42px;
+  font-size:12px;
+  opacity:.65;
+  line-height:1.5;
+  margin-bottom:18px;
 }
 
 #startButton{
@@ -223,9 +276,9 @@ html,body{
   transform:scale(.98);
 }
 
-/* =========================
+/* =========================================================
    END SCREEN
-========================= */
+========================================================= */
 
 #endScreen{
   position:fixed;
@@ -234,12 +287,12 @@ html,body{
   display:none;
   align-items:center;
   justify-content:center;
-  background:rgba(0,0,0,.8);
+  background:rgba(0,0,0,.82);
   color:white;
 }
 
 .endPanel{
-  width:min(90%,400px);
+  width:min(90%,420px);
   text-align:center;
   background:#111;
   border:1px solid #555;
@@ -253,6 +306,13 @@ html,body{
   margin-bottom:20px;
 }
 
+#endStats{
+  font-size:18px;
+  line-height:1.8;
+  margin-bottom:25px;
+  opacity:.85;
+}
+
 #restartButton{
   border:0;
   border-radius:8px;
@@ -263,9 +323,9 @@ html,body{
   font-weight:bold;
 }
 
-/* =========================
+/* =========================================================
    MOBILE CONTROLS
-========================= */
+========================================================= */
 
 #mobileControls{
   display:none;
@@ -357,9 +417,9 @@ html,body{
   height:65px;
 }
 
-/* =========================
-   MOBILE LOOK ZONE
-========================= */
+/* =========================================================
+   MOBILE LOOK
+========================================================= */
 
 #lookZone{
   position:absolute;
@@ -370,11 +430,8 @@ html,body{
   pointer-events:auto;
 }
 
-/* =========================
-   MOBILE
-========================= */
+@media(pointer:coarse){
 
-@media (pointer:coarse){
   #mobileControls{
     display:block;
   }
@@ -399,7 +456,9 @@ html,body{
     left:10px;
     bottom:10px;
   }
+
 }
+
 </style>
 </head>
 
@@ -407,15 +466,34 @@ html,body{
 
 <canvas id="renderCanvas"></canvas>
 
-<!-- =========================
+<!-- =====================================================
      HUD
-========================= -->
+===================================================== -->
 
 <div id="hud">
 
   <div id="topHud">
-    <div class="hudBox">ROUND <span id="round">1</span></div>
-    <div class="hudBox">ENEMIES <span id="enemyCount">0</span></div>
+
+    <div class="hudBox">
+      MODE <span id="modeText">ROUND</span>
+    </div>
+
+    <div class="hudBox" id="roundBox">
+      ROUND <span id="round">1</span>
+    </div>
+
+    <div class="hudBox">
+      ENEMIES <span id="enemyCount">0</span>
+    </div>
+
+    <div class="hudBox" id="killsBox">
+      KILLS <span id="kills">0</span>
+    </div>
+
+    <div class="hudBox" id="timerBox">
+      TIME <span id="timer">--:--</span>
+    </div>
+
   </div>
 
   <div id="crosshair">
@@ -429,28 +507,73 @@ html,body{
   </div>
 
   <div id="healthBox">
-    <div id="healthLabel">HP <span id="hpText">100</span></div>
+
+    <div id="healthLabel">
+      HP <span id="hpText">100</span>
+    </div>
+
     <div id="healthBarOuter">
       <div id="healthBar"></div>
     </div>
+
   </div>
 
   <div id="ammoBox">
+
     <div id="ammo">12</div>
-    <div id="reserve">/ 60</div>
+
+    <div id="reserve">
+      / 60
+    </div>
+
   </div>
 
 </div>
 
-<!-- =========================
-     START
-========================= -->
+<!-- =====================================================
+     START SCREEN
+===================================================== -->
 
 <div id="startScreen">
+
   <div class="startPanel">
 
-    <div class="logo">VECTOR</div>
-    <div class="subtitle">TACTICAL FPS</div>
+    <div class="logo">
+      VECTOR
+    </div>
+
+    <div class="subtitle">
+      TACTICAL FPS
+    </div>
+
+    <div class="modeTitle">
+      GAME MODE
+    </div>
+
+    <div class="modeButtons">
+
+      <button
+        class="modeButton selected"
+        id="roundModeButton"
+      >
+        ROUND
+      </button>
+
+      <button
+        class="modeButton"
+        id="deathmatchModeButton"
+      >
+        DEATHMATCH
+      </button>
+
+    </div>
+
+    <div
+      class="modeDescription"
+      id="modeDescription"
+    >
+      적을 모두 처치하면 다음 라운드로 진행합니다.
+    </div>
 
     <button id="startButton">
       START GAME
@@ -467,57 +590,74 @@ html,body{
     </div>
 
   </div>
+
 </div>
 
-<!-- =========================
-     END
-========================= -->
+<!-- =====================================================
+     END SCREEN
+===================================================== -->
 
 <div id="endScreen">
+
   <div class="endPanel">
 
-    <div id="endTitle">YOU DIED</div>
+    <div id="endTitle">
+      MATCH END
+    </div>
 
-    <div style="
-      opacity:.7;
-      margin-bottom:25px;
-    ">
-      VECTOR FPS
+    <div id="endStats">
+      KILLS: 0
     </div>
 
     <button id="restartButton">
-      RESTART
+      PLAY AGAIN
     </button>
 
   </div>
+
 </div>
 
-<!-- =========================
+<!-- =====================================================
      MOBILE
-========================= -->
+===================================================== -->
 
 <div id="mobileControls">
 
   <div id="lookZone"></div>
 
   <div id="joystickZone">
+
     <div id="joystickBase"></div>
+
     <div id="joystickKnob"></div>
+
   </div>
 
-  <div id="fireButton" class="mobileButton">
+  <div
+    id="fireButton"
+    class="mobileButton"
+  >
     FIRE
   </div>
 
-  <div id="reloadButton" class="mobileButton">
+  <div
+    id="reloadButton"
+    class="mobileButton"
+  >
     R
   </div>
 
-  <div id="runButton" class="mobileButton">
+  <div
+    id="runButton"
+    class="mobileButton"
+  >
     RUN
   </div>
 
-  <div id="jumpButton" class="mobileButton">
+  <div
+    id="jumpButton"
+    class="mobileButton"
+  >
     JUMP
   </div>
 
@@ -529,30 +669,64 @@ html,body{
 
 /* =========================================================
    VECTOR FPS
-   Babylon.js
+   ROUND + DEATHMATCH
 ========================================================= */
 
-const canvas=document.getElementById("renderCanvas");
+const canvas=
+  document.getElementById(
+    "renderCanvas"
+  );
 
-const engine=new BABYLON.Engine(
-  canvas,
-  true,
-  {
-    preserveDrawingBuffer:true,
-    stencil:true
-  }
-);
+const engine=
+  new BABYLON.Engine(
+    canvas,
+    true,
+    {
+      preserveDrawingBuffer:true,
+      stencil:true
+    }
+  );
 
 let scene;
 let camera;
 
+/* =========================================================
+   GAME STATE
+========================================================= */
+
 let gameStarted=false;
 let gameOver=false;
 
-let round=1;
-let playerHP=100;
+let gameMode="round";
 
-let enemies=[];
+/*
+  Deathmatch 설정
+*/
+
+const DEATHMATCH_TIME=300;
+const DEATHMATCH_KILLS=30;
+
+let deathmatchTime=DEATHMATCH_TIME;
+let kills=0;
+
+/*
+  플레이어 사망 상태
+*/
+
+let playerDead=false;
+let respawnTimer=0;
+
+/* =========================================================
+   ROUND
+========================================================= */
+
+let round=1;
+
+/* =========================================================
+   PLAYER
+========================================================= */
+
+let playerHP=100;
 
 let ammo=12;
 let reserve=60;
@@ -563,10 +737,7 @@ const FIRE_DELAY=145;
 
 let lastShot=0;
 let firing=false;
-
 let reloading=false;
-
-let lastFrame=performance.now();
 
 /* =========================================================
    MOVEMENT
@@ -575,10 +746,12 @@ let lastFrame=performance.now();
 const WALK_SPEED=1.6;
 const RUN_SPEED=2.7;
 
-/*
-  기존보다 낮춘 점프
-*/
 const GROUND_Y=1.7;
+
+/*
+  낮춘 점프 높이
+*/
+
 const JUMP_POWER=3.6;
 const GRAVITY=14;
 
@@ -612,35 +785,41 @@ let lastLookY=0;
    RECOIL
 ========================================================= */
 
+const RECOIL_PER_SHOT=.035;
+const MAX_RECOIL_PITCH=1.35;
+const RECOIL_SIDE=.008;
+
+/* =========================================================
+   ENEMIES
+========================================================= */
+
+let enemies=[];
+
 /*
-  중요:
-
-  예전에는 recoilTarget을 만들고
-  매 프레임 자동으로 카메라를 되돌렸음.
-
-  이번 버전에서는 그 방식을 완전히 제거.
-
-  총을 쏠 때마다 실제 camera.rotation.x를 위쪽으로 올리고,
-  발사를 멈춰도 그대로 유지한다.
-
-  따라서:
-
-  연사 중
-      ↓
-  반동이 계속 위로 올라감
-      ↓
-  플레이어가 마우스/터치로 아래로 조준
-      ↓
-  반동을 직접 제어
-
-  발사 중지
-      ↓
-  자동으로 내려오지 않음
+  DEATHMATCH에서는 동시에 존재하는 적 수
 */
 
-const RECOIL_PER_SHOT=0.035;
-const MAX_RECOIL_PITCH=1.35;
-const RECOIL_SIDE=0.008;
+const DEATHMATCH_ENEMY_COUNT=5;
+
+/* =========================================================
+   SPAWN POINTS
+========================================================= */
+
+const spawnPoints=[
+
+  [-22,-25],
+  [22,-25],
+
+  [-28,0],
+  [28,0],
+
+  [-20,23],
+  [20,23],
+
+  [0,-32],
+  [0,32]
+
+];
 
 /* =========================================================
    MATERIAL
@@ -648,16 +827,18 @@ const RECOIL_SIDE=0.008;
 
 function mat(name,color){
 
-  const m=new BABYLON.StandardMaterial(
-    name,
-    scene
-  );
+  const m=
+    new BABYLON.StandardMaterial(
+      name,
+      scene
+    );
 
-  m.diffuseColor=new BABYLON.Color3(
-    color[0],
-    color[1],
-    color[2]
-  );
+  m.diffuseColor=
+    new BABYLON.Color3(
+      color[0],
+      color[1],
+      color[2]
+    );
 
   return m;
 }
@@ -668,28 +849,33 @@ function mat(name,color){
 
 function createScene(){
 
-  scene=new BABYLON.Scene(engine);
+  scene=
+    new BABYLON.Scene(
+      engine
+    );
 
-  scene.clearColor=new BABYLON.Color4(
-    0.035,
-    0.045,
-    0.06,
-    1
-  );
+  scene.clearColor=
+    new BABYLON.Color4(
+      .035,
+      .045,
+      .06,
+      1
+    );
 
-  /* =========================
+  /* =====================================================
      CAMERA
-  ========================= */
+  ===================================================== */
 
-  camera=new BABYLON.UniversalCamera(
-    "playerCamera",
-    new BABYLON.Vector3(
-      0,
-      GROUND_Y,
-      0
-    ),
-    scene
-  );
+  camera=
+    new BABYLON.UniversalCamera(
+      "playerCamera",
+      new BABYLON.Vector3(
+        0,
+        GROUND_Y,
+        -25
+      ),
+      scene
+    );
 
   camera.minZ=.05;
 
@@ -702,90 +888,100 @@ function createScene(){
     false
   );
 
-  /* =========================
+  /* =====================================================
      LIGHT
-  ========================= */
+  ===================================================== */
 
-  const light=new BABYLON.HemisphericLight(
-    "mainLight",
-    new BABYLON.Vector3(
-      0,
-      1,
-      0
-    ),
-    scene
-  );
+  const light=
+    new BABYLON.HemisphericLight(
+      "mainLight",
+      new BABYLON.Vector3(
+        0,
+        1,
+        0
+      ),
+      scene
+    );
 
   light.intensity=1.1;
 
-  const sun=new BABYLON.DirectionalLight(
-    "sun",
-    new BABYLON.Vector3(
-      -.4,
-      -1,
-      -.3
-    ),
-    scene
-  );
+  const sun=
+    new BABYLON.DirectionalLight(
+      "sun",
+      new BABYLON.Vector3(
+        -.4,
+        -1,
+        -.3
+      ),
+      scene
+    );
 
-  sun.position=new BABYLON.Vector3(
-    20,
-    30,
-    20
-  );
+  sun.position=
+    new BABYLON.Vector3(
+      20,
+      30,
+      20
+    );
 
   sun.intensity=.7;
 
-  /* =========================
+  /* =====================================================
      MATERIALS
-  ========================= */
+  ===================================================== */
 
-  const floorMat=mat(
-    "floor",
-    [.13,.15,.18]
-  );
+  const floorMat=
+    mat(
+      "floor",
+      [.13,.15,.18]
+    );
 
   /*
-    벽을 흰색으로 변경
+    벽 = 흰색
   */
-  const wallMat=mat(
-    "wall",
-    [.92,.92,.92]
-  );
 
-  const coverMat=mat(
-    "cover",
-    [.20,.23,.28]
-  );
+  const wallMat=
+    mat(
+      "wall",
+      [.92,.92,.92]
+    );
 
-  const enemyBodyMat=mat(
-    "enemyBody",
-    [.75,.12,.12]
-  );
+  const coverMat=
+    mat(
+      "cover",
+      [.20,.23,.28]
+    );
 
-  const enemyHeadMat=mat(
-    "enemyHead",
-    [.95,.35,.25]
-  );
+  const enemyBodyMat=
+    mat(
+      "enemyBody",
+      [.75,.12,.12]
+    );
 
-  /* =========================
+  const enemyHeadMat=
+    mat(
+      "enemyHead",
+      [.95,.35,.25]
+    );
+
+  /* =====================================================
      FLOOR
-  ========================= */
+  ===================================================== */
 
-  const floor=BABYLON.MeshBuilder.CreateGround(
-    "floor",
-    {
-      width:70,
-      height:70
-    },
-    scene
-  );
+  const floor=
+    BABYLON.MeshBuilder.CreateGround(
+      "floor",
+      {
+        width:70,
+        height:70
+      },
+      scene
+    );
 
   floor.material=floorMat;
 
-  /* =========================
-     WALL HELPER
-  ========================= */
+  /* =====================================================
+     WALL FUNCTION
+  ===================================================== */
 
   function wall(
     name,
@@ -797,15 +993,16 @@ function createScene(){
     depth
   ){
 
-    const mesh=BABYLON.MeshBuilder.CreateBox(
-      name,
-      {
-        width:width,
-        height:height,
-        depth:depth
-      },
-      scene
-    );
+    const mesh=
+      BABYLON.MeshBuilder.CreateBox(
+        name,
+        {
+          width:width,
+          height:height,
+          depth:depth
+        },
+        scene
+      );
 
     mesh.position.set(
       x,
@@ -818,9 +1015,9 @@ function createScene(){
     return mesh;
   }
 
-  /* =========================
+  /* =====================================================
      OUTER WALLS
-  ========================= */
+  ===================================================== */
 
   wall(
     "northWall",
@@ -862,9 +1059,9 @@ function createScene(){
     68
   );
 
-  /* =========================
+  /* =====================================================
      INTERNAL WALLS
-  ========================= */
+  ===================================================== */
 
   wall(
     "middleWall",
@@ -926,9 +1123,9 @@ function createScene(){
     1
   );
 
-  /* =========================
+  /* =====================================================
      COVER
-  ========================= */
+  ===================================================== */
 
   function cover(
     x,
@@ -938,15 +1135,16 @@ function createScene(){
     d
   ){
 
-    const mesh=BABYLON.MeshBuilder.CreateBox(
-      "cover",
-      {
-        width:w,
-        height:h,
-        depth:d
-      },
-      scene
-    );
+    const mesh=
+      BABYLON.MeshBuilder.CreateBox(
+        "cover",
+        {
+          width:w,
+          height:h,
+          depth:d
+        },
+        scene
+      );
 
     mesh.position.set(
       x,
@@ -974,51 +1172,40 @@ function createScene(){
   cover(0,20,5,2,2);
   cover(0,-20,5,2,2);
 
-  /* =========================
-     SPAWN ENEMIES
-  ========================= */
-
-  startRound();
-
   return scene;
 }
 
 /* =========================================================
-   ENEMY SPAWN POINTS
-========================================================= */
-
-const spawnPoints=[
-  [-22,-25],
-  [22,-25],
-  [-28,0],
-  [28,0],
-  [-20,23],
-  [20,23],
-  [0,-32],
-  [0,32]
-];
-
-/* =========================================================
-   ENEMY
+   CREATE ENEMY
 ========================================================= */
 
 function createEnemy(x,z){
 
   const enemy={
+
     root:null,
+
     body:null,
+
     head:null,
+
     hp:100,
+
     dead:false,
+
     speed:1+Math.random()*.5,
+
     attackTimer:0,
+
     deathTimer:0
+
   };
 
-  const root=new BABYLON.TransformNode(
-    "enemyRoot",
-    scene
-  );
+  const root=
+    new BABYLON.TransformNode(
+      "enemyRoot",
+      scene
+    );
 
   root.position.set(
     x,
@@ -1030,23 +1217,25 @@ function createEnemy(x,z){
 
   /* BODY */
 
-  const body=BABYLON.MeshBuilder.CreateBox(
-    "enemyBody",
-    {
-      width:.8,
-      height:1.4,
-      depth:.55
-    },
-    scene
-  );
+  const body=
+    BABYLON.MeshBuilder.CreateBox(
+      "enemyBody",
+      {
+        width:.8,
+        height:1.4,
+        depth:.55
+      },
+      scene
+    );
 
   body.parent=root;
 
   body.position.y=.9;
 
-  body.material=scene.getMaterialByName(
-    "enemyBody"
-  );
+  body.material=
+    scene.getMaterialByName(
+      "enemyBody"
+    );
 
   body.metadata={
     enemy:enemy,
@@ -1057,21 +1246,23 @@ function createEnemy(x,z){
 
   /* HEAD */
 
-  const head=BABYLON.MeshBuilder.CreateSphere(
-    "enemyHead",
-    {
-      diameter:.55
-    },
-    scene
-  );
+  const head=
+    BABYLON.MeshBuilder.CreateSphere(
+      "enemyHead",
+      {
+        diameter:.55
+      },
+      scene
+    );
 
   head.parent=root;
 
   head.position.y=1.85;
 
-  head.material=scene.getMaterialByName(
-    "enemyHead"
-  );
+  head.material=
+    scene.getMaterialByName(
+      "enemyHead"
+    );
 
   head.metadata={
     enemy:enemy,
@@ -1086,43 +1277,97 @@ function createEnemy(x,z){
 }
 
 /* =========================================================
-   ROUND
+   FIND SAFE SPAWN
+========================================================= */
+
+function getSpawnPoint(){
+
+  /*
+    가능한 한 플레이어와 먼 위치 선택
+  */
+
+  const available=
+    spawnPoints
+      .map(p=>({
+
+        p:p,
+
+        distance:
+          Math.hypot(
+            p[0]-camera.position.x,
+            p[1]-camera.position.z
+          )
+
+      }))
+      .sort(
+        (a,b)=>
+          b.distance-a.distance
+      );
+
+  /*
+    먼 위치들 중 랜덤
+  */
+
+  const candidates=
+    available.slice(
+      0,
+      Math.min(
+        4,
+        available.length
+      )
+    );
+
+  const chosen=
+    candidates[
+      Math.floor(
+        Math.random()*
+        candidates.length
+      )
+    ];
+
+  return chosen.p;
+}
+
+/* =========================================================
+   START ROUND
 ========================================================= */
 
 function startRound(){
 
   if(gameOver)return;
 
-  /*
-    각 라운드 시작시 HP 회복
-  */
-
   playerHP=100;
 
-  /*
-    라운드가 올라갈수록 reserve 증가
-  */
-
-  reserve=60+(round-1)*12;
+  reserve=
+    60+
+    (round-1)*12;
 
   ammo=MAG_SIZE;
 
-  enemies.forEach(e=>{
-    if(e.root){
-      e.root.dispose();
+  enemies.forEach(
+    e=>{
+      if(e.root){
+        e.root.dispose();
+      }
     }
-  });
+  );
 
   enemies=[];
 
-  const count=Math.min(
-    3+round,
-    spawnPoints.length
-  );
+  const count=
+    Math.min(
+      3+round,
+      spawnPoints.length
+    );
 
-  for(let i=0;i<count;i++){
+  for(
+    let i=0;
+    i<count;
+    i++
+  ){
 
-    const p=spawnPoints[i];
+    const p=
+      spawnPoints[i];
 
     createEnemy(
       p[0],
@@ -1134,683 +1379,75 @@ function startRound(){
 }
 
 /* =========================================================
-   PLAYER MOVEMENT
+   START DEATHMATCH
 ========================================================= */
 
-function updateMovement(dt){
+function startDeathmatch(){
 
-  if(!gameStarted || gameOver)return;
+  deathmatchTime=
+    DEATHMATCH_TIME;
 
-  let forward=0;
-  let strafe=0;
+  kills=0;
 
-  if(moveForward)forward+=1;
-  if(moveBackward)forward-=1;
+  playerDead=false;
 
-  if(moveRight)strafe+=1;
-  if(moveLeft)strafe-=1;
+  respawnTimer=0;
 
-  /* MOBILE JOYSTICK */
+  playerHP=100;
 
-  forward+=joystickY;
-  strafe+=joystickX;
+  ammo=MAG_SIZE;
 
-  const length=Math.hypot(
-    forward,
-    strafe
-  );
+  reserve=999;
 
-  if(length>1){
-
-    forward/=length;
-    strafe/=length;
-  }
-
-  const speed=
-    running
-      ? RUN_SPEED
-      : WALK_SPEED;
-
-  const yaw=camera.rotation.y;
-
-  const forwardX=Math.sin(yaw);
-  const forwardZ=Math.cos(yaw);
-
-  const rightX=Math.cos(yaw);
-  const rightZ=-Math.sin(yaw);
-
-  camera.position.x+=
-    (
-      forwardX*forward+
-      rightX*strafe
-    )*speed*dt;
-
-  camera.position.z+=
-    (
-      forwardZ*forward+
-      rightZ*strafe
-    )*speed*dt;
-
-  /* =========================
-     GRAVITY
-  ========================= */
-
-  velocityY-=GRAVITY*dt;
-
-  camera.position.y+=
-    velocityY*dt;
-
-  if(camera.position.y<=GROUND_Y){
-
-    camera.position.y=GROUND_Y;
-
-    velocityY=0;
-
-    onGround=true;
-  }
-
-  /* =========================
-     MAP BOUNDS
-  ========================= */
-
-  camera.position.x=
-    Math.max(
-      -32,
-      Math.min(
-        32,
-        camera.position.x
-      )
-    );
-
-  camera.position.z=
-    Math.max(
-      -32,
-      Math.min(
-        32,
-        camera.position.z
-      )
-    );
-}
-
-/* =========================================================
-   JUMP
-========================================================= */
-
-function jump(){
-
-  if(
-    !gameStarted ||
-    gameOver ||
-    !onGround
-  )return;
-
-  velocityY=JUMP_POWER;
-
-  onGround=false;
-}
-
-/* =========================================================
-   RECOIL
-========================================================= */
-
-function applyRecoil(){
-
-  /*
-    반동은 이제 camera.rotation.x 자체에 적용.
-
-    음수 방향으로 회전시키면
-    시선이 위로 올라간다.
-  */
-
-  camera.rotation.x-=RECOIL_PER_SHOT;
-
-  /*
-    무한히 하늘을 보는 것을 방지.
-  */
-
-  camera.rotation.x=Math.max(
-    -MAX_RECOIL_PITCH,
-    Math.min(
-      MAX_RECOIL_PITCH,
-      camera.rotation.x
-    )
-  );
-
-  /*
-    약간의 좌우 흔들림
-  */
-
-  camera.rotation.y+=
-    (Math.random()-.5)*
-    RECOIL_SIDE;
-}
-
-/*
-  중요:
-  recoilTarget
-  recoilPitch
-  recoilYaw
-  updateRecoilStable
-  등의 자동 복귀 코드는 없음.
-
-  따라서 발사를 멈춰도
-  반동 위치가 그대로 유지된다.
-*/
-
-/* =========================================================
-   SHOOT
-========================================================= */
-
-function shoot(){
-
-  if(
-    !gameStarted ||
-    gameOver ||
-    reloading
-  )return;
-
-  const now=performance.now();
-
-  if(
-    now-lastShot<FIRE_DELAY
-  )return;
-
-  if(ammo<=0){
-
-    reload();
-
-    return;
-  }
-
-  lastShot=now;
-
-  ammo--;
-
-  /* 반동 */
-
-  applyRecoil();
-
-  /* 총구 효과 */
-
-  muzzleFlash();
-
-  /* 히트 판정 */
-
-  const ray=scene.createPickingRay(
-    canvas.width/2,
-    canvas.height/2,
-    BABYLON.Matrix.Identity(),
-    camera
-  );
-
-  const hit=scene.pickWithRay(
-    ray,
-    mesh=>{
-      return !!(
-        mesh.metadata &&
-        mesh.metadata.enemy
-      );
+  enemies.forEach(
+    e=>{
+      if(e.root){
+        e.root.dispose();
+      }
     }
   );
 
-  if(
-    hit &&
-    hit.hit &&
-    hit.pickedMesh
+  enemies=[];
+
+  /*
+    처음부터 일정 수의 적 생성
+  */
+
+  for(
+    let i=0;
+    i<DEATHMATCH_ENEMY_COUNT;
+    i++
   ){
 
-    const data=
-      hit.pickedMesh.metadata;
+    const p=
+      spawnPoints[i];
 
-    const enemy=data.enemy;
-
-    if(
-      enemy &&
-      !enemy.dead
-    ){
-
-      let damage=34;
-
-      if(
-        data.hitPart==="head"
-      ){
-
-        damage=100;
-
-      }else{
-
-        damage=
-          4+
-          Math.floor(
-            Math.random()*7
-          );
-      }
-
-      enemy.hp-=damage;
-
-      showHitMarker();
-
-      if(enemy.hp<=0){
-
-        killEnemy(enemy);
-      }
-    }
+    createEnemy(
+      p[0],
+      p[1]
+    );
   }
 
   updateHUD();
 }
 
 /* =========================================================
-   AUTO FIRE
+   START MATCH
 ========================================================= */
 
-function fireLoop(){
-
-  if(
-    !firing ||
-    !gameStarted ||
-    gameOver
-  )return;
-
-  shoot();
-}
-
-/* =========================================================
-   MUZZLE FLASH
-========================================================= */
-
-let muzzleTimeout=null;
-
-function muzzleFlash(){
-
-  /*
-    화면 중앙에 짧은 흰색 효과
-  */
-
-  const flash=document.createElement(
-    "div"
-  );
-
-  flash.style.position="fixed";
-  flash.style.left="50%";
-  flash.style.top="50%";
-  flash.style.width="40px";
-  flash.style.height="40px";
-  flash.style.transform=
-    "translate(-50%,-50%)";
-  flash.style.background=
-    "radial-gradient(circle,rgba(255,255,255,.9),rgba(255,180,50,0))";
-  flash.style.pointerEvents="none";
-  flash.style.zIndex="8";
-
-  document.body.appendChild(flash);
-
-  setTimeout(()=>{
-    flash.remove();
-  },35);
-}
-
-/* =========================================================
-   HIT MARKER
-========================================================= */
-
-function showHitMarker(){
-
-  const marker=
-    document.getElementById(
-      "hitMarker"
-    );
-
-  marker.style.opacity="1";
-
-  setTimeout(()=>{
-    marker.style.opacity="0";
-  },90);
-}
-
-/* =========================================================
-   RELOAD
-========================================================= */
-
-function reload(){
-
-  if(
-    reloading ||
-    ammo>=MAG_SIZE ||
-    reserve<=0
-  )return;
-
-  reloading=true;
-
-  setTimeout(()=>{
-
-    const need=
-      MAG_SIZE-ammo;
-
-    const amount=
-      Math.min(
-        need,
-        reserve
-      );
-
-    ammo+=amount;
-
-    reserve-=amount;
-
-    reloading=false;
-
-    updateHUD();
-
-  },850);
-}
-
-/* =========================================================
-   ENEMY AI
-========================================================= */
-
-function updateEnemies(dt){
-
-  if(
-    !gameStarted ||
-    gameOver
-  )return;
-
-  enemies.forEach(enemy=>{
-
-    if(
-      enemy.dead ||
-      !enemy.root
-    )return;
-
-    const pos=
-      enemy.root.position;
-
-    const dx=
-      camera.position.x-pos.x;
-
-    const dz=
-      camera.position.z-pos.z;
-
-    const dist=
-      Math.hypot(dx,dz);
-
-    /* =========================
-       MOVE TOWARD PLAYER
-    ========================= */
-
-    if(dist>2.3){
-
-      const dirX=
-        dx/dist;
-
-      const dirZ=
-        dz/dist;
-
-      pos.x+=
-        dirX*
-        enemy.speed*
-        dt;
-
-      pos.z+=
-        dirZ*
-        enemy.speed*
-        dt;
-
-    }else{
-
-      /* =========================
-         ATTACK
-      ========================= */
-
-      enemy.attackTimer-=dt;
-
-      if(
-        enemy.attackTimer<=0
-      ){
-
-        enemy.attackTimer=.8;
-
-        damagePlayer(
-          5+
-          Math.floor(
-            Math.random()*6
-          )
-        );
-      }
-    }
-
-    /* FACE PLAYER */
-
-    enemy.root.rotation.y=
-      Math.atan2(
-        dx,
-        dz
-      );
-
-  });
-}
-
-/* =========================================================
-   ENEMY DEATH
-========================================================= */
-
-function killEnemy(enemy){
-
-  if(
-    !enemy ||
-    enemy.dead
-  )return;
-
-  enemy.dead=true;
-
-  enemy.deathTimer=0;
-
-  /*
-    죽은 적은 즉시 공격하지 않으며
-    천천히 넘어지는 연출.
-  */
-}
-
-/* =========================================================
-   UPDATE DEATH ANIMATION
-========================================================= */
-
-function updateDeaths(dt){
-
-  enemies.forEach(enemy=>{
-
-    if(
-      !enemy.dead ||
-      !enemy.root
-    )return;
-
-    enemy.deathTimer+=dt;
-
-    enemy.root.rotation.z=
-      Math.min(
-        Math.PI/2,
-        enemy.deathTimer*5
-      );
-
-    enemy.root.position.y=
-      Math.max(
-        -.3,
-        enemy.root.position.y-
-        dt*.7
-      );
-
-    if(
-      enemy.deathTimer>1.2
-    ){
-
-      enemy.root.dispose();
-
-    }
-
-  });
-
-  enemies=enemies.filter(
-    enemy=>{
-
-      if(!enemy.root){
-
-        return false;
-      }
-
-      if(
-        enemy.dead &&
-        enemy.deathTimer>1.2
-      ){
-
-        enemy.root.dispose();
-
-        return false;
-      }
-
-      return true;
-    }
-  );
-}
-
-/* =========================================================
-   PLAYER DAMAGE
-========================================================= */
-
-function damagePlayer(amount){
-
-  if(
-    gameOver ||
-    !gameStarted
-  )return;
-
-  playerHP-=amount;
-
-  playerHP=
-    Math.max(
-      0,
-      playerHP
-    );
-
-  updateHUD();
-
-  if(playerHP<=0){
-
-    finishGame();
-  }
-}
-
-/* =========================================================
-   ROUND CHECK
-========================================================= */
-
-function checkRound(){
-
-  const alive=
-    enemies.filter(
-      e=>!e.dead
-    ).length;
-
-  if(
-    alive===0 &&
-    enemies.length>0
-  ){
-
-    setTimeout(()=>{
-
-      if(gameOver)return;
-
-      round++;
-
-      startRound();
-
-    },1200);
-  }
-}
-
-/* =========================================================
-   HUD
-========================================================= */
-
-function updateHUD(){
-
-  document.getElementById(
-    "round"
-  ).textContent=round;
-
-  const alive=
-    enemies.filter(
-      e=>!e.dead
-    ).length;
-
-  document.getElementById(
-    "enemyCount"
-  ).textContent=alive;
-
-  document.getElementById(
-    "ammo"
-  ).textContent=
-    reloading
-      ? "RELOAD"
-      : ammo;
-
-  document.getElementById(
-    "reserve"
-  ).textContent=
-    reloading
-      ? ""
-      : "/ "+reserve;
-
-  document.getElementById(
-    "hpText"
-  ).textContent=
-    playerHP;
-
-  document.getElementById(
-    "healthBar"
-  ).style.width=
-    playerHP+"%";
-}
-
-/* =========================================================
-   FINISH
-========================================================= */
-
-function finishGame(){
-
-  if(gameOver)return;
-
-  gameOver=true;
-
-  firing=false;
-
-  reloading=false;
-
-  document.getElementById(
-    "endTitle"
-  ).textContent=
-    "YOU DIED";
-
-  document.getElementById(
-    "endScreen"
-  ).style.display="flex";
-
-  try{
-    camera.detachControl(
-      canvas
-    );
-  }catch(e){}
-}
-
-/* =========================================================
-   START GAME
-========================================================= */
-
-function startGame(){
+function startMatch(){
 
   gameStarted=true;
+
   gameOver=false;
 
+  playerDead=false;
+
+  respawnTimer=0;
+
   round=1;
+
+  kills=0;
 
   playerHP=100;
 
@@ -1847,10 +1484,1198 @@ function startGame(){
     "endScreen"
   ).style.display="none";
 
-  startRound();
+  if(gameMode==="deathmatch"){
+
+    startDeathmatch();
+
+  }else{
+
+    startRound();
+
+  }
+
+  updateHUD();
 
   canvas.focus();
 }
+
+/* =========================================================
+   PLAYER MOVEMENT
+========================================================= */
+
+function updateMovement(dt){
+
+  if(
+    !gameStarted ||
+    gameOver ||
+    playerDead
+  )return;
+
+  let forward=0;
+  let strafe=0;
+
+  if(moveForward)forward+=1;
+  if(moveBackward)forward-=1;
+
+  if(moveRight)strafe+=1;
+  if(moveLeft)strafe-=1;
+
+  forward+=joystickY;
+  strafe+=joystickX;
+
+  const length=
+    Math.hypot(
+      forward,
+      strafe
+    );
+
+  if(length>1){
+
+    forward/=length;
+    strafe/=length;
+  }
+
+  const speed=
+    running
+      ? RUN_SPEED
+      : WALK_SPEED;
+
+  const yaw=
+    camera.rotation.y;
+
+  const forwardX=
+    Math.sin(yaw);
+
+  const forwardZ=
+    Math.cos(yaw);
+
+  const rightX=
+    Math.cos(yaw);
+
+  const rightZ=
+    -Math.sin(yaw);
+
+  camera.position.x+=
+    (
+      forwardX*forward+
+      rightX*strafe
+    )*
+    speed*
+    dt;
+
+  camera.position.z+=
+    (
+      forwardZ*forward+
+      rightZ*strafe
+    )*
+    speed*
+    dt;
+
+  /* GRAVITY */
+
+  velocityY-=
+    GRAVITY*dt;
+
+  camera.position.y+=
+    velocityY*dt;
+
+  if(
+    camera.position.y<=
+    GROUND_Y
+  ){
+
+    camera.position.y=
+      GROUND_Y;
+
+    velocityY=0;
+
+    onGround=true;
+  }
+
+  /* MAP BOUNDS */
+
+  camera.position.x=
+    Math.max(
+      -32,
+      Math.min(
+        32,
+        camera.position.x
+      )
+    );
+
+  camera.position.z=
+    Math.max(
+      -32,
+      Math.min(
+        32,
+        camera.position.z
+      )
+    );
+}
+
+/* =========================================================
+   JUMP
+========================================================= */
+
+function jump(){
+
+  if(
+    !gameStarted ||
+    gameOver ||
+    playerDead ||
+    !onGround
+  )return;
+
+  velocityY=
+    JUMP_POWER;
+
+  onGround=false;
+}
+
+/* =========================================================
+   RECOIL
+========================================================= */
+
+function applyRecoil(){
+
+  /*
+    반동은 실제 카메라 회전값에 적용.
+
+    자동 복귀 없음.
+  */
+
+  camera.rotation.x-=
+    RECOIL_PER_SHOT;
+
+  camera.rotation.x=
+    Math.max(
+      -MAX_RECOIL_PITCH,
+      Math.min(
+        MAX_RECOIL_PITCH,
+        camera.rotation.x
+      )
+    );
+
+  camera.rotation.y+=
+    (Math.random()-.5)*
+    RECOIL_SIDE;
+}
+
+/* =========================================================
+   SHOOT
+========================================================= */
+
+function shoot(){
+
+  if(
+    !gameStarted ||
+    gameOver ||
+    playerDead ||
+    reloading
+  )return;
+
+  const now=
+    performance.now();
+
+  if(
+    now-lastShot<
+    FIRE_DELAY
+  )return;
+
+  if(ammo<=0){
+
+    reload();
+
+    return;
+  }
+
+  lastShot=now;
+
+  ammo--;
+
+  applyRecoil();
+
+  muzzleFlash();
+
+  /* =====================================================
+     RAY
+  ===================================================== */
+
+  const ray=
+    scene.createPickingRay(
+      canvas.width/2,
+      canvas.height/2,
+      BABYLON.Matrix.Identity(),
+      camera
+    );
+
+  const hit=
+    scene.pickWithRay(
+      ray,
+      mesh=>{
+        return !!(
+          mesh.metadata &&
+          mesh.metadata.enemy
+        );
+      }
+    );
+
+  if(
+    hit &&
+    hit.hit &&
+    hit.pickedMesh
+  ){
+
+    const data=
+      hit.pickedMesh.metadata;
+
+    const enemy=
+      data.enemy;
+
+    if(
+      enemy &&
+      !enemy.dead
+    ){
+
+      let damage=34;
+
+      if(
+        data.hitPart==="head"
+      ){
+
+        damage=100;
+
+      }else{
+
+        damage=
+          4+
+          Math.floor(
+            Math.random()*7
+          );
+      }
+
+      enemy.hp-=damage;
+
+      showHitMarker();
+
+      if(
+        enemy.hp<=0
+      ){
+
+        killEnemy(enemy);
+
+      }
+
+    }
+
+  }
+
+  updateHUD();
+}
+
+/* =========================================================
+   FIRE LOOP
+========================================================= */
+
+function fireLoop(){
+
+  if(
+    !firing ||
+    !gameStarted ||
+    gameOver ||
+    playerDead
+  )return;
+
+  shoot();
+}
+
+/* =========================================================
+   MUZZLE FLASH
+========================================================= */
+
+function muzzleFlash(){
+
+  const flash=
+    document.createElement(
+      "div"
+    );
+
+  flash.style.position=
+    "fixed";
+
+  flash.style.left="50%";
+
+  flash.style.top="50%";
+
+  flash.style.width="40px";
+
+  flash.style.height="40px";
+
+  flash.style.transform=
+    "translate(-50%,-50%)";
+
+  flash.style.background=
+    "radial-gradient(circle,rgba(255,255,255,.9),rgba(255,180,50,0))";
+
+  flash.style.pointerEvents=
+    "none";
+
+  flash.style.zIndex="8";
+
+  document.body.appendChild(
+    flash
+  );
+
+  setTimeout(
+    ()=>{
+      flash.remove();
+    },
+    35
+  );
+}
+
+/* =========================================================
+   HIT MARKER
+========================================================= */
+
+function showHitMarker(){
+
+  const marker=
+    document.getElementById(
+      "hitMarker"
+    );
+
+  marker.style.opacity="1";
+
+  setTimeout(
+    ()=>{
+      marker.style.opacity="0";
+    },
+    90
+  );
+}
+
+/* =========================================================
+   RELOAD
+========================================================= */
+
+function reload(){
+
+  if(
+    reloading ||
+    playerDead ||
+    ammo>=MAG_SIZE
+  )return;
+
+  if(
+    gameMode==="round" &&
+    reserve<=0
+  )return;
+
+  reloading=true;
+
+  setTimeout(
+    ()=>{
+
+      if(gameMode==="deathmatch"){
+
+        ammo=MAG_SIZE;
+
+      }else{
+
+        const need=
+          MAG_SIZE-ammo;
+
+        const amount=
+          Math.min(
+            need,
+            reserve
+          );
+
+        ammo+=amount;
+
+        reserve-=amount;
+      }
+
+      reloading=false;
+
+      updateHUD();
+
+    },
+    850
+  );
+}
+
+/* =========================================================
+   KILL ENEMY
+========================================================= */
+
+function killEnemy(enemy){
+
+  if(
+    !enemy ||
+    enemy.dead
+  )return;
+
+  enemy.dead=true;
+
+  enemy.deathTimer=0;
+
+  if(
+    gameMode==="deathmatch"
+  ){
+
+    kills++;
+
+    /*
+      목표 킬 달성
+    */
+
+    if(
+      kills>=DEATHMATCH_KILLS
+    ){
+
+      setTimeout(
+        ()=>{
+          finishDeathmatch(
+            "TARGET REACHED"
+          );
+        },
+        350
+      );
+
+      return;
+    }
+
+    /*
+      죽은 적은 짧은 시간 뒤
+      새로운 위치에서 부활
+    */
+
+    setTimeout(
+      ()=>{
+
+        if(
+          gameOver ||
+          !gameStarted
+        )return;
+
+        respawnEnemy(enemy);
+
+      },
+      700
+    );
+
+  }
+
+}
+
+/* =========================================================
+   RESPAWN ENEMY
+========================================================= */
+
+function respawnEnemy(enemy){
+
+  if(
+    !enemy ||
+    !enemy.root
+  )return;
+
+  const p=
+    getSpawnPoint();
+
+  enemy.root.position.set(
+    p[0],
+    0,
+    p[1]
+  );
+
+  enemy.root.rotation.set(
+    0,
+    0,
+    0
+  );
+
+  enemy.hp=100;
+
+  enemy.dead=false;
+
+  enemy.deathTimer=0;
+
+  enemy.attackTimer=0;
+
+  enemy.speed=
+    1+
+    Math.random()*.5;
+
+  /*
+    죽음 애니메이션에서
+    내려갔던 위치 복구
+  */
+
+  enemy.body.isVisible=true;
+  enemy.head.isVisible=true;
+}
+
+/* =========================================================
+   ENEMY AI
+========================================================= */
+
+function updateEnemies(dt){
+
+  if(
+    !gameStarted ||
+    gameOver ||
+    playerDead
+  )return;
+
+  enemies.forEach(
+    enemy=>{
+
+      if(
+        enemy.dead ||
+        !enemy.root
+      )return;
+
+      const pos=
+        enemy.root.position;
+
+      const dx=
+        camera.position.x-
+        pos.x;
+
+      const dz=
+        camera.position.z-
+        pos.z;
+
+      const dist=
+        Math.hypot(
+          dx,
+          dz
+        );
+
+      if(dist>2.3){
+
+        const dirX=
+          dx/dist;
+
+        const dirZ=
+          dz/dist;
+
+        pos.x+=
+          dirX*
+          enemy.speed*
+          dt;
+
+        pos.z+=
+          dirZ*
+          enemy.speed*
+          dt;
+
+      }else{
+
+        enemy.attackTimer-=dt;
+
+        if(
+          enemy.attackTimer<=0
+        ){
+
+          enemy.attackTimer=.8;
+
+          damagePlayer(
+            5+
+            Math.floor(
+              Math.random()*6
+            )
+          );
+        }
+      }
+
+      enemy.root.rotation.y=
+        Math.atan2(
+          dx,
+          dz
+        );
+
+    }
+  );
+}
+
+/* =========================================================
+   UPDATE DEATHS
+========================================================= */
+
+function updateDeaths(dt){
+
+  enemies.forEach(
+    enemy=>{
+
+      if(
+        !enemy.dead ||
+        !enemy.root
+      )return;
+
+      /*
+        Deathmatch에서는
+        죽자마자 새 위치로 이동시킬 예정이므로
+        짧은 죽음 애니메이션만 표시.
+      */
+
+      enemy.deathTimer+=dt;
+
+      enemy.root.rotation.z=
+        Math.min(
+          Math.PI/2,
+          enemy.deathTimer*5
+        );
+
+      enemy.root.position.y=
+        Math.max(
+          -.3,
+          enemy.root.position.y-
+          dt*.7
+        );
+
+      /*
+        ROUND 모드에서는
+        죽은 적을 완전히 제거.
+      */
+
+      if(
+        gameMode==="round" &&
+        enemy.deathTimer>1.2
+      ){
+
+        enemy.root.dispose();
+
+      }
+
+    }
+  );
+
+  /*
+    ROUND 모드에서만 제거
+  */
+
+  if(
+    gameMode==="round"
+  ){
+
+    enemies=
+      enemies.filter(
+        enemy=>{
+
+          if(
+            !enemy.root
+          ){
+
+            return false;
+          }
+
+          if(
+            enemy.dead &&
+            enemy.deathTimer>1.2
+          ){
+
+            enemy.root.dispose();
+
+            return false;
+          }
+
+          return true;
+
+        }
+      );
+
+  }
+
+}
+
+/* =========================================================
+   PLAYER DAMAGE
+========================================================= */
+
+function damagePlayer(amount){
+
+  if(
+    gameOver ||
+    !gameStarted ||
+    playerDead
+  )return;
+
+  playerHP-=amount;
+
+  playerHP=
+    Math.max(
+      0,
+      playerHP
+    );
+
+  updateHUD();
+
+  if(
+    playerHP<=0
+  ){
+
+    if(
+      gameMode==="deathmatch"
+    ){
+
+      playerDeath();
+
+    }else{
+
+      finishGame();
+
+    }
+
+  }
+
+}
+
+/* =========================================================
+   PLAYER DEATH
+========================================================= */
+
+function playerDeath(){
+
+  if(playerDead)return;
+
+  playerDead=true;
+
+  firing=false;
+
+  reloading=false;
+
+  respawnTimer=3;
+
+  /*
+    시야를 약간 기울여
+    사망 느낌
+  */
+
+  camera.rotation.z=.15;
+
+}
+
+/* =========================================================
+   PLAYER RESPAWN
+========================================================= */
+
+function respawnPlayer(){
+
+  playerDead=false;
+
+  playerHP=100;
+
+  ammo=MAG_SIZE;
+
+  reserve=999;
+
+  velocityY=0;
+
+  onGround=true;
+
+  /*
+    랜덤 스폰
+  */
+
+  const p=
+    getSpawnPoint();
+
+  camera.position.set(
+    p[0],
+    GROUND_Y,
+    p[1]
+  );
+
+  camera.rotation.x=0;
+
+  camera.rotation.z=0;
+
+  updateHUD();
+}
+
+/* =========================================================
+   UPDATE RESPAWN
+========================================================= */
+
+function updateRespawn(dt){
+
+  if(
+    gameMode!=="deathmatch" ||
+    !playerDead
+  )return;
+
+  respawnTimer-=dt;
+
+  if(
+    respawnTimer<=0
+  ){
+
+    respawnPlayer();
+
+  }
+
+}
+
+/* =========================================================
+   DEATHMATCH TIMER
+========================================================= */
+
+function updateDeathmatch(dt){
+
+  if(
+    gameMode!=="deathmatch" ||
+    !gameStarted ||
+    gameOver
+  )return;
+
+  if(playerDead)return;
+
+  deathmatchTime-=dt;
+
+  if(
+    deathmatchTime<=0
+  ){
+
+    deathmatchTime=0;
+
+    finishDeathmatch(
+      "TIME UP"
+    );
+
+  }
+
+}
+
+/* =========================================================
+   DEATHMATCH FINISH
+========================================================= */
+
+function finishDeathmatch(reason){
+
+  if(gameOver)return;
+
+  gameOver=true;
+
+  firing=false;
+
+  reloading=false;
+
+  let title="MATCH END";
+
+  if(
+    reason==="TARGET REACHED"
+  ){
+
+    title="TARGET REACHED";
+
+  }else if(
+    reason==="TIME UP"
+  ){
+
+    title="TIME UP";
+
+  }
+
+  document.getElementById(
+    "endTitle"
+  ).textContent=title;
+
+  document.getElementById(
+    "endStats"
+  ).innerHTML=
+    `
+      KILLS: <b>${kills}</b><br>
+      TARGET: ${DEATHMATCH_KILLS}<br>
+      TIME: ${formatTime(deathmatchTime)}
+    `;
+
+  document.getElementById(
+    "endScreen"
+  ).style.display="flex";
+
+  try{
+
+    camera.detachControl(
+      canvas
+    );
+
+  }catch(e){}
+
+}
+
+/* =========================================================
+   ROUND CHECK
+========================================================= */
+
+function checkRound(){
+
+  if(
+    gameMode!=="round"
+  )return;
+
+  const alive=
+    enemies.filter(
+      e=>!e.dead
+    ).length;
+
+  if(
+    alive===0 &&
+    enemies.length>0
+  ){
+
+    setTimeout(
+      ()=>{
+
+        if(gameOver)return;
+
+        round++;
+
+        startRound();
+
+      },
+      1200
+    );
+
+  }
+
+}
+
+/* =========================================================
+   TIME FORMAT
+========================================================= */
+
+function formatTime(seconds){
+
+  seconds=
+    Math.max(
+      0,
+      Math.ceil(seconds)
+    );
+
+  const minutes=
+    Math.floor(
+      seconds/60
+    );
+
+  const sec=
+    seconds%60;
+
+  return(
+    String(minutes)
+      .padStart(2,"0")
+    +
+    ":"
+    +
+    String(sec)
+      .padStart(2,"0")
+  );
+}
+
+/* =========================================================
+   HUD
+========================================================= */
+
+function updateHUD(){
+
+  document.getElementById(
+    "modeText"
+  ).textContent=
+    gameMode==="deathmatch"
+      ? "DEATHMATCH"
+      : "ROUND";
+
+  document.getElementById(
+    "round"
+  ).textContent=
+    round;
+
+  const alive=
+    enemies.filter(
+      e=>!e.dead
+    ).length;
+
+  document.getElementById(
+    "enemyCount"
+  ).textContent=
+    alive;
+
+  document.getElementById(
+    "kills"
+  ).textContent=
+    kills;
+
+  if(
+    gameMode==="deathmatch"
+  ){
+
+    document.getElementById(
+      "roundBox"
+    ).style.display="none";
+
+    document.getElementById(
+      "killsBox"
+    ).style.display="block";
+
+    document.getElementById(
+      "timerBox"
+    ).style.display="block";
+
+    document.getElementById(
+      "timer"
+    ).textContent=
+      formatTime(
+        deathmatchTime
+      );
+
+  }else{
+
+    document.getElementById(
+      "roundBox"
+    ).style.display="block";
+
+    document.getElementById(
+      "killsBox"
+    ).style.display="none";
+
+    document.getElementById(
+      "timerBox"
+    ).style.display="none";
+
+  }
+
+  document.getElementById(
+    "ammo"
+  ).textContent=
+    reloading
+      ? "RELOAD"
+      : ammo;
+
+  document.getElementById(
+    "reserve"
+  ).textContent=
+    reloading
+      ? ""
+      :
+      (
+        gameMode==="deathmatch"
+          ? "/ ∞"
+          : "/ "+reserve
+      );
+
+  document.getElementById(
+    "hpText"
+  ).textContent=
+    playerHP;
+
+  document.getElementById(
+    "healthBar"
+  ).style.width=
+    playerHP+"%";
+
+}
+
+/* =========================================================
+   NORMAL GAME OVER
+========================================================= */
+
+function finishGame(){
+
+  if(gameOver)return;
+
+  gameOver=true;
+
+  firing=false;
+
+  reloading=false;
+
+  document.getElementById(
+    "endTitle"
+  ).textContent=
+    "YOU DIED";
+
+  document.getElementById(
+    "endStats"
+  ).innerHTML=
+    `
+      ROUND: <b>${round}</b><br>
+      KILLS: <b>${kills}</b>
+    `;
+
+  document.getElementById(
+    "endScreen"
+  ).style.display="flex";
+
+  try{
+
+    camera.detachControl(
+      canvas
+    );
+
+  }catch(e){}
+
+}
+
+/* =========================================================
+   MODE SELECT
+========================================================= */
+
+const roundModeButton=
+  document.getElementById(
+    "roundModeButton"
+  );
+
+const deathmatchModeButton=
+  document.getElementById(
+    "deathmatchModeButton"
+  );
+
+const modeDescription=
+  document.getElementById(
+    "modeDescription"
+  );
+
+roundModeButton.addEventListener(
+  "click",
+  ()=>{
+
+    gameMode="round";
+
+    roundModeButton.classList.add(
+      "selected"
+    );
+
+    deathmatchModeButton.classList.remove(
+      "selected"
+    );
+
+    modeDescription.textContent=
+      "적을 모두 처치하면 다음 라운드로 진행합니다.";
+
+  }
+);
+
+deathmatchModeButton.addEventListener(
+  "click",
+  ()=>{
+
+    gameMode="deathmatch";
+
+    deathmatchModeButton.classList.add(
+      "selected"
+    );
+
+    roundModeButton.classList.remove(
+      "selected"
+    );
+
+    modeDescription.textContent=
+      "5분 동안 싸우며 30킬을 먼저 달성하면 목표를 완료합니다. 죽어도 3초 후 부활합니다.";
+
+  }
+);
 
 /* =========================================================
    KEYBOARD
@@ -1893,6 +2718,7 @@ window.addEventListener(
       case "KeyR":
         reload();
         break;
+
     }
 
   }
@@ -1924,6 +2750,7 @@ window.addEventListener(
       case "ShiftRight":
         running=false;
         break;
+
     }
 
   }
@@ -1949,7 +2776,9 @@ canvas.addEventListener(
       ){
 
         canvas.requestPointerLock();
+
       }
+
     }
 
   }
@@ -1960,7 +2789,8 @@ document.addEventListener(
   ()=>{
 
     mouseLocked=
-      document.pointerLockElement===canvas;
+      document.pointerLockElement===
+      canvas;
 
   }
 );
@@ -1972,16 +2802,9 @@ document.addEventListener(
     if(
       !gameStarted ||
       gameOver ||
+      playerDead ||
       !mouseLocked
     )return;
-
-    /*
-      마우스 아래 이동:
-      rotation.x 증가
-
-      따라서 반동으로 올라간 시선을
-      직접 아래로 내릴 수 있다.
-    */
 
     camera.rotation.y+=
       e.movementX*.0025;
@@ -2012,7 +2835,8 @@ canvas.addEventListener(
     if(
       e.button===0 &&
       gameStarted &&
-      !gameOver
+      !gameOver &&
+      !playerDead
     ){
 
       firing=true;
@@ -2028,7 +2852,9 @@ window.addEventListener(
   "mouseup",
   e=>{
 
-    if(e.button===0){
+    if(
+      e.button===0
+    ){
 
       firing=false;
 
@@ -2054,6 +2880,8 @@ const joystickKnob=
 joystickZone.addEventListener(
   "pointerdown",
   e=>{
+
+    if(playerDead)return;
 
     joystickActive=true;
 
@@ -2105,35 +2933,41 @@ function updateJoystick(
     rect.top+
     rect.height/2;
 
-  let dx=x-centerX;
-  let dy=y-centerY;
+  let dx=
+    x-centerX;
+
+  let dy=
+    y-centerY;
 
   const max=50;
 
   const length=
-    Math.hypot(dx,dy);
+    Math.hypot(
+      dx,
+      dy
+    );
 
   if(length>max){
 
     dx=
-      dx/length*max;
+      dx/length*
+      max;
 
     dy=
-      dy/length*max;
+      dy/length*
+      max;
+
   }
 
   joystickX=
     dx/max;
-
-  /*
-    화면 위쪽 = 전진
-  */
 
   joystickY=
     -dy/max;
 
   joystickKnob.style.transform=
     `translate(${dx}px,${dy}px)`;
+
 }
 
 function resetJoystick(){
@@ -2143,6 +2977,7 @@ function resetJoystick(){
   joystickPointerId=null;
 
   joystickX=0;
+
   joystickY=0;
 
   joystickKnob.style.transform=
@@ -2174,13 +3009,9 @@ lookZone.addEventListener(
 
     if(
       !gameStarted ||
-      gameOver
+      gameOver ||
+      playerDead
     )return;
-
-    /*
-      FIRE 버튼이나 다른 컨트롤과
-      겹치지 않도록 오른쪽 look 영역만 처리.
-    */
 
     lookActive=true;
 
@@ -2188,6 +3019,7 @@ lookZone.addEventListener(
       e.pointerId;
 
     lastLookX=e.clientX;
+
     lastLookY=e.clientY;
 
     lookZone.setPointerCapture(
@@ -2213,24 +3045,11 @@ lookZone.addEventListener(
       e.clientY-lastLookY;
 
     lastLookX=e.clientX;
-    lastLookY=e.clientY;
 
-    /*
-      좌우 시선
-    */
+    lastLookY=e.clientY;
 
     camera.rotation.y+=
       dx*.004;
-
-    /*
-      위/아래 시선
-
-      아래로 손가락을 움직이면
-      camera.rotation.x가 증가.
-
-      따라서 연사 중 위로 올라간 반동을
-      손가락을 아래로 움직여 직접 잡을 수 있다.
-    */
 
     camera.rotation.x+=
       dy*.004;
@@ -2250,13 +3069,16 @@ lookZone.addEventListener(
 function stopLook(e){
 
   if(
-    e.pointerId===lookPointerId
+    e.pointerId===
+    lookPointerId
   ){
 
     lookActive=false;
 
     lookPointerId=null;
+
   }
+
 }
 
 lookZone.addEventListener(
@@ -2286,7 +3108,8 @@ fireButton.addEventListener(
 
     if(
       !gameStarted ||
-      gameOver
+      gameOver ||
+      playerDead
     )return;
 
     firing=true;
@@ -2394,7 +3217,7 @@ document.getElementById(
 );
 
 /* =========================================================
-   START / RESTART BUTTONS
+   START
 ========================================================= */
 
 document.getElementById(
@@ -2402,9 +3225,13 @@ document.getElementById(
 ).addEventListener(
   "click",
   ()=>{
-    startGame();
+    startMatch();
   }
 );
+
+/* =========================================================
+   RESTART
+========================================================= */
 
 document.getElementById(
   "restartButton"
@@ -2418,7 +3245,7 @@ document.getElementById(
       "endScreen"
     ).style.display="none";
 
-    startGame();
+    startMatch();
 
   }
 );
@@ -2435,7 +3262,7 @@ window.addEventListener(
 );
 
 /* =========================================================
-   CREATE
+   CREATE SCENE
 ========================================================= */
 
 scene=createScene();
@@ -2444,24 +3271,25 @@ scene=createScene();
    RENDER LOOP
 ========================================================= */
 
+let lastFrame=
+  performance.now();
+
 engine.runRenderLoop(
   ()=>{
 
-    const now=performance.now();
+    const now=
+      performance.now();
 
     let dt=
       (now-lastFrame)/1000;
 
     lastFrame=now;
 
-    /*
-      너무 긴 프레임 방지
-    */
-
-    dt=Math.min(
-      dt,
-      .05
-    );
+    dt=
+      Math.min(
+        dt,
+        .05
+      );
 
     updateMovement(dt);
 
@@ -2469,14 +3297,11 @@ engine.runRenderLoop(
 
     updateDeaths(dt);
 
+    updateRespawn(dt);
+
+    updateDeathmatch(dt);
+
     checkRound();
-
-    /*
-      여기에는 recoil 자동 복귀 함수가 없다.
-
-      따라서 발사 후에도
-      카메라 반동이 그대로 유지된다.
-    */
 
     fireLoop();
 
