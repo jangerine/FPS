@@ -1874,6 +1874,111 @@ function createScene(){
   decoBox("warningLight",x,1.1,30,.38,.08,.38,warmMat,false);
  }
 
+ /* =====================================================
+    ORGANIC MAP PASS — 곡선/대각선/원형 구조로 네모난 인상을 줄입니다.
+    기존 플레이 동선과 충돌 시스템은 유지하고, 시각적 구조와 일부 엄폐물만 추가합니다.
+ ===================================================== */
+ function decoCylinder(name,x,y,z,diameter,height,material,collide=false){
+  const m=BABYLON.MeshBuilder.CreateCylinder(name,{diameter,height,tessellation:20},scene);
+  m.position.set(x,y,z);
+  m.material=material;
+  m.isPickable=false;
+  if(collide){ m.checkCollisions=true; collisionMeshes.push(m); }
+  return m;
+ }
+ function decoTorus(name,x,y,z,diameter,thickness,material){
+  const m=BABYLON.MeshBuilder.CreateTorus(name,{diameter,thickness,tessellation:28},scene);
+  m.position.set(x,y,z);
+  m.material=material;
+  m.isPickable=false;
+  return m;
+ }
+ function curvedWall(cx,cz,radius,startAngle,endAngle,count,height,depth,material,collide=false){
+  for(let i=0;i<count;i++){
+   const t=(i+.5)/count;
+   const a=startAngle+(endAngle-startAngle)*t;
+   const x=cx+Math.cos(a)*radius;
+   const z=cz+Math.sin(a)*radius;
+   const seg=decoBox("curvedCover",x,height/2,z,depth, height,Math.max(1.8,radius*Math.abs(endAngle-startAngle)/count*1.15),material,collide);
+   seg.rotation.y=a+Math.PI/2;
+  }
+ }
+ function diagonalCover(x,z,w,d,rot=0,collide=true){
+  const m=decoBox("diagonalCover",x,1.35,z,w,2.7,d,darkMat,collide);
+  m.rotation.y=rot;
+  const trim=decoBox("diagonalTrim",x,2.75,z,w*.72,.10,.10,trimMat,false);
+  trim.rotation.y=rot;
+ }
+
+ // 중앙 원형 전술 광장 — 직선 교차로 대신 원형 기준점을 만듭니다.
+ decoCylinder("centralPlaza",0,.03,0,25,.06,darkMat,false);
+ decoTorus("centralRing",0,.075,0,25,.20,trimMat);
+ decoTorus("centralRingInner",0,.085,0,13,.12,warmMat);
+ decoCylinder("centralCore",0,.10,0,5.4,.12,coverMat,false);
+ for(let a=0;a<8;a++){
+  const ang=a*Math.PI/4;
+  const x=Math.cos(ang)*8.5;
+  const z=Math.sin(ang)*8.5;
+  const marker=decoBox("radialMarker",x,.075,z,3.8,.05,.22,trimMat,false);
+  marker.rotation.y=ang;
+ }
+
+ // 중앙 주변은 4개의 부드러운 곡선 엄폐물로 구성합니다.
+ curvedWall(0,0,14,-Math.PI*.78,-Math.PI*.22,6,2.4,.9,darkMat,true);
+ curvedWall(0,0,14,Math.PI*.22,Math.PI*.78,6,2.4,.9,darkMat,true);
+ curvedWall(0,0,14,Math.PI*.78,Math.PI*1.22,5,2.2,.85,darkMat,true);
+ curvedWall(0,0,14,Math.PI*1.78,Math.PI*2.22,5,2.2,.85,darkMat,true);
+
+ // 대각선 엄폐물 — 사각형 방의 느낌을 끊고 시야에 자연스러운 각도를 만듭니다.
+ diagonalCover(-15,5,7,1.2,-.52,true);
+ diagonalCover(15,-5,7,1.2,.52,true);
+ diagonalCover(-15,-5,7,1.2,.52,true);
+ diagonalCover(15,5,7,1.2,-.52,true);
+
+ // 모서리에는 직각 대신 원형 정원/장비 패드를 배치합니다.
+ [[-39,-39],[-39,39],[39,-39],[39,39]].forEach((q,i)=>{
+  decoCylinder("cornerPad",q[0],.04,q[1],10,.08,darkMat,false);
+  decoTorus("cornerRing",q[0],.09,q[1],10,.16,i%2?warmMat:trimMat);
+  for(let a=0;a<4;a++){
+   const ang=a*Math.PI/2+Math.PI/4;
+   decoCylinder("cornerBollard",q[0]+Math.cos(ang)*3.2,.6,q[1]+Math.sin(ang)*3.2,.42,1.2,darkMat,false);
+  }
+ });
+
+ // 고지대 주변에도 곡선형 난간/테두리를 추가해 플랫폼을 박스처럼 보이지 않게 합니다.
+ [[-28,22],[28,22],[-28,-22],[28,-22]].forEach((q,i)=>{
+  const a0=i%2===0?Math.PI*.08:Math.PI*1.08;
+  curvedWall(q[0],q[1],5.7,a0,a0+Math.PI*.82,7,1.0,.14,trimMat,false);
+  decoTorus("platformAccent",q[0],6.02,q[1],8.5,.10,trimMat);
+ });
+
+ // 길게 뻗은 직선 외곽선 대신 사선 방향의 지면 패턴을 추가합니다.
+ for(let i=-3;i<=3;i++){
+  const line=decoBox("diagonalFloorLine",i*7,.028,0,1.0,.035,82,trimMat,false);
+  line.rotation.y=(i%2===0?.18:-.18);
+ }
+
+ // 원형 화분과 낮은 관목을 추가해 산업 시설 사이의 빈 공간을 부드럽게 연결합니다.
+ function roundPlanter(x,z,r=1.4){
+  decoCylinder("roundPlanter",x,.42,z,r*2,.84,darkMat,true);
+  decoCylinder("roundPlant",x,1.18,z,r*1.05,1.0,plantMat,false);
+  decoTorus("planterTrim",x,.86,z,r*2.05,.10,trimMat);
+ }
+ roundPlanter(-27,0,1.45);
+ roundPlanter(27,0,1.45);
+ roundPlanter(0,-28,1.25);
+ roundPlanter(0,28,1.25);
+
+ // 짧은 곡선형 벽을 동선 끝에 배치해 직선 복도 느낌을 줄입니다.
+ curvedWall(-30,0,7,Math.PI*.30,Math.PI*.72,4,2.1,.8,darkMat,true);
+ curvedWall(30,0,7,Math.PI*1.30,Math.PI*1.72,4,2.1,.8,darkMat,true);
+
+ // 맵 전체의 작은 금속 라이트를 원형/대각선 패턴으로 분산합니다.
+ [[-12,25],[12,25],[-25,12],[-25,-12],[25,12],[25,-12],[-12,-25],[12,-25]].forEach((q,i)=>{
+  decoCylinder("routeLightBase",q[0],.28,q[1],.5,.56,darkMat,false);
+  decoCylinder("routeLight",q[0],.62,q[1],.22,.18,i%2?warmMat:trimMat,false);
+ });
+
  return scene;
 
 }
