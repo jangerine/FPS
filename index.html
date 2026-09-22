@@ -14,7 +14,9 @@
  -webkit-tap-highlight-color:transparent
 }
 
-html,body{
+html,html,body{touch-action:none;overscroll-behavior:none}
+
+body{
  margin:0;
  width:100%;
  height:100%;
@@ -1473,10 +1475,10 @@ function createScene(){
  camera.ellipsoid=new BABYLON.Vector3(PLAYER_RADIUS,1.7,PLAYER_RADIUS);
  camera.ellipsoidOffset=new BABYLON.Vector3(0,0,0);
 
- camera.attachControl(
-  canvas,
-  false
- );
+ // 카메라의 기본 Babylon 입력은 사용하지 않습니다.
+ // 모바일은 lookZone, PC는 pointer-lock mouse 이벤트가 직접 회전을 처리합니다.
+ camera.inputs.clear();
+ camera.detachControl();
 
  /* =====================================================
     LIGHT
@@ -3770,16 +3772,27 @@ function updateMovement(dt){
   const dx=(fx*forward+rx*strafe)*speed*dt;
   const dz=(fz*forward+rz*strafe)*speed*dt;
 
-  // Babylon 내장 충돌을 사용합니다. 기존 2D 충돌 계산 때문에
-  // 조이스틱은 움직이는데 카메라가 한 자리에서 막히는 문제를 방지합니다.
+  // 이동은 직접 X/Z를 갱신하고, 실제 벽 목록만 검사합니다.
+  // Babylon 카메라 입력/충돌 시스템에 막혀 조이스틱이 움직여도
+  // 화면과 캐릭터가 멈추는 문제를 피합니다.
   const beforeX=camera.position.x;
   const beforeZ=camera.position.z;
-  camera.moveWithCollisions(new BABYLON.Vector3(dx,0,dz));
+  let moved=false;
 
-  // 내장 충돌이 이동을 거부한 경우에는 기존 X/Z 충돌을 한 번 더 시도합니다.
-  if(Math.abs(camera.position.x-beforeX)<0.00001 && Math.abs(camera.position.z-beforeZ)<0.00001){
-   if(!blockedAt(beforeX+dx,beforeZ,PLAYER_RADIUS)) camera.position.x=beforeX+dx;
-   if(!blockedAt(camera.position.x,beforeZ+dz,PLAYER_RADIUS)) camera.position.z=beforeZ+dz;
+  if(!blockedAt(beforeX+dx,beforeZ,PLAYER_RADIUS)){
+   camera.position.x=beforeX+dx;
+   moved=true;
+  }
+  if(!blockedAt(camera.position.x,beforeZ+dz,PLAYER_RADIUS)){
+   camera.position.z=beforeZ+dz;
+   moved=true;
+  }
+
+  // 혹시 충돌 목록이 잘못된 경우에도 입력 자체는 살아 있도록
+  // 맵 경계 안에서 한 번 더 보정합니다.
+  if(!moved){
+   camera.position.x=Math.max(-48,Math.min(48,beforeX+dx));
+   camera.position.z=Math.max(-48,Math.min(48,beforeZ+dz));
   }
 
   camera.position.x=Math.max(-48,Math.min(48,camera.position.x));
@@ -4737,10 +4750,10 @@ function startMatch(){
 
  }
 
- camera.attachControl(
-  canvas,
-  false
- );
+ // 카메라의 기본 Babylon 입력은 사용하지 않습니다.
+ // 모바일은 lookZone, PC는 pointer-lock mouse 이벤트가 직접 회전을 처리합니다.
+ camera.inputs.clear();
+ camera.detachControl();
 
  updateHUD();
 
@@ -5097,11 +5110,14 @@ const lookZone=
  document.getElementById(
   "lookZone"
  );
+lookZone.style.touchAction="none";
+lookZone.style.userSelect="none";
 
 lookZone.addEventListener(
  "pointerdown",
  e=>{
 
+  e.preventDefault();
   e.stopPropagation();
 
   if(
@@ -5208,10 +5224,14 @@ const lookLeftZone=
  document.getElementById(
   "lookLeftZone"
  );
+lookLeftZone.style.touchAction="none";
+lookLeftZone.style.userSelect="none";
 
 lookLeftZone.addEventListener(
  "pointerdown",
  e=>{
+
+  e.preventDefault();
 
   if(
    !gameStarted ||
