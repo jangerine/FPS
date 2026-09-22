@@ -1470,7 +1470,7 @@ function createScene(){
 
  camera.inertia=0;
 
- camera.checkCollisions=true;
+ camera.checkCollisions=false;
  camera.applyGravity=false;
  camera.ellipsoid=new BABYLON.Vector3(PLAYER_RADIUS,1.7,PLAYER_RADIUS);
  camera.ellipsoidOffset=new BABYLON.Vector3(0,0,0);
@@ -1573,13 +1573,16 @@ function createScene(){
  function box(name,x,y,z,w,h,d,material,collide=true,rot=0){
   const m=BABYLON.MeshBuilder.CreateBox(name,{width:w,height:h,depth:d},scene);
   m.position.set(x,y,z); m.rotation.y=rot; m.material=material; m.isPickable=false;
-  if(collide){m.checkCollisions=true;collisionMeshes.push(m);}
+  const n=(name||"").toLowerCase();
+  const solidWall=n.startsWith("border")||n.startsWith("housenorth")||n.startsWith("housesouth")||n.startsWith("housewest")||n.startsWith("houseeast")||n.startsWith("stonecover")||n.startsWith("cornercolumn");
+  if(collide && solidWall){m.checkCollisions=true;m.isVisible=true;m.visibility=1;if(m.material)m.material.alpha=1;collisionMeshes.push(m);}else{m.checkCollisions=false;}
   return m;
  }
  function cyl(name,x,y,z,diameter,height,material,collide=false,segments=18){
   const m=BABYLON.MeshBuilder.CreateCylinder(name,{diameter,height,tessellation:segments},scene);
   m.position.set(x,y,z);m.material=material;m.isPickable=false;
-  if(collide){m.checkCollisions=true;collisionMeshes.push(m);} return m;
+  m.checkCollisions=false;
+  return m;
  }
  function torus(name,x,y,z,diameter,thickness,material){
   const m=BABYLON.MeshBuilder.CreateTorus(name,{diameter,thickness,tessellation:28},scene);
