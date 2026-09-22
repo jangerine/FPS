@@ -432,12 +432,16 @@ h1{
  box-shadow:0 18px 60px rgba(0,0,0,.65)
 }
 
-.weaponGrid{
- display:grid;
- grid-template-columns:1fr 1fr;
- gap:10px;
- margin-top:16px
-}
+.weaponGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.loadoutSections{display:flex;flex-direction:column;gap:12px;margin-top:16px;text-align:left;max-height:62vh;overflow:auto;padding-right:3px}
+.loadoutSection{background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:10px}
+.loadoutHeader{display:flex;justify-content:space-between;align-items:center;font-size:12px;letter-spacing:.08em;margin-bottom:6px;color:#dcecff}
+.loadoutHeader span{opacity:.5;font-size:10px;letter-spacing:0}
+.weaponBtn{min-height:58px;position:relative}
+.weaponBtn small{font-weight:normal;opacity:.65}
+.weaponBtn.locked{opacity:.62;cursor:default}
+.loadoutSummary{margin-top:12px;padding:10px;border-radius:10px;background:rgba(90,190,230,.08);font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.loadoutConfirm{margin-top:10px;width:100%;padding:13px;border:0;border-radius:10px;background:#e9f7ff;color:#071018;font-weight:900;letter-spacing:.08em}
 
 .weaponBtn{
  padding:16px 8px;
@@ -779,12 +783,17 @@ h1{
   <div id="weaponSelectKicker" style="font-size:12px;opacity:.65">LOADOUT</div>
   <h2 id="weaponSelectTitle" style="margin:7px 0">CHOOSE WEAPON</h2>
   <div id="weaponSelectDesc" style="font-size:12px;opacity:.65">다음 라운드에 사용할 총을 선택하세요.</div>
-  <div class="weaponGrid">
-   <button class="weaponBtn" data-weapon="rifle">RIFLE<br><small>균형형</small></button>
-   <button class="weaponBtn" data-weapon="smg">SMG<br><small>빠른 연사</small></button>
-   <button class="weaponBtn" data-weapon="shotgun">SHOTGUN<br><small>근거리 산탄</small></button>
-   <button class="weaponBtn" data-weapon="sniper">SNIPER<br><small>정밀 사격</small></button>
+  <div class="loadoutSections">
+   <div class="loadoutSection"><div class="loadoutHeader"><b>MELEE</b><span>기본 장착</span></div><button class="weaponBtn locked meleeCard" data-weapon="knife" data-slot="melee">🔪 KNIFE<br><small>기본 근접무기</small></button></div>
+   <div class="loadoutSection"><div class="loadoutHeader"><b>SIDEARM</b><span>보조무기</span></div><div class="weaponGrid">
+    <button class="weaponBtn" data-weapon="pistol" data-slot="sidearm">PISTOL<br><small>균형형</small></button><button class="weaponBtn" data-weapon="burstPistol" data-slot="sidearm">BURST PISTOL<br><small>3점사</small></button><button class="weaponBtn" data-weapon="revolver" data-slot="sidearm">REVOLVER<br><small>강한 한 발</small></button>
+   </div></div>
+   <div class="loadoutSection"><div class="loadoutHeader"><b>PRIMARY</b><span>주무기</span></div><div class="weaponGrid">
+    <button class="weaponBtn" data-weapon="rifle" data-slot="primary">RIFLE<br><small>균형형 연사</small></button><button class="weaponBtn" data-weapon="smg" data-slot="primary">SMG<br><small>빠른 연사</small></button><button class="weaponBtn" data-weapon="shotgun" data-slot="primary">SHOTGUN<br><small>근거리</small></button><button class="weaponBtn" data-weapon="sniper" data-slot="primary">SNIPER<br><small>정밀 사격</small></button><button class="weaponBtn" data-weapon="carbine" data-slot="primary">CARBINE<br><small>안정형</small></button>
+   </div></div>
   </div>
+  <div class="loadoutSummary" id="loadoutSummary">🔪 KNIFE · SIDEARM: PISTOL · PRIMARY: RIFLE</div>
+  <button id="loadoutConfirm" class="loadoutConfirm">CONFIRM LOADOUT</button>
  </div>
 </div>
 
@@ -872,16 +881,25 @@ const NETWORK_SEND_RATE=50;
 
 const MAG_SIZE=12;
 
+// 3슬롯 구조: 칼은 기본, 보조무기와 주무기만 로드아웃에서 선택합니다.
+// 무기 간 격차를 작게 잡아 특정 무기 하나만 정답이 되지 않도록 했습니다.
 const WEAPONS={
- // 총기마다 발사 간격과 수직/수평 반동을 완전히 다르게 설정합니다.
- // 값은 브라우저 모바일 FPS에서 체감 차이가 나되 성능 부담은 거의 없습니다.
- rifle:{name:"RIFLE",fireDelay:145,bodyDamage:34,headDamage:100,pellets:1,spread:0,zoom:.72,recoil:.026,recoilSide:.0045,recoilJitter:.55},
- smg:{name:"SMG",fireDelay:78,bodyDamage:30,headDamage:95,pellets:1,spread:.008,zoom:.78,recoil:.018,recoilSide:.009,recoilJitter:.85},
- shotgun:{name:"SHOTGUN",fireDelay:620,bodyDamage:8,headDamage:11,pellets:6,spread:.060,zoom:.83,recoil:.075,recoilSide:.022,recoilJitter:.45},
- sniper:{name:"SNIPER",fireDelay:900,bodyDamage:58,headDamage:100,pellets:1,spread:0,zoom:.42,recoil:.055,recoilSide:.006,recoilJitter:.25}
+ knife:{name:"KNIFE",slot:"melee",fireDelay:420,bodyDamage:55,headDamage:85,melee:true,meleeRange:2.8,zoom:.90,recoil:0,recoilSide:0,recoilJitter:0,magSize:1},
+ pistol:{name:"PISTOL",slot:"sidearm",fireDelay:185,bodyDamage:32,headDamage:90,pellets:1,spread:.004,zoom:.82,recoil:.012,recoilSide:.003,recoilJitter:.55,magSize:12},
+ burstPistol:{name:"BURST PISTOL",slot:"sidearm",fireDelay:260,bodyDamage:29,headDamage:88,pellets:3,spread:.012,zoom:.80,recoil:.018,recoilSide:.005,recoilJitter:.70,magSize:15},
+ revolver:{name:"REVOLVER",slot:"sidearm",fireDelay:360,bodyDamage:39,headDamage:100,pellets:1,spread:.002,zoom:.78,recoil:.030,recoilSide:.006,recoilJitter:.35,magSize:6},
+ rifle:{name:"RIFLE",slot:"primary",fireDelay:145,bodyDamage:34,headDamage:100,pellets:1,spread:0,zoom:.72,recoil:.026,recoilSide:.0045,recoilJitter:.55,magSize:20},
+ smg:{name:"SMG",slot:"primary",fireDelay:92,bodyDamage:31,headDamage:94,pellets:1,spread:.008,zoom:.78,recoil:.019,recoilSide:.009,recoilJitter:.85,magSize:24},
+ shotgun:{name:"SHOTGUN",slot:"primary",fireDelay:600,bodyDamage:8,headDamage:12,pellets:6,spread:.055,zoom:.83,recoil:.068,recoilSide:.020,recoilJitter:.45,magSize:8},
+ sniper:{name:"SNIPER",slot:"primary",fireDelay:800,bodyDamage:60,headDamage:100,pellets:1,spread:0,zoom:.42,recoil:.052,recoilSide:.006,recoilJitter:.25,magSize:5},
+ carbine:{name:"CARBINE",slot:"primary",fireDelay:180,bodyDamage:33,headDamage:98,pellets:1,spread:.002,zoom:.74,recoil:.022,recoilSide:.005,recoilJitter:.50,magSize:18}
 };
 
+const WEAPON_SLOTS={melee:"knife",sidearm:"pistol",primary:"rifle"};
+let currentSlot="primary";
 let currentWeapon="rifle";
+let pendingSidearm="pistol";
+let pendingPrimary="rifle";
 let zoomed=false;
 let sensitivity=Number(localStorage.getItem("vectorSensitivity")||"1");
 let sniperSensitivity=Number(localStorage.getItem("vectorSniperSensitivity")||"0.50");
@@ -916,51 +934,36 @@ function makeWeaponCylinder(name, opts, pos, rot, mat){
 function createWeaponView(){
  if(weaponViewRoot){weaponViewRoot.dispose();}
  weaponViewRoot=new BABYLON.TransformNode("weaponViewRoot",scene);
- weaponViewRoot.parent=camera;
- weaponViewRoot.position.set(.48,-.38,1.05);
- weaponViewRoot.rotation.set(0,0,0);
-
- const dark=new BABYLON.StandardMaterial("weaponDark",scene);
- dark.diffuseColor=new BABYLON.Color3(.055,.065,.08);
- const metal=new BABYLON.StandardMaterial("weaponMetal",scene);
- metal.diffuseColor=new BABYLON.Color3(.18,.20,.23);
- const accent=new BABYLON.StandardMaterial("weaponAccent",scene);
- accent.diffuseColor=new BABYLON.Color3(.65,.68,.72);
- const glow=new BABYLON.StandardMaterial("weaponGlow",scene);
- glow.diffuseColor=new BABYLON.Color3(.05,.45,.9);
- glow.emissiveColor=new BABYLON.Color3(.02,.18,.5);
-
- if(currentWeapon==="rifle"){
-  makeWeaponPart("rifleReceiver",{width:.34,height:.22,depth:.72},[0,0,.05],[0,0,0],dark);
-  makeWeaponPart("rifleStock",{width:.22,height:.18,depth:.52},[0,-.02,-.55],[0,0,0],dark);
-  makeWeaponPart("rifleBarrel",{width:.13,height:.13,depth:.72},[0,.01,.72],[0,0,0],metal);
-  makeWeaponPart("rifleGrip",{width:.15,height:.34,depth:.18},[0,-.24,-.02],[.18,0,0],dark);
-  makeWeaponPart("rifleSight",{width:.07,height:.09,depth:.22},[0,.16,.34],[0,0,0],accent);
+ weaponViewRoot.parent=camera; weaponViewRoot.position.set(.48,-.38,1.05);
+ const dark=new BABYLON.StandardMaterial("weaponDark",scene); dark.diffuseColor=new BABYLON.Color3(.055,.065,.08);
+ const metal=new BABYLON.StandardMaterial("weaponMetal",scene); metal.diffuseColor=new BABYLON.Color3(.18,.20,.23);
+ const accent=new BABYLON.StandardMaterial("weaponAccent",scene); accent.diffuseColor=new BABYLON.Color3(.65,.68,.72);
+ const glow=new BABYLON.StandardMaterial("weaponGlow",scene); glow.diffuseColor=new BABYLON.Color3(.05,.45,.9); glow.emissiveColor=new BABYLON.Color3(.02,.18,.5);
+ if(currentWeapon==="knife"){
+  makeWeaponPart("knifeBlade",{width:.07,height:.28,depth:.82},[0,.02,.52],[.05,0,0],accent); makeWeaponPart("knifeGuard",{width:.28,height:.07,depth:.14},[0,-.15,.10],[0,0,0],metal); makeWeaponPart("knifeHandle",{width:.13,height:.14,depth:.45},[0,-.23,-.15],[0,0,0],dark);
+ }else if(currentWeapon==="pistol"){
+  makeWeaponPart("pistolSlide",{width:.30,height:.14,depth:.52},[0,.08,.30],[0,0,0],metal); makeWeaponPart("pistolFrame",{width:.34,height:.16,depth:.45},[0,-.02,.02],[0,0,0],dark); makeWeaponPart("pistolGrip",{width:.15,height:.34,depth:.18},[0,-.25,-.08],[.18,0,0],dark);
+ }else if(currentWeapon==="burstPistol"){
+  makeWeaponPart("burstSlide",{width:.32,height:.15,depth:.58},[0,.08,.32],[0,0,0],dark); makeWeaponPart("burstBarrel",{width:.10,height:.10,depth:.32},[0,.08,.72],[0,0,0],metal); makeWeaponPart("burstFrame",{width:.34,height:.17,depth:.42},[0,-.02,.02],[0,0,0],dark); makeWeaponPart("burstGrip",{width:.15,height:.34,depth:.18},[0,-.25,-.10],[.18,0,0],dark);
+ }else if(currentWeapon==="revolver"){
+  makeWeaponPart("revolverFrame",{width:.32,height:.20,depth:.48},[0,.03,.05],[0,0,0],dark); makeWeaponCylinder("revolverCylinder",{diameter:.28,height:.28,tessellation:12},[0,.03,.30],[Math.PI/2,0,0],metal); makeWeaponPart("revolverBarrel",{width:.10,height:.10,depth:.50},[0,.06,.68],[0,0,0],metal); makeWeaponPart("revolverGrip",{width:.16,height:.34,depth:.18},[0,-.25,-.12],[.18,0,0],dark);
+ }else if(currentWeapon==="rifle"){
+  makeWeaponPart("rifleReceiver",{width:.34,height:.22,depth:.72},[0,0,.05],[0,0,0],dark); makeWeaponPart("rifleStock",{width:.22,height:.18,depth:.52},[0,-.02,-.55],[0,0,0],dark); makeWeaponPart("rifleBarrel",{width:.13,height:.13,depth:.72},[0,.01,.72],[0,0,0],metal); makeWeaponPart("rifleGrip",{width:.15,height:.34,depth:.18},[0,-.24,-.02],[.18,0,0],dark); makeWeaponPart("rifleSight",{width:.07,height:.09,depth:.22},[0,.16,.34],[0,0,0],accent);
  }else if(currentWeapon==="smg"){
-  makeWeaponPart("smgBody",{width:.36,height:.22,depth:.52},[0,0,.05],[0,0,0],dark);
-  makeWeaponPart("smgStock",{width:.18,height:.16,depth:.32},[0,-.02,-.38],[0,0,0],metal);
-  makeWeaponPart("smgBarrel",{width:.12,height:.12,depth:.46},[0,.01,.54],[0,0,0],metal);
-  makeWeaponPart("smgMag",{width:.14,height:.32,depth:.2},[0,-.22,.02],[.08,0,0],dark);
-  makeWeaponPart("smgGrip",{width:.15,height:.30,depth:.18},[0,-.22,-.08],[.16,0,0],dark);
-  makeWeaponPart("smgSight",{width:.08,height:.08,depth:.16},[0,.15,.25],[0,0,0],glow);
+  makeWeaponPart("smgBody",{width:.36,height:.22,depth:.52},[0,0,.05],[0,0,0],dark); makeWeaponPart("smgStock",{width:.18,height:.16,depth:.32},[0,-.02,-.38],[0,0,0],metal); makeWeaponPart("smgBarrel",{width:.12,height:.12,depth:.46},[0,.01,.54],[0,0,0],metal); makeWeaponPart("smgMag",{width:.14,height:.32,depth:.2},[0,-.22,.02],[.08,0,0],dark); makeWeaponPart("smgGrip",{width:.15,height:.30,depth:.18},[0,-.22,-.08],[.16,0,0],dark);
  }else if(currentWeapon==="shotgun"){
-  makeWeaponPart("shotgunBody",{width:.38,height:.24,depth:.58},[0,0,-.02],[0,0,0],dark);
-  makeWeaponPart("shotgunStock",{width:.24,height:.20,depth:.55},[0,-.01,-.55],[0,0,0],dark);
-  makeWeaponPart("shotgunBarrel",{width:.17,height:.17,depth:.88},[0,.02,.68],[0,0,0],metal);
-  makeWeaponPart("shotgunPump",{width:.25,height:.18,depth:.30},[0,-.10,.48],[0,0,0],accent);
-  makeWeaponPart("shotgunGrip",{width:.16,height:.34,depth:.18},[0,-.24,-.08],[.16,0,0],dark);
- }else{
-  makeWeaponPart("sniperBody",{width:.34,height:.22,depth:.78},[0,0,-.02],[0,0,0],dark);
-  makeWeaponPart("sniperStock",{width:.22,height:.19,depth:.58},[0,-.02,-.62],[0,0,0],dark);
-  makeWeaponPart("sniperBarrel",{width:.11,height:.11,depth:1.02},[0,.01,.88],[0,0,0],metal);
-  makeWeaponPart("sniperScope",{width:.16,height:.16,depth:.48},[0,.19,.27],[0,0,0],glow);
-  makeWeaponPart("sniperGrip",{width:.15,height:.34,depth:.18},[0,-.24,-.08],[.16,0,0],dark);
+  makeWeaponPart("shotgunBody",{width:.38,height:.24,depth:.58},[0,0,-.02],[0,0,0],dark); makeWeaponPart("shotgunStock",{width:.24,height:.20,depth:.55},[0,-.01,-.55],[0,0,0],dark); makeWeaponPart("shotgunBarrel",{width:.17,height:.17,depth:.88},[0,.02,.68],[0,0,0],metal); makeWeaponPart("shotgunPump",{width:.25,height:.18,depth:.30},[0,-.10,.48],[0,0,0],accent); makeWeaponPart("shotgunGrip",{width:.16,height:.34,depth:.18},[0,-.24,-.08],[.16,0,0],dark);
+ }else if(currentWeapon==="sniper"){
+  makeWeaponPart("sniperBody",{width:.34,height:.22,depth:.78},[0,0,-.02],[0,0,0],dark); makeWeaponPart("sniperStock",{width:.22,height:.19,depth:.58},[0,-.02,-.62],[0,0,0],dark); makeWeaponPart("sniperBarrel",{width:.11,height:.11,depth:1.02},[0,.01,.88],[0,0,0],metal); makeWeaponPart("sniperScope",{width:.16,height:.16,depth:.48},[0,.19,.27],[0,0,0],glow); makeWeaponPart("sniperGrip",{width:.15,height:.34,depth:.18},[0,-.24,-.08],[.16,0,0],dark);
+ }else if(currentWeapon==="carbine"){
+  makeWeaponPart("carbineBody",{width:.34,height:.21,depth:.66},[0,0,.02],[0,0,0],dark); makeWeaponPart("carbineStock",{width:.20,height:.17,depth:.42},[0,-.01,-.48],[0,0,0],dark); makeWeaponPart("carbineBarrel",{width:.12,height:.12,depth:.68},[0,.01,.68],[0,0,0],metal); makeWeaponPart("carbineMag",{width:.13,height:.30,depth:.18},[0,-.20,.02],[.12,0,0],dark); makeWeaponPart("carbineSight",{width:.08,height:.08,depth:.20},[0,.16,.30],[0,0,0],glow);
  }
 }
 
 
-let ammo=MAG_SIZE;
-
+function getMagSize(id=currentWeapon){ return WEAPONS[id]?.magSize || MAG_SIZE; }
+function isMelee(){ return currentWeapon==="knife"; }
+let ammo=getMagSize();
 let reserve=60;
 
 let lastShot=0;
@@ -968,6 +971,30 @@ let lastShot=0;
 let firing=false;
 
 let reloading=false;
+
+
+/* =========================================================
+   LOADOUT / WEAPON SYSTEM NOTES
+========================================================= */
+// 슬롯 1 = 기본 칼 / 슬롯 2 = 선택한 보조무기 / 슬롯 3 = 선택한 주무기.
+// 칼은 선택 목록에서 잠금 표시만 하고 별도 구매/선택 과정 없이 항상 보유합니다.
+// 보조무기는 PISTOL / BURST PISTOL / REVOLVER 중 하나를 장착합니다.
+// 주무기는 RIFLE / SMG / SHOTGUN / SNIPER / CARBINE 중 하나를 장착합니다.
+// 라운드 종료와 데스매치 사망 시 같은 로드아웃 창을 사용합니다.
+// TRAINING에서는 WEAPON 버튼 또는 Q 키로 언제든 로드아웃을 열 수 있습니다.
+// 모바일에서는 WEAPON 버튼으로 로드아웃을 열고 CONFIRM LOADOUT으로 확정합니다.
+// PC에서는 1/2/3 키로 칼/보조/주무기 슬롯을 즉시 전환할 수 있습니다.
+// 총기별 성능은 서로 비슷한 범위에 두되 발사 간격, 탄창, 반동, 탄 퍼짐을 다르게 했습니다.
+// 칼은 탄약을 사용하지 않으며 근거리 부채꼴 판정으로 공격합니다.
+// 멀티플레이에서는 칼 공격도 호스트가 최종 판정을 담당합니다.
+// 주무기와 보조무기를 바꿔도 기존 카메라 감도/ADS 설정은 그대로 유지됩니다.
+// 새 무기를 추가할 때는 WEAPONS, createWeaponView, 로드아웃 HTML의 세 곳을 함께 수정합니다.
+// 현재 무기 모델은 외부 에셋 없이 Babylon 기본 메시로 만들어 모바일 성능을 고려했습니다.
+// 모든 총은 ADS가 가능하며 SNIPER만 원형 스코프 오버레이를 사용합니다.
+// 보조무기와 주무기의 선택은 한 번의 CONFIRM으로 동시에 확정됩니다.
+// MELEE 카드는 기본 장비이므로 클릭해도 다른 칼을 선택하는 동작은 하지 않습니다.
+// 이 주석 블록은 향후 무기 밸런스 조정 시 슬롯 구조를 빠르게 찾기 위한 안내입니다.
+
 
 /* =========================================================
    MOVEMENT
@@ -1336,14 +1363,11 @@ function updateHUD(){
  document.getElementById(
   "ammo"
  ).textContent=
-  reloading
-   ?"RELOAD"
-   :
-   `${ammo} / ${
-    gameMode==="deathmatch"
-     ?"∞"
-     :reserve
-   }`;
+  isMelee()
+   ?"KNIFE"
+   :reloading
+    ?"RELOAD"
+    :`${ammo} / ${gameMode==="deathmatch"?"∞":reserve}`;
 
 }
 
@@ -3325,6 +3349,13 @@ function findPlayerHit(
    HOST PROCESS SHOT
 ========================================================= */
 
+function findPlayerMeleeHit(origin,dir,excludeId){
+ let best=null,bestDist=Infinity; const targets=[];
+ if(excludeId!==myPeerId&&!playerDead)targets.push({id:myPeerId,x:camera.position.x,y:camera.position.y,z:camera.position.z,dead:playerDead});
+ for(const [id,p] of remotePlayers){if(id!==excludeId&&!p.dead)targets.push({id,x:p.x,y:p.y,z:p.z,dead:p.dead});}
+ for(const t of targets){const dx=t.x-origin.x,dz=t.z-origin.z,dist=Math.hypot(dx,dz);if(dist>WEAPONS.knife.meleeRange||dist<.1)continue;const dot=(dx*dir.x+dz*dir.z)/dist;if(dot<Math.cos(Math.PI/3))continue;const part=(t.y+1.45>origin.y)?"head":"body";if(dist<bestDist){bestDist=dist;best={id:t.id,part};}} return best;
+}
+
 function hostProcessShot(data){
  if(!gameStarted||gameOver)return;
  const shooterId=data.shooterId;
@@ -3334,6 +3365,9 @@ function hostProcessShot(data){
  if(!origin)return;
  const dirs=Array.isArray(data.dirs)&&data.dirs.length?data.dirs:[data.dir];
  const totalDamage=new Map();
+ if(data.weapon==="knife"){
+  const raw=dirs[0]; if(raw){const len=Math.hypot(raw.x,raw.y,raw.z)||1;const nd={x:raw.x/len,y:raw.y/len,z:raw.z/len};const hit=findPlayerMeleeHit(origin,nd,shooterId);if(hit){const damage=hit.part==="head"?WEAPONS.knife.headDamage:WEAPONS.knife.bodyDamage;totalDamage.set(hit.id,damage);}}
+ } else {
  const hitParts=new Map();
  for(const raw of dirs){
   if(!raw)continue;
@@ -3344,6 +3378,7 @@ function hostProcessShot(data){
   const damage=hit.part==="head"?weapon.headDamage:weapon.bodyDamage;
   totalDamage.set(hit.id,(totalDamage.get(hit.id)||0)+damage);
   hitParts.set(hit.id,hit.part);
+ }
  }
  for(const [targetId,damage] of totalDamage){
   let targetPlayer=null;
@@ -4115,7 +4150,7 @@ function respawnPlayer(){
 
  playerHP=100;
 
- ammo=MAG_SIZE;
+ ammo=getMagSize();
 
  reserve=999;
 
@@ -4356,50 +4391,24 @@ function muzzleFlash(){
    SHOOT
 ========================================================= */
 
-function setWeapon(id){
- if(!WEAPONS[id])return;
- currentWeapon=id;
- setZoom(false);
- createWeaponView();
- ammo=MAG_SIZE;
- reloading=false;
- updateWeaponButtons();
- updateHUD();
+function equipSlot(slot){
+ if(slot==="melee") currentWeapon="knife"; else if(slot==="sidearm") currentWeapon=WEAPON_SLOTS.sidearm; else if(slot==="primary") currentWeapon=WEAPON_SLOTS.primary;
+ currentSlot=slot; setZoom(false); createWeaponView(); ammo=getMagSize(); reloading=false; updateWeaponButtons(); updateHUD();
 }
-
+function setWeapon(id){ if(!WEAPONS[id])return; const slot=WEAPONS[id].slot; if(slot==="sidearm")WEAPON_SLOTS.sidearm=id; if(slot==="primary")WEAPON_SLOTS.primary=id; equipSlot(slot); }
 function updateWeaponButtons(){
- document.querySelectorAll(".weaponBtn").forEach(btn=>{
-  btn.classList.toggle("selected",btn.dataset.weapon===currentWeapon);
- });
+ document.querySelectorAll(".weaponBtn[data-weapon]").forEach(btn=>{const id=btn.dataset.weapon,slot=btn.dataset.slot; const selected=(id==="knife"&&currentWeapon==="knife")||(slot==="sidearm"&&id===WEAPON_SLOTS.sidearm)||(slot==="primary"&&id===WEAPON_SLOTS.primary); btn.classList.toggle("selected",selected);});
+ const summary=document.getElementById("loadoutSummary"); if(summary)summary.textContent=`🔪 KNIFE · SIDEARM: ${WEAPONS[WEAPON_SLOTS.sidearm].name} · PRIMARY: ${WEAPONS[WEAPON_SLOTS.primary].name}`;
 }
-
 function showWeaponSelect(){
- if(gameOver)return;
- weaponSelectionOpen=true;
- const kicker=document.getElementById("weaponSelectKicker");
- const title=document.getElementById("weaponSelectTitle");
- const desc=document.getElementById("weaponSelectDesc");
- if(gameMode==="round"){
-  kicker.textContent="ROUND COMPLETE";
-  title.textContent=`ROUND ${round} COMPLETE`;
-  desc.textContent="다음 라운드에 사용할 총을 선택하세요.";
- }else if(gameMode==="training"){
-  kicker.textContent="TRAINING LOADOUT";
-  title.textContent="CHOOSE WEAPON";
-  desc.textContent="훈련 중 언제든 총기를 바꿀 수 있습니다.";
- }else{
-  kicker.textContent="RESPAWN LOADOUT";
-  title.textContent="CHOOSE WEAPON";
-  desc.textContent="부활 후 사용할 총을 선택하세요.";
- }
- document.getElementById("weaponSelect").style.display="flex";
- updateWeaponButtons();
+ if(gameOver)return; weaponSelectionOpen=true; pendingSidearm=WEAPON_SLOTS.sidearm; pendingPrimary=WEAPON_SLOTS.primary;
+ const kicker=document.getElementById("weaponSelectKicker"),title=document.getElementById("weaponSelectTitle"),desc=document.getElementById("weaponSelectDesc");
+ if(gameMode==="round"){kicker.textContent="ROUND COMPLETE";title.textContent=`ROUND ${round} LOADOUT`;desc.textContent="보조무기와 주무기를 선택한 뒤 LOADOUT을 확정하세요. 칼은 기본 장비입니다.";}
+ else if(gameMode==="training"){kicker.textContent="TRAINING LOADOUT";title.textContent="CHOOSE LOADOUT";desc.textContent="훈련 중 언제든 보조무기와 주무기를 바꿀 수 있습니다.";}
+ else{kicker.textContent="RESPAWN LOADOUT";title.textContent="CHOOSE LOADOUT";desc.textContent="부활 후 사용할 보조무기와 주무기를 선택하세요.";}
+ document.getElementById("weaponSelect").style.display="flex"; updateWeaponButtons();
 }
-
-function hideWeaponSelect(){
- weaponSelectionOpen=false;
- document.getElementById("weaponSelect").style.display="none";
-}
+function hideWeaponSelect(){weaponSelectionOpen=false;document.getElementById("weaponSelect").style.display="none";}
 
 function setZoom(active){
  zoomed=!!active;
@@ -4449,43 +4458,16 @@ function findRoundEnemyHit(origin,dir){
  return best;
 }
 
+function findRoundMeleeHit(origin,dir){
+ let best=null,bestDist=Infinity;
+ for(const enemy of enemies){if(!enemy||enemy.dead||!enemy.root)continue; const dx=enemy.root.position.x-origin.x,dz=enemy.root.position.z-origin.z,dist=Math.hypot(dx,dz); if(dist>WEAPONS.knife.meleeRange||dist<.1)continue; const dot=(dx*dir.x+dz*dir.z)/dist; if(dot<Math.cos(Math.PI/3))continue; const part=(enemy.root.position.y+1.45>origin.y)?"head":"body"; if(dist<bestDist){bestDist=dist;best={enemy,part};}} return best;
+}
 function shoot(){
-
- if(!gameStarted || gameOver || playerDead || reloading)return;
- const now=performance.now();
- if(now-lastShot<WEAPONS[currentWeapon].fireDelay)return;
- if(ammo<=0){reload();return;}
- lastShot=now;
- ammo--;
- applyRecoil();
- muzzleFlash();
- const dirs=buildShotDirections();
-
- if(gameMode==="deathmatch"){
-  const data={
-   type:"shoot",shooterId:myPeerId,weapon:currentWeapon,
-   origin:{x:camera.position.x,y:camera.position.y,z:camera.position.z},
-   dirs:dirs.map(d=>({x:d.x,y:d.y,z:d.z}))
-  };
-  if(isHost)hostProcessShot(data);
-  else sendPeer(hostConnection,data);
- }else{
-  let didHit=false;
-  for(const dir of dirs){
-   const hit=findRoundEnemyHit(camera.position,dir);
-   if(hit&&hit.enemy){
-    const enemy=hit.enemy;
-    if(!enemy.dead){
-     const weapon=WEAPONS[currentWeapon];
-     enemy.hp-=hit.part==="head"?weapon.headDamage:weapon.bodyDamage;
-     didHit=true;
-     if(enemy.hp<=0){killEnemy(enemy);break;}
-    }
-   }
-  }
-  if(didHit)showHitMarker();
- }
- updateHUD();
+ if(!gameStarted||gameOver||playerDead||reloading)return; const weapon=WEAPONS[currentWeapon],now=performance.now(); if(now-lastShot<weapon.fireDelay)return;
+ if(isMelee()){lastShot=now;const dir=camera.getForwardRay(3).direction.normalize();const hit=findRoundMeleeHit(camera.position,dir);if(hit&&hit.enemy){hit.enemy.hp-=hit.part==="head"?weapon.headDamage:weapon.bodyDamage;if(hit.enemy.hp<=0)killEnemy(hit.enemy);showHitMarker();}return;}
+ if(ammo<=0){reload();return;} lastShot=now; ammo--; applyRecoil(); muzzleFlash(); const dirs=buildShotDirections();
+ if(gameMode==="deathmatch"){const data={type:"shoot",shooterId:myPeerId,weapon:currentWeapon,origin:{x:camera.position.x,y:camera.position.y,z:camera.position.z},dirs:dirs.map(d=>({x:d.x,y:d.y,z:d.z}))};if(isHost)hostProcessShot(data);else sendPeer(hostConnection,data);}
+ else{let didHit=false;for(const dir of dirs){const hit=findRoundEnemyHit(camera.position,dir);if(hit&&hit.enemy&&!hit.enemy.dead){hit.enemy.hp-=hit.part==="head"?weapon.headDamage:weapon.bodyDamage;didHit=true;if(hit.enemy.hp<=0){killEnemy(hit.enemy);break;}}}if(didHit)showHitMarker();} updateHUD();
 }
 
 /* =========================================================
@@ -4510,71 +4492,10 @@ function fireLoop(){
 ========================================================= */
 
 function reload(){
-
- if(
-  reloading ||
-  gameOver ||
-  playerDead ||
-  !gameStarted
- )return;
-
- if(
-  gameMode==="deathmatch"
- ){
-
-  if(
-   ammo>=MAG_SIZE
-  )return;
-
- }else{
-
-  if(
-   ammo>=MAG_SIZE ||
-   reserve<=0
-  )return;
-
- }
-
- reloading=true;
-
- setTimeout(
-  ()=>{
-
-   if(
-    gameMode==="deathmatch"
-   ){
-
-    ammo=
-     MAG_SIZE;
-
-   }else{
-
-    const need=
-     MAG_SIZE-ammo;
-
-    const amount=
-     Math.min(
-      need,
-      reserve
-     );
-
-    ammo+=
-     amount;
-
-    reserve-=
-     amount;
-
-   }
-
-   reloading=false;
-
-   updateHUD();
-
-  },
-  850
- );
-
+ if(isMelee()||reloading||gameOver||playerDead||!gameStarted)return; const magSize=getMagSize(); if(gameMode==="deathmatch"){if(ammo>=magSize)return;}else if(ammo>=magSize||reserve<=0)return; reloading=true;
+ setTimeout(()=>{if(gameMode==="deathmatch")ammo=magSize;else{const need=magSize-ammo,amount=Math.min(need,reserve);ammo+=amount;reserve-=amount;}reloading=false;updateHUD();},weaponReloadTime());
 }
+function weaponReloadTime(){if(currentWeapon==="revolver")return 700;if(currentWeapon==="sniper")return 950;if(currentWeapon==="shotgun")return 1050;return 820;}
 
 /* =========================================================
    KILL BOT
@@ -4770,7 +4691,7 @@ function startRound(){
   (round-1)*12;
 
  ammo=
-  MAG_SIZE;
+  getMagSize();
 
  velocityY=0;
 
@@ -4803,7 +4724,7 @@ function startRound(){
 
 function startTraining(){
  clearEnemies();
- playerHP=100; ammo=MAG_SIZE; reserve=999; kills=0; playerDead=false; roundTransition=false; velocityY=0; onGround=true;
+ playerHP=100; ammo=getMagSize(); reserve=999; kills=0; playerDead=false; roundTransition=false; velocityY=0; onGround=true;
  camera.position.set(0,GROUND_Y,-40);
  camera.rotation.x=0; camera.rotation.z=0;
  spawnTrainingBots();
@@ -4867,7 +4788,7 @@ function startDeathmatch(){
  playerHP=100;
 
  ammo=
-  MAG_SIZE;
+  getMagSize();
 
  reserve=999;
 
@@ -5272,10 +5193,9 @@ window.addEventListener(
   )return;
 
   if(gameStarted&&!gameOver&&!playerDead){
-   if(e.code==="Digit1"){setWeapon("rifle");return;}
-   if(e.code==="Digit2"){setWeapon("smg");return;}
-   if(e.code==="Digit3"){setWeapon("shotgun");return;}
-   if(e.code==="Digit4"){setWeapon("sniper");return;}
+   if(e.code==="Digit1"){equipSlot("melee");return;}
+   if(e.code==="Digit2"){equipSlot("sidearm");return;}
+   if(e.code==="Digit3"){equipSlot("primary");return;}
    if(e.code==="KeyQ"&&gameMode==="training"){showWeaponSelect();return;}
   }
 
@@ -5930,19 +5850,13 @@ sniperSensitivityRange.addEventListener("input",()=>{
  localStorage.setItem("vectorSniperSensitivity",String(sniperSensitivity));
 });
 
-document.querySelectorAll(".weaponBtn").forEach(btn=>{
- btn.addEventListener("click",()=>{
-  setWeapon(btn.dataset.weapon);
-
-  if(gameMode==="round" && roundTransition){
-   hideWeaponSelect();
-   round++;
-   startRound();
-   return;
-  }
-
-  hideWeaponSelect();
- });
+document.querySelectorAll(".weaponBtn[data-weapon]").forEach(btn=>{
+ btn.addEventListener("click",()=>{const id=btn.dataset.weapon;if(id==="knife")return;const slot=btn.dataset.slot;if(slot==="sidearm")pendingSidearm=id;if(slot==="primary")pendingPrimary=id;WEAPON_SLOTS.sidearm=pendingSidearm;WEAPON_SLOTS.primary=pendingPrimary;updateWeaponButtons();});
+});
+document.getElementById("loadoutConfirm").addEventListener("click",()=>{
+ WEAPON_SLOTS.sidearm=pendingSidearm;WEAPON_SLOTS.primary=pendingPrimary;
+ if(gameMode==="round"&&roundTransition){hideWeaponSelect();round++;equipSlot("primary");startRound();return;}
+ hideWeaponSelect();equipSlot(currentSlot);
 });
 
 const zoomBtn=document.getElementById("zoomBtn");
