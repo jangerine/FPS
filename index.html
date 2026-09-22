@@ -873,10 +873,12 @@ const NETWORK_SEND_RATE=50;
 const MAG_SIZE=12;
 
 const WEAPONS={
- rifle:{name:"RIFLE",fireDelay:145,bodyDamage:34,headDamage:100,pellets:1,spread:0,zoom:.72},
- smg:{name:"SMG",fireDelay:110,bodyDamage:30,headDamage:95,pellets:1,spread:.006,zoom:.78},
- shotgun:{name:"SHOTGUN",fireDelay:520,bodyDamage:8,headDamage:11,pellets:6,spread:.055,zoom:.83},
- sniper:{name:"SNIPER",fireDelay:650,bodyDamage:58,headDamage:100,pellets:1,spread:0,zoom:.42}
+ // 총기마다 발사 간격과 수직/수평 반동을 완전히 다르게 설정합니다.
+ // 값은 브라우저 모바일 FPS에서 체감 차이가 나되 성능 부담은 거의 없습니다.
+ rifle:{name:"RIFLE",fireDelay:145,bodyDamage:34,headDamage:100,pellets:1,spread:0,zoom:.72,recoil:.026,recoilSide:.0045,recoilJitter:.55},
+ smg:{name:"SMG",fireDelay:78,bodyDamage:30,headDamage:95,pellets:1,spread:.008,zoom:.78,recoil:.018,recoilSide:.009,recoilJitter:.85},
+ shotgun:{name:"SHOTGUN",fireDelay:620,bodyDamage:8,headDamage:11,pellets:6,spread:.060,zoom:.83,recoil:.075,recoilSide:.022,recoilJitter:.45},
+ sniper:{name:"SNIPER",fireDelay:900,bodyDamage:58,headDamage:100,pellets:1,spread:0,zoom:.42,recoil:.055,recoilSide:.006,recoilJitter:.25}
 };
 
 let currentWeapon="rifle";
@@ -1040,11 +1042,11 @@ let lastLookY=0;
   아래쪽으로 직접 내려서 반동을 잡는다.
 */
 
-const RECOIL_PER_SHOT=.035;
+const RECOIL_PER_SHOT=.026;
 
 const MAX_RECOIL_PITCH=1.00;
 
-const RECOIL_SIDE=.008;
+const RECOIL_SIDE=.0045;
 
 /* =========================================================
    ENEMIES
@@ -2157,6 +2159,43 @@ function createScene(){
  warmFill.diffuse=new BABYLON.Color3(1,.78,.58);
  warmFill.groundColor=new BABYLON.Color3(.28,.20,.15);
  warmFill.intensity=.22;
+
+ /* =====================================================
+    LEGACY MAP CLEANUP
+    새 지중해풍 맵과 기존 네모형 맵이 겹치지 않도록
+    기존 내부 벽/산업 장식의 렌더링과 충돌을 제거합니다.
+    외곽 경계와 고지대/계단은 그대로 유지합니다.
+ ===================================================== */
+ const legacyVisualNames=[
+  "middleWall","middleWall2","leftWall","rightWall","upperWall","lowerWall",
+  "cover","centerTile","centerStripe","centerStripe2",
+  "pillar","pillarAccent","lampPole","lampHead","lampGlow",
+  "planter","plant","crateA","crateB",
+  "platformTrim","platformTrim2","northPanel","southPanel","westPanel","eastPanel",
+  "roadPanel","roadPanelV","panelWall","panelRib",
+  "commandBase","commandCore","commandGlow","commandPillar","commandLight",
+  "railPost","railTop","container","containerStripe",
+  "gateLeft","gateRight","gateTop","gateLight","bollard","warningLight",
+  "diagonalFloorLine"
+ ];
+ for(const mesh of scene.meshes){
+  if(!mesh || mesh.isDisposed()) continue;
+  if(legacyVisualNames.includes(mesh.name)){
+   mesh.setEnabled(false);
+   mesh.checkCollisions=false;
+   const idx=collisionMeshes.indexOf(mesh);
+   if(idx!==-1) collisionMeshes.splice(idx,1);
+  }
+ }
+
+ // 새 건물 파사드는 실제 벽으로 사용해 보이는 건물과 충돌도 일치시킵니다.
+ for(const mesh of scene.meshes){
+  if(!mesh || mesh.isDisposed()) continue;
+  if(mesh.name==="stuccoBuilding"){
+   mesh.checkCollisions=true;
+   if(!collisionMeshes.includes(mesh)) collisionMeshes.push(mesh);
+  }
+ }
 
  return scene;
 
@@ -4220,31 +4259,21 @@ function jump(){
 
 function applyRecoil(){
 
- /*
-   강화된 수직 반동
- */
+ const weapon=WEAPONS[currentWeapon]||WEAPONS.rifle;
+ const vertical=weapon.recoil ?? RECOIL_PER_SHOT;
+ const side=weapon.recoilSide ?? RECOIL_SIDE;
+ const jitter=weapon.recoilJitter ?? 1;
 
- camera.rotation.x-=
-  RECOIL_PER_SHOT;
+ // 무기별 수직 반동
+ camera.rotation.x-=vertical;
+ camera.rotation.x=Math.max(
+  -MAX_RECOIL_PITCH,
+  Math.min(MAX_RECOIL_PITCH,camera.rotation.x)
+ );
 
- camera.rotation.x=
-  Math.max(
-   -MAX_RECOIL_PITCH,
-   Math.min(
-    MAX_RECOIL_PITCH,
-    camera.rotation.x
-   )
-  );
-
- /*
-   좌우 흔들림
- */
-
- camera.rotation.y+=
-  (
-   Math.random()-.5
-  )*
-  RECOIL_SIDE;
+ // 무기별 좌우 반동 + 미세한 랜덤 편차
+ camera.rotation.y+=(Math.random()-.5)*side;
+ camera.rotation.y+=(Math.random()-.5)*side*.35*jitter;
 
 }
 
