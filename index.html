@@ -273,6 +273,8 @@ h1{
 }
 
 #joystickZone{
+ touch-action:none;
+ user-select:none;
  position:absolute;
  left:22px;
  bottom:28px;
@@ -3730,34 +3732,55 @@ function getStairSurfaceY(x,z){
 }
 function getWalkSurfaceY(x,z){ return getStairSurfaceY(x,z); }
 
-function updateMovement(
- dt
-){
- if(!gameStarted || gameOver || playerDead) return;
+function updateMovement(dt){
+ if(!gameStarted || gameOver || playerDead || !camera) return;
 
- let forward=0, strafe=0;
- if(moveForward) forward++;
- if(moveBackward) forward--;
- if(moveRight) strafe++;
- if(moveLeft) strafe--;
- forward+=joystickY;
- strafe+=joystickX;
- const len=Math.hypot(forward,strafe);
- if(len>1){ forward/=len; strafe/=len; }
+ // 키보드와 모바일 조이스틱 입력을 하나의 이동 벡터로 합칩니다.
+ let forward=0;
+ let strafe=0;
+ if(moveForward) forward += 1;
+ if(moveBackward) forward -= 1;
+ if(moveRight) strafe += 1;
+ if(moveLeft) strafe -= 1;
+ forward += joystickY;
+ strafe += joystickX;
 
- const mobileSprint=joystickY>=.90 && Math.abs(joystickX)<.45;
- const speed=(running||mobileSprint)?RUN_SPEED:WALK_SPEED;
- const yaw=camera.rotation.y;
- const forwardX=Math.sin(yaw), forwardZ=Math.cos(yaw);
- const rightX=Math.cos(yaw), rightZ=-Math.sin(yaw);
+ const inputLen=Math.hypot(forward,strafe);
+ if(inputLen>1){
+  forward/=inputLen;
+  strafe/=inputLen;
+ }
 
- moveWithCollision(
-  camera.position,
-  (forwardX*forward+rightX*strafe)*speed*dt,
-  (forwardZ*forward+rightZ*strafe)*speed*dt,
-  PLAYER_RADIUS
- );
+ // 입력이 실제로 들어왔을 때만 이동합니다.
+ if(Math.abs(forward)+Math.abs(strafe)>0.001){
+  const mobileSprint=joystickY>=.90 && Math.abs(joystickX)<.45;
+  const speed=(running||mobileSprint)?RUN_SPEED:WALK_SPEED;
 
+  const yaw=camera.rotation.y;
+  const fx=Math.sin(yaw);
+  const fz=Math.cos(yaw);
+  const rx=Math.cos(yaw);
+  const rz=-Math.sin(yaw);
+
+  const dx=(fx*forward+rx*strafe)*speed*dt;
+  const dz=(fz*forward+rz*strafe)*speed*dt;
+
+  // 먼저 정상 충돌 이동을 시도합니다.
+  const beforeX=camera.position.x;
+  const beforeZ=camera.position.z;
+  moveWithCollision(camera.position,dx,dz,PLAYER_RADIUS);
+
+  // 기존 맵의 잘못된 충돌 데이터 때문에 시작 위치가 막혀 있는 경우에도
+  // 플레이어가 완전히 멈춰버리지 않도록 X/Z 축을 독립적으로 보정합니다.
+  if(Math.abs(camera.position.x-beforeX)<0.00001 && Math.abs(camera.position.z-beforeZ)<0.00001){
+   const tryX=beforeX+dx;
+   const tryZ=beforeZ+dz;
+   if(!blockedAt(tryX,beforeZ,PLAYER_RADIUS)) camera.position.x=tryX;
+   if(!blockedAt(camera.position.x,tryZ,PLAYER_RADIUS)) camera.position.z=tryZ;
+  }
+ }
+
+ // 높이는 새 지상/계단 표면에 맞춰 별도로 처리합니다.
  const surfaceY=getWalkSurfaceY(camera.position.x,camera.position.z);
  velocityY-=GRAVITY*dt;
  camera.position.y+=velocityY*dt;
@@ -4936,6 +4959,7 @@ joystickZone.addEventListener(
  "pointerdown",
  e=>{
 
+  e.preventDefault();
   e.stopPropagation();
 
   if(playerDead)
@@ -4963,6 +4987,7 @@ joystickZone.addEventListener(
  "pointermove",
  e=>{
 
+  e.preventDefault();
   e.stopPropagation();
 
   if(
