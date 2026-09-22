@@ -130,6 +130,34 @@ h1{
  font-size:24px
 }
 
+#minimapWrap{
+ position:absolute;
+ top:16px;
+ right:16px;
+ width:180px;
+ height:180px;
+ border:1px solid rgba(255,255,255,.28);
+ border-radius:10px;
+ background:rgba(5,10,16,.72);
+ box-shadow:0 8px 24px rgba(0,0,0,.35);
+ overflow:hidden
+}
+
+#minimap{
+ width:100%;
+ height:100%;
+ display:block
+}
+
+#minimapLabel{
+ position:absolute;
+ left:8px;
+ top:6px;
+ font-size:10px;
+ letter-spacing:1px;
+ opacity:.7
+}
+
 #crosshair{
  position:absolute;
  left:50%;
@@ -339,8 +367,12 @@ h1{
  padding:12px
 }
 
-#sensitivityRange{
+#sensitivityRange,#sniperSensitivityRange{
  width:100%
+}
+
+.sensitivityRow{
+ margin-top:10px
 }
 
 #weaponSelect{
@@ -569,6 +601,11 @@ h1{
    <span id="sensitivityValue">1.00x</span>
   </div>
   <input id="sensitivityRange" type="range" min="0.50" max="2.00" step="0.05" value="1.00">
+  <div class="sensitivityRow" style="display:flex;justify-content:space-between;gap:12px">
+   <span>SNIPER ADS SENSITIVITY</span>
+   <span id="sniperSensitivityValue">0.50x</span>
+  </div>
+  <input id="sniperSensitivityRange" type="range" min="0.10" max="1.00" step="0.05" value="0.50">
  </div>
 
  <button id="startBtn">
@@ -624,6 +661,11 @@ h1{
  <div id="ammo">
   12 / 60
  </div>
+
+ <div id="minimapWrap">
+ <canvas id="minimap" width="180" height="180"></canvas>
+ <div id="minimapLabel">MINIMAP</div>
+</div>
 
  <div id="crosshair"></div>
 
@@ -804,6 +846,10 @@ const WEAPONS={
 let currentWeapon="rifle";
 let zoomed=false;
 let sensitivity=Number(localStorage.getItem("vectorSensitivity")||"1");
+let sniperSensitivity=Number(localStorage.getItem("vectorSniperSensitivity")||"0.50");
+function getLookSensitivity(){
+ return sensitivity*((zoomed&&currentWeapon==="sniper")?sniperSensitivity:1);
+}
 let weaponSelectionOpen=false;
 
 /* =========================================================
@@ -1059,6 +1105,9 @@ const connectionStatus=
   "connectionStatus"
  );
 
+const minimapCanvas=document.getElementById("minimap");
+const minimapCtx=minimapCanvas.getContext("2d");
+
 let mpRole="host";
 
 /* =========================================================
@@ -1090,6 +1139,77 @@ function formatTime(sec){
   s
  );
 
+}
+
+/* =========================================================
+   MINIMAP
+========================================================= */
+
+function updateMinimap(){
+ if(!minimapCtx || !camera) return;
+
+ const ctx=minimapCtx;
+ const w=minimapCanvas.width;
+ const h=minimapCanvas.height;
+ const scale=w/104; // -52 ~ +52
+
+ ctx.clearRect(0,0,w,h);
+ ctx.fillStyle="rgba(5,10,16,.92)";
+ ctx.fillRect(0,0,w,h);
+
+ const mx=x=>w/2+x*scale;
+ const mz=z=>h/2-z*scale;
+
+ // grid
+ ctx.strokeStyle="rgba(255,255,255,.08)";
+ ctx.lineWidth=1;
+ for(let i=-50;i<=50;i+=10){
+  ctx.beginPath(); ctx.moveTo(mx(i),0); ctx.lineTo(mx(i),h); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(0,mz(i)); ctx.lineTo(w,mz(i)); ctx.stroke();
+ }
+
+ // collision geometry
+ ctx.fillStyle="rgba(170,185,200,.30)";
+ for(const mesh of collisionMeshes){
+  if(!mesh || mesh.isDisposed()) continue;
+  const n=(mesh.name||"").toLowerCase();
+  if(!(n.includes("wall") || n.includes("cover") || n.includes("highplatform") || n.includes("highstep"))) continue;
+  const bb=mesh.getBoundingInfo().boundingBox;
+  const minX=bb.minimumWorld.x, maxX=bb.maximumWorld.x;
+  const minZ=bb.minimumWorld.z, maxZ=bb.maximumWorld.z;
+  ctx.fillRect(mx(minX),mz(maxZ),Math.max(1,(maxX-minX)*scale),Math.max(1,(maxZ-minZ)*scale));
+ }
+
+ // round/training enemies
+ if(gameMode!=="deathmatch"){
+  for(const e of enemies){
+   if(!e || e.dead || !e.root) continue;
+   const x=e.root.position.x, z=e.root.position.z;
+   ctx.fillStyle="rgba(255,70,70,.95)";
+   ctx.beginPath(); ctx.arc(mx(x),mz(z),3.2,0,Math.PI*2); ctx.fill();
+  }
+ }else{
+  // remote deathmatch players
+  ctx.fillStyle="rgba(255,70,70,.95)";
+  for(const p of remotePlayers.values()){
+   if(!p || !p.root) continue;
+   ctx.beginPath(); ctx.arc(mx(p.root.position.x),mz(p.root.position.z),3.2,0,Math.PI*2); ctx.fill();
+  }
+ }
+
+ // player direction arrow
+ const px=mx(camera.position.x), pz=mz(camera.position.z);
+ const ang=-camera.rotation.y;
+ ctx.save();
+ ctx.translate(px,pz);
+ ctx.rotate(ang);
+ ctx.fillStyle="#fff";
+ ctx.beginPath();
+ ctx.moveTo(0,-7); ctx.lineTo(4,6); ctx.lineTo(0,3); ctx.lineTo(-4,6); ctx.closePath(); ctx.fill();
+ ctx.restore();
+
+ ctx.strokeStyle="rgba(255,255,255,.25)";
+ ctx.strokeRect(.5,.5,w-1,h-1);
 }
 
 /* =========================================================
@@ -1800,9 +1920,31 @@ function blockedAt(
  radius
 ){
 
+ /*
+   2D 이동 충돌만 검사하면 높은 플랫폼의 바닥도
+   벽처럼 취급되어 그 아래를 지나갈 수 없습니다.
+   플레이어 몸통의 실제 높이와 장애물의 Y 범위를 함께
+   비교해서, 머리 위에 있는 천장/플랫폼은 아래에서
+   이동을 막지 않도록 합니다.
+ */
+ const eyeY=camera ? camera.position.y : GROUND_Y;
+ const playerFeet=eyeY-1.7;
+ const playerHead=eyeY+1.7;
+
  for(
   const mesh of collisionMeshes
  ){
+
+  if(!mesh || mesh.isDisposed()) continue;
+
+  const bb=mesh.getBoundingInfo().boundingBox;
+  const minY=bb.minimumWorld.y;
+  const maxY=bb.maximumWorld.y;
+
+  // 수직으로 겹치지 않는 장애물은 XZ 충돌에서 제외합니다.
+  if(maxY < playerFeet-.05 || minY > playerHead+.05){
+   continue;
+  }
 
   if(
    circleHitsMesh(
@@ -4980,10 +5122,10 @@ document.addEventListener(
   )return;
 
   camera.rotation.y+=
-   e.movementX*.0025*sensitivity;
+   e.movementX*.0025*getLookSensitivity();
 
   camera.rotation.x+=
-   e.movementY*.0025*sensitivity;
+   e.movementY*.0025*getLookSensitivity();
 
   camera.rotation.x=
    Math.max(
@@ -5241,10 +5383,10 @@ lookZone.addEventListener(
    e.clientY;
 
   camera.rotation.y+=
-   dx*.004*sensitivity;
+   dx*.004*getLookSensitivity();
 
   camera.rotation.x+=
-   dy*.004*sensitivity;
+   dy*.004*getLookSensitivity();
 
   camera.rotation.x=
    Math.max(
@@ -5356,10 +5498,10 @@ lookLeftZone.addEventListener(
   */
 
   camera.rotation.y+=
-   dx*.004*sensitivity;
+   dx*.004*getLookSensitivity();
 
   camera.rotation.x+=
-   dy*.004*sensitivity;
+   dy*.004*getLookSensitivity();
 
   camera.rotation.x=
    Math.max(
@@ -5424,8 +5566,8 @@ fireBtn.addEventListener("pointermove",e=>{
  const dx=e.clientX-fireLastX;
  const dy=e.clientY-fireLastY;
  fireLastX=e.clientX; fireLastY=e.clientY;
- camera.rotation.y+=dx*.004*sensitivity;
- camera.rotation.x+=dy*.004*sensitivity;
+ camera.rotation.y+=dx*.004*getLookSensitivity();
+ camera.rotation.x+=dy*.004*getLookSensitivity();
  camera.rotation.x=Math.max(-Math.PI/2+.05,Math.min(Math.PI/2-.05,camera.rotation.x));
 });
 
@@ -5491,12 +5633,21 @@ jumpBtn.addEventListener(
 
 const sensitivityRange=document.getElementById("sensitivityRange");
 const sensitivityValue=document.getElementById("sensitivityValue");
+const sniperSensitivityRange=document.getElementById("sniperSensitivityRange");
+const sniperSensitivityValue=document.getElementById("sniperSensitivityValue");
 sensitivityRange.value=sensitivity.toFixed(2);
 sensitivityValue.textContent=sensitivity.toFixed(2)+"x";
+sniperSensitivityRange.value=sniperSensitivity.toFixed(2);
+sniperSensitivityValue.textContent=sniperSensitivity.toFixed(2)+"x";
 sensitivityRange.addEventListener("input",()=>{
  sensitivity=Number(sensitivityRange.value);
  sensitivityValue.textContent=sensitivity.toFixed(2)+"x";
  localStorage.setItem("vectorSensitivity",String(sensitivity));
+});
+sniperSensitivityRange.addEventListener("input",()=>{
+ sniperSensitivity=Number(sniperSensitivityRange.value);
+ sniperSensitivityValue.textContent=sniperSensitivity.toFixed(2)+"x";
+ localStorage.setItem("vectorSniperSensitivity",String(sniperSensitivity));
 });
 
 document.querySelectorAll(".weaponBtn").forEach(btn=>{
@@ -5638,6 +5789,11 @@ engine.runRenderLoop(
    checkRound();
 
    updateHUD();
+   updateMinimap();
+
+  }else{
+
+   updateMinimap();
 
   }
 
