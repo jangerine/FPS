@@ -276,22 +276,50 @@ h1{
  position:absolute;
  left:22px;
  bottom:28px;
- width:145px;
- height:145px;
- border:2px solid rgba(255,255,255,.25);
+ width:154px;
+ height:154px;
+ border:1px solid rgba(255,255,255,.42);
  border-radius:50%;
- pointer-events:auto
+ pointer-events:auto;
+ background:
+  radial-gradient(circle at 50% 50%,rgba(255,255,255,.12) 0 26%,transparent 27%),
+  radial-gradient(circle,rgba(18,22,28,.62) 0 57%,rgba(255,255,255,.06) 58% 62%,rgba(8,10,14,.58) 63%);
+ box-shadow:inset 0 0 28px rgba(255,255,255,.08),0 8px 30px rgba(0,0,0,.38);
+ backdrop-filter:blur(5px)
+}
+
+#joystickZone:before{
+ content:"";
+ position:absolute;
+ inset:14px;
+ border:1px solid rgba(255,255,255,.12);
+ border-radius:50%
+}
+
+#joystickZone:after{
+ content:"";
+ position:absolute;
+ left:50%;
+ top:9px;
+ width:2px;
+ height:18px;
+ transform:translateX(-50%);
+ background:rgba(255,255,255,.22);
+ box-shadow:0 118px 0 rgba(255,255,255,.22),59px 59px 0 rgba(255,255,255,.12),-59px 59px 0 rgba(255,255,255,.12)
 }
 
 #joystickKnob{
  position:absolute;
  left:50%;
  top:50%;
- width:58px;
- height:58px;
- margin:-29px;
+ width:64px;
+ height:64px;
+ margin:-32px;
  border-radius:50%;
- background:rgba(255,255,255,.3)
+ background:radial-gradient(circle at 38% 32%,rgba(255,255,255,.42),rgba(255,255,255,.12) 52%,rgba(0,0,0,.32));
+ border:1px solid rgba(255,255,255,.55);
+ box-shadow:0 5px 18px rgba(0,0,0,.42),inset 0 1px 5px rgba(255,255,255,.22);
+ transition:transform .04s linear
 }
 
 #lookZone{
@@ -323,18 +351,23 @@ h1{
 }
 
 #fireBtn{
- right:28px;
- bottom:42px;
- width:92px;
- height:92px
+ right:24px;
+ bottom:36px;
+ width:96px;
+ height:96px;
+ border:2px solid rgba(255,255,255,.68);
+ background:radial-gradient(circle at 35% 30%,rgba(255,120,70,.34),rgba(20,20,24,.78) 62%);
+ font-size:14px
 }
+#fireBtn:before{content:"●";display:block;font-size:28px;line-height:28px;margin-bottom:2px;color:rgba(255,255,255,.9)}
 
 #reloadBtn{
- right:130px;
- bottom:50px;
+ right:136px;
+ bottom:54px;
  width:62px;
  height:62px
 }
+#reloadBtn:before{content:"↻";font-size:24px;display:block}
 
 #runBtn{
  display:none;
@@ -345,18 +378,20 @@ h1{
 }
 
 #zoomBtn{
- right:105px;
- bottom:230px;
- width:62px;
- height:62px
+ right:116px;
+ bottom:226px;
+ width:66px;
+ height:66px
 }
+#zoomBtn:before{content:"⌖";display:block;font-size:25px;line-height:25px}
 
 #weaponOpenBtn{
- right:28px;
- bottom:155px;
- width:62px;
- height:62px
+ right:26px;
+ bottom:152px;
+ width:66px;
+ height:66px
 }
+#weaponOpenBtn:before{content:"▣";display:block;font-size:23px;line-height:23px}
 
 #settingsBox{
  margin-top:14px;
@@ -420,11 +455,12 @@ h1{
 }
 
 #jumpBtn{
- right:132px;
- bottom:120px;
- width:62px;
- height:62px
+ right:134px;
+ bottom:122px;
+ width:66px;
+ height:66px
 }
+#jumpBtn:before{content:"↟";display:block;font-size:25px;line-height:25px}
 
 #mpPanel{
  margin-top:16px;
@@ -1348,11 +1384,15 @@ function createScene(){
 
  scene.clearColor=
   new BABYLON.Color4(
-   .035,
-   .045,
-   .06,
+   .72,
+   .79,
+   .88,
    1
   );
+
+ scene.fogMode=BABYLON.Scene.FOGMODE_EXP2;
+ scene.fogDensity=.0038;
+ scene.fogColor=new BABYLON.Color3(.72,.79,.88);
 
  /* =====================================================
     CAMERA
@@ -1401,7 +1441,7 @@ function createScene(){
    scene
   );
 
- light.intensity=1.1;
+ light.intensity=1.35;
 
  const sun=
   new BABYLON.DirectionalLight(
@@ -1421,7 +1461,7 @@ function createScene(){
    20
   );
 
- sun.intensity=.7;
+ sun.intensity=.95;
 
  /* =====================================================
     MATERIALS
@@ -1978,6 +2018,145 @@ function createScene(){
   decoCylinder("routeLightBase",q[0],.28,q[1],.5,.56,darkMat,false);
   decoCylinder("routeLight",q[0],.62,q[1],.22,.18,i%2?warmMat:trimMat,false);
  });
+
+
+ /* =====================================================
+    PREMIUM MEDITERRANEAN / TACTICAL VILLAGE PASS
+    따뜻한 테라코타 건물 + 석재 + 아치 + 지붕 + 식생
+ ===================================================== */
+ const stuccoMat=mat("warmStucco",[.72,.36,.19]);
+ stuccoMat.roughness=.82;
+ const creamMat=mat("warmCream",[.88,.67,.45]);
+ creamMat.roughness=.9;
+ const stoneMat=mat("limestone",[.43,.36,.27]);
+ stoneMat.roughness=.95;
+ const roofMat=mat("terracottaRoof",[.43,.12,.055]);
+ roofMat.roughness=.9;
+ const roofLightMat=mat("roofHighlight",[.66,.24,.09]);
+ const woodMat=mat("darkWood",[.16,.075,.035]);
+ const glassMat=new BABYLON.StandardMaterial("warmGlass",scene);
+ glassMat.diffuseColor=new BABYLON.Color3(.08,.24,.28);
+ glassMat.emissiveColor=new BABYLON.Color3(.025,.08,.09);
+ glassMat.alpha=.88;
+ const waterMat=new BABYLON.StandardMaterial("fountainWater",scene);
+ waterMat.diffuseColor=new BABYLON.Color3(.08,.38,.48);
+ waterMat.emissiveColor=new BABYLON.Color3(.025,.12,.15);
+ waterMat.alpha=.82;
+ const ivyMat=mat("ivy",[.08,.24,.08]);
+ const flowerMat=mat("flowers",[.55,.20,.24],new BABYLON.Color3(.15,.04,.02));
+
+ function archOpening(x,y,z,w,h,rot=0){
+  const side1=decoBox("archStone",x-w/2,y+h/2,z,.42,h,1.0,stoneMat,false); side1.rotation.y=rot;
+  const side2=decoBox("archStone",x+w/2,y+h/2,z,.42,h,1.0,stoneMat,false); side2.rotation.y=rot;
+  const top=decoBox("archTop",x,y+h,z,w+.5,.55,1.0,stoneMat,false); top.rotation.y=rot;
+  decoTorus("archRound",x,y+h-.18,z,w+.45,.34,stoneMat).rotation.x=Math.PI/2;
+ }
+ function roof(x,y,z,w,d,rot=0){
+  const r=decoBox("terracottaRoof",x,y,z,w,.32,d,roofMat,false); r.rotation.y=rot;
+  const ridge=decoBox("roofRidge",x,y+.23,z,w*.92,.16,.22,roofLightMat,false); ridge.rotation.y=rot;
+  for(let i=-4;i<=4;i++){
+   const tile=decoBox("roofTile",x+i*(w/9),y+.19,z,d*.02,.08,d*.9,roofLightMat,false);
+   tile.rotation.y=rot;
+  }
+ }
+ function windowUnit(x,y,z,rot=0){
+  decoBox("windowFrame",x,y,z,2.0,.12,1.35,woodMat,false).rotation.y=rot;
+  const g=decoBox("windowGlass",x,y,z-.03,1.55,.06,1.0,glassMat,false); g.rotation.y=rot;
+  const s1=decoBox("windowBar",x,y,z-.08,.09,.08,1.0,creamMat,false); s1.rotation.y=rot;
+  const s2=decoBox("windowBar",x,y,z-.08,1.55,.08,.09,creamMat,false); s2.rotation.y=rot;
+ }
+ function balcony(x,y,z,rot=0){
+  const deck=decoBox("balconyDeck",x,y,z,3.4,.18,1.25,stoneMat,true); deck.rotation.y=rot;
+  for(let i=-1;i<=1;i++){
+   const post=decoBox("balconyPost",x+i*1.25,y+.7,z, .10,1.45,.10,woodMat,false); post.rotation.y=rot;
+  }
+  const rail=decoBox("balconyRail",x,y+1.28,z,3.5,.10,.10,woodMat,false); rail.rotation.y=rot;
+ }
+ function facadeBuilding(x,z,w,d,h,rot=0){
+  const shell=decoBox("stuccoBuilding",x,h/2,z,w,h,d,stuccoMat,false); shell.rotation.y=rot;
+  roof(x,h+.12,z,w+1.0,d+.8,rot);
+  const frontZ=z-d/2-.035;
+  for(let i=-1;i<=1;i++) windowUnit(x+i*(w/3.3),h*.62,frontZ,rot);
+  balcony(x,h*.48,frontZ-.28,rot);
+  const door=decoBox("door",x,.95,frontZ-.05,1.45,1.9,.12,woodMat,false); door.rotation.y=rot;
+  archOpening(x,0,frontZ-.09,2.0,2.25,rot);
+ }
+
+ // 주변의 건물군 — 외곽 벽을 도시의 파사드처럼 감쌉니다.
+ facadeBuilding(-36,-43,18,7,7,0);
+ facadeBuilding(8,-43,18,7,7,0);
+ facadeBuilding(36,43,18,7,7,Math.PI);
+ facadeBuilding(-8,43,18,7,7,Math.PI);
+ facadeBuilding(-43,-28,7,17,7,Math.PI/2);
+ facadeBuilding(43,28,7,17,7,-Math.PI/2);
+
+ // 중앙 골목의 낮은 상점/아치
+ [[-27,0,0],[-18,27,Math.PI/2],[27,0,Math.PI],[18,-27,-Math.PI/2]].forEach(q=>{
+  const [x,z,r]=q;
+  facadeBuilding(x,z,9,6,4.8,r);
+ });
+
+ // 중앙 분수 — 기존 광장 구조 위에 따뜻한 석재 랜드마크를 얹습니다.
+ decoCylinder("fountainBase",0,.38,0,7.6,.72,stoneMat,true);
+ decoCylinder("fountainWater",0,.78,0,5.8,.10,waterMat,false);
+ decoCylinder("fountainInner",0,1.02,0,2.3,.42,stoneMat,false);
+ decoCylinder("fountainWaterTop",0,1.25,0,1.65,.07,waterMat,false);
+ decoCylinder("fountainColumn",0,1.75,0,.42,1.0,stoneMat,false);
+ decoCylinder("fountainCap",0,2.25,0,1.05,.18,creamMat,false);
+
+ // 아치형 통로를 여러 방향에 배치해 사진 속 골목 느낌을 만듭니다.
+ archOpening(-24,0,-.2,5.5,4.2,0);
+ archOpening(24,0,.2,5.5,4.2,Math.PI);
+ archOpening(0,0,24,5.5,4.2,Math.PI/2);
+ archOpening(0,0,-24,5.5,4.2,-Math.PI/2);
+
+ // 나무/화분/아이비
+ function cypress(x,z,scale=1){
+  decoCylinder("cypressTrunk",x,1.0,z,.55*scale,2.0*scale,woodMat,false);
+  const c=decoCylinder("cypressLeaf",x,3.0*scale,z,2.0*scale,4.5*scale,ivyMat,false);
+  c.scaling.y=1.15;
+ }
+ function ivy(x,y,z,rot=0){
+  for(let i=0;i<5;i++){
+   const leaf=decoCylinder("ivyLeaf",x+(i-2)*.38,y+Math.sin(i)*.18,z,.18,.55,ivyMat,false);
+   leaf.rotation.z=.55+Math.sin(i)*.25; leaf.rotation.y=rot;
+  }
+ }
+ cypress(-31,-5,1.1); cypress(31,5,1.1); cypress(-5,31,.9); cypress(5,-31,.9);
+ [[-36,-40],[-28,-40],[28,40],[36,40],[-40,-12],[40,12]].forEach(q=>ivy(q[0],2.5,q[1]));
+
+ // 천장 지붕 아래 따뜻한 램프
+ function warmLamp(x,y,z){
+  decoBox("lampArm",x,y,z,.12,.12,1.1,woodMat,false);
+  const glow=BABYLON.MeshBuilder.CreateSphere("warmLampGlow",{diameter:.32,segments:10},scene);
+  glow.position.set(x,y-.25,z);
+  glow.material=warmMat;
+  glow.isPickable=false;
+ }
+ [[-39,4,-36],[-30,4,-36],[30,4,36],[39,4,36],[-43,3,-20],[43,3,20]].forEach(q=>warmLamp(q[0],q[1],q[2]));
+
+ // 바닥을 돌바닥처럼 보이게 하는 불규칙 패턴
+ for(let r=4;r<=30;r+=4){
+  decoTorus("stoneRing",0,.055,0,r,.055,creamMat);
+ }
+ for(let i=0;i<18;i++){
+  const a=i*Math.PI/9;
+  const m=decoBox("radialStone",Math.cos(a)*18,.06,Math.sin(a)*18,6,.05,.08,stoneMat,false);
+  m.rotation.y=a;
+ }
+
+ // 하늘의 따뜻한 원경 구조물
+ const skylineMat=mat("farBuilding",[.42,.23,.16]);
+ [[-34,8,39,7,14],[0,9,43,9,16],[34,7,39,7,13]].forEach(q=>{
+  const b=decoBox("farTower",q[0],q[1],q[2],q[3],q[4],4,skylineMat,false);
+  roof(q[0],q[1]+q[4]/2+.2,q[2],q[3]+1,4,0);
+ });
+
+ // 화면 전체를 따뜻한 오후빛으로 통일
+ const warmFill=new BABYLON.HemisphericLight("warmFill",new BABYLON.Vector3(0,1,0),scene);
+ warmFill.diffuse=new BABYLON.Color3(1,.78,.58);
+ warmFill.groundColor=new BABYLON.Color3(.28,.20,.15);
+ warmFill.intensity=.22;
 
  return scene;
 
