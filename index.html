@@ -346,7 +346,7 @@ h1{
 
 #zoomBtn{
  right:105px;
- bottom:155px;
+ bottom:230px;
  width:62px;
  height:62px
 }
@@ -420,8 +420,8 @@ h1{
 }
 
 #jumpBtn{
- right:28px;
- bottom:155px;
+ right:132px;
+ bottom:120px;
  width:62px;
  height:62px
 }
@@ -966,6 +966,7 @@ let running=false;
 ========================================================= */
 
 const collisionMeshes=[];
+const stairSurfaces=[];
 
 const PLAYER_RADIUS=.42;
 
@@ -1180,26 +1181,47 @@ function updateMinimap(){
   ctx.fillRect(mx(minX),mz(maxZ),Math.max(1,(maxX-minX)*scale),Math.max(1,(maxZ-minZ)*scale));
  }
 
- // round/training enemies
+ // 미니맵 적 표시는 "내가 실제로 바라보고 있는 적"만 표시합니다.
+ function enemyIsSeen(targetRoot){
+  if(!targetRoot || targetRoot.isDisposed()) return false;
+  const dx=targetRoot.position.x-camera.position.x;
+  const dz=targetRoot.position.z-camera.position.z;
+  const dist=Math.hypot(dx,dz);
+  if(dist>90) return false;
+  const fx=Math.sin(camera.rotation.y);
+  const fz=Math.cos(camera.rotation.y);
+  const dot=(dx*fx+dz*fz)/Math.max(.001,dist);
+  // 화면의 약 100도 시야 안에 들어온 적만 표시
+  if(dot<Math.cos(50*Math.PI/180)) return false;
+  // 벽/엄폐물에 가려진 적은 표시하지 않습니다.
+  const origin=new BABYLON.Vector3(camera.position.x,camera.position.y,camera.position.z);
+  const dir=new BABYLON.Vector3(dx,0,dz).normalize();
+  const ray=new BABYLON.Ray(origin,dir,dist);
+  const hit=scene.pickWithRay(ray,m=>{
+   if(!m || m.isDisposed() || !m.checkCollisions) return false;
+   return m!==targetRoot && !m.name.toLowerCase().includes("enemy");
+  });
+  return !hit.hit || hit.distance>=dist-.7;
+ }
+
  if(gameMode!=="deathmatch"){
   for(const e of enemies){
-   if(!e || e.dead || !e.root) continue;
+   if(!e || e.dead || !e.root || !enemyIsSeen(e.root)) continue;
    const x=e.root.position.x, z=e.root.position.z;
    ctx.fillStyle="rgba(255,70,70,.95)";
    ctx.beginPath(); ctx.arc(mx(x),mz(z),3.2,0,Math.PI*2); ctx.fill();
   }
  }else{
-  // remote deathmatch players
   ctx.fillStyle="rgba(255,70,70,.95)";
   for(const p of remotePlayers.values()){
-   if(!p || !p.root) continue;
+   if(!p || !p.root || !enemyIsSeen(p.root)) continue;
    ctx.beginPath(); ctx.arc(mx(p.root.position.x),mz(p.root.position.z),3.2,0,Math.PI*2); ctx.fill();
   }
  }
 
  // player direction arrow
  const px=mx(camera.position.x), pz=mz(camera.position.z);
- const ang=-camera.rotation.y;
+ const ang=camera.rotation.y;
  ctx.save();
  ctx.translate(px,pz);
  ctx.rotate(ang);
@@ -1666,21 +1688,27 @@ function createScene(){
     HIGH GROUND / STAIRS
  ===================================================== */
  function highPlatform(x,z){
+  const PLATFORM_TOP=4.3;
   const base=BABYLON.MeshBuilder.CreateBox("highPlatform",{width:12,height:2,depth:10},scene);
-  base.position.set(x,5,z);
+  base.position.set(x,PLATFORM_TOP-1,z);
   base.material=coverMat;
   base.checkCollisions=true;
   collisionMeshes.push(base);
 
-  // 1m씩 올라가는 4단 계단: 마지막 단의 높이를 플랫폼 바닥(4m)에 맞춥니다.
-  const steps=[[-8,1],[-6,2],[-4,3],[-2,4]];
-  steps.forEach((step,i)=>{
-   const mesh=BABYLON.MeshBuilder.CreateBox(`highStep${i}`,{width:3,height:step[1],depth:4},scene);
-   mesh.position.set(x+step[0],step[1]/2,z);
+  // 계단은 실제 충돌벽으로 만들지 않고, 이동 높이만 계단형으로 계산합니다.
+  // 그래서 한 칸씩 자연스럽게 올라가며 마지막 칸에서 플랫폼 높이와 정확히 연결됩니다.
+  const stairCount=8;
+  const stairStartX=x-10.5;
+  const stairWidth=2.0;
+  for(let i=0;i<stairCount;i++){
+   const top=PLATFORM_TOP*(i+1)/stairCount;
+   const mesh=BABYLON.MeshBuilder.CreateBox(`highStep${x}_${i}`,{width:stairWidth,height:top,depth:4},scene);
+   mesh.position.set(stairStartX+i*stairWidth,top/2,z);
    mesh.material=coverMat;
-   mesh.checkCollisions=true;
-   collisionMeshes.push(mesh);
-  });
+   mesh.checkCollisions=false;
+   mesh.isPickable=false;
+  }
+  stairSurfaces.push({minX:x-11.5,maxX:x+5,minZ:z-2,maxZ:z+2,baseY:GROUND_Y,maxY:GROUND_Y+PLATFORM_TOP,platformX:x,platformZ:z});
  }
  highPlatform(-28,22);
  highPlatform(28,-22);
@@ -2008,18 +2036,18 @@ function moveWithCollision(
 
  position.x=
   Math.max(
-   -32,
+   -48,
    Math.min(
-    32,
+    48,
     position.x
    )
   );
 
  position.z=
   Math.max(
-   -32,
+   -48,
    Math.min(
-    32,
+    48,
     position.z
    )
   );
@@ -3816,131 +3844,70 @@ function respawnPlayer(){
    MOVEMENT
 ========================================================= */
 
+function getStairSurfaceY(x,z){
+ for(const s of stairSurfaces){
+  if(x<s.minX || x>s.maxX || z<s.minZ || z>s.maxZ) continue;
+  const rel=(x-(s.platformX-10.5))/2.0;
+  const step=Math.max(0,Math.min(7,Math.floor(rel)));
+  const top=4.3*(step+1)/8;
+  return GROUND_Y+top;
+ }
+ return null;
+}
+
+function getWalkSurfaceY(x,z){
+ const stairY=getStairSurfaceY(x,z);
+ for(const s of stairSurfaces){
+  if(Math.abs(x-s.platformX)<=6 && Math.abs(z-s.platformZ)<=5){
+   return GROUND_Y+4.3;
+  }
+ }
+ return stairY;
+}
+
 function updateMovement(
  dt
 ){
+ if(!gameStarted || gameOver || playerDead) return;
 
- if(
-  !gameStarted ||
-  gameOver ||
-  playerDead
- )return;
+ let forward=0, strafe=0;
+ if(moveForward) forward++;
+ if(moveBackward) forward--;
+ if(moveRight) strafe++;
+ if(moveLeft) strafe--;
+ forward+=joystickY;
+ strafe+=joystickX;
+ const len=Math.hypot(forward,strafe);
+ if(len>1){ forward/=len; strafe/=len; }
 
- let forward=0;
-
- let strafe=0;
-
- if(moveForward)
-  forward++;
-
- if(moveBackward)
-  forward--;
-
- if(moveRight)
-  strafe++;
-
- if(moveLeft)
-  strafe--;
-
- forward+=
-  joystickY;
-
- strafe+=
-  joystickX;
-
- const len=
-  Math.hypot(
-   forward,
-   strafe
-  );
-
- if(len>1){
-
-  forward/=len;
-
-  strafe/=len;
-
- }
-
- const mobileSprint=
-  joystickY>=.90 &&
-  Math.abs(joystickX)<.45;
-
- const speed=
-  running || mobileSprint
-   ?RUN_SPEED
-   :WALK_SPEED;
-
- const yaw=
-  camera.rotation.y;
-
- const forwardX=
-  Math.sin(yaw);
-
- const forwardZ=
-  Math.cos(yaw);
-
- const rightX=
-  Math.cos(yaw);
-
- const rightZ=
-  -Math.sin(yaw);
+ const mobileSprint=joystickY>=.90 && Math.abs(joystickX)<.45;
+ const speed=(running||mobileSprint)?RUN_SPEED:WALK_SPEED;
+ const yaw=camera.rotation.y;
+ const forwardX=Math.sin(yaw), forwardZ=Math.cos(yaw);
+ const rightX=Math.cos(yaw), rightZ=-Math.sin(yaw);
 
  moveWithCollision(
   camera.position,
-  (
-   forwardX*forward+
-   rightX*strafe
-  )*
-  speed*
-  dt,
-  (
-   forwardZ*forward+
-   rightZ*strafe
-  )*
-  speed*
-  dt,
+  (forwardX*forward+rightX*strafe)*speed*dt,
+  (forwardZ*forward+rightZ*strafe)*speed*dt,
   PLAYER_RADIUS
  );
 
- const highZones=[
-  [-28,22,6,5], [28,-22,6,5],
-  [28,22,6,5], [-28,-22,6,5]
- ];
- let platformTop=null;
- for(const z of highZones){
-  if(Math.abs(camera.position.x-z[0])<=z[2] && Math.abs(camera.position.z-z[1])<=z[3]){
-   platformTop=6; break;
-  }
- }
+ const surfaceY=getWalkSurfaceY(camera.position.x,camera.position.z);
  velocityY-=GRAVITY*dt;
+ camera.position.y+=velocityY*dt;
 
- camera.position.y+=
-  velocityY*
-  dt;
-
- if(platformTop!==null && camera.position.y<=platformTop && velocityY<=0){
-  camera.position.y=platformTop;
+ if(surfaceY!==null && velocityY<=0 && camera.position.y<=surfaceY+.18){
+  camera.position.y=surfaceY;
   velocityY=0;
   onGround=true;
- }else if(
-  camera.position.y<=
-  GROUND_Y
- ){
-
-  camera.position.y=
-   GROUND_Y;
-
+ }else if(camera.position.y<=GROUND_Y){
+  camera.position.y=GROUND_Y;
   velocityY=0;
-
   onGround=true;
-
  }else{
-
   onGround=false;
-
  }
-
 }
 
 /* =========================================================
