@@ -393,6 +393,16 @@ h1{
 }
 #weaponOpenBtn:before{content:"▣";display:block;font-size:23px;line-height:23px}
 
+#swapWeaponBtn{
+ right:190px;
+ bottom:152px;
+ width:66px;
+ height:66px;
+ background:radial-gradient(circle at 35% 30%,rgba(255,190,100,.22),rgba(20,20,24,.76) 64%);
+}
+#swapWeaponBtn:before{content:"⇄";display:block;font-size:25px;line-height:23px}
+
+
 #settingsBox{
  margin-top:14px;
  width:min(92vw,460px);
@@ -774,6 +784,13 @@ h1{
   class="mobileBtn"
  >
   WEAPON
+ </button>
+
+ <button
+  id="swapWeaponBtn"
+  class="mobileBtn"
+ >
+  SWAP
  </button>
 
 </div>
@@ -1493,24 +1510,6 @@ function createScene(){
     MATERIALS
  ===================================================== */
 
- const floorMat=
-  mat(
-   "floor",
-   [.13,.15,.18]
-  );
-
- const wallMat=
-  mat(
-   "wall",
-   [.92,.92,.92]
-  );
-
- const coverMat=
-  mat(
-   "cover",
-   [.20,.23,.28]
-  );
-
  const enemyBodyMat=
   mat(
    "enemyBody",
@@ -1536,691 +1535,205 @@ function createScene(){
   );
 
  /* =====================================================
-    FLOOR
+    NEW MEDITERRANEAN TACTICAL MAP
+    기존 파란 바닥/검정 구조물/고지대 플랫폼을 전부 제거하고
+    따뜻한 테라코타·석재·목재 기반의 새로운 원형 레이아웃으로 구성합니다.
+    실제 게임 플레이 충돌은 보이는 건물과 같은 위치에만 둡니다.
  ===================================================== */
+ const floorMat=mat("warmStoneFloor",[.46,.34,.24],new BABYLON.Color3(.68,.52,.38));
+ const stuccoMat=mat("sunStucco",[.72,.43,.25],new BABYLON.Color3(.92,.62,.38));
+ const stuccoLight=mat("creamStucco",[.82,.68,.51],new BABYLON.Color3(.98,.78,.53));
+ const terracottaMat=mat("terracotta",[.55,.20,.08],new BABYLON.Color3(.78,.29,.10));
+ const stoneMat=mat("limestone",[.54,.47,.37],new BABYLON.Color3(.76,.66,.50));
+ const woodMat=mat("warmWood",[.30,.16,.08],new BABYLON.Color3(.52,.27,.12));
+ const greenMat=mat("oliveGreen",[.10,.28,.14],new BABYLON.Color3(.22,.55,.25));
+ const leafMat=mat("leaf",[.10,.36,.16],new BABYLON.Color3(.30,.72,.28));
+ const brassMat=mat("brass",[.58,.32,.08],new BABYLON.Color3(1,.58,.15));
+ const glassMat=mat("blueGlass",[.12,.32,.40],new BABYLON.Color3(.25,.65,.72));
+ const creamTrim=mat("creamTrim",[.72,.59,.43],new BABYLON.Color3(.94,.78,.58));
 
- const floor=
-  BABYLON.MeshBuilder.CreateGround(
-   "floor",
-   {
-    width:100,
-    height:100
-   },
-   scene
-  );
-
+ const floor=BABYLON.MeshBuilder.CreateGround("newFloor",{width:100,height:100},scene);
  floor.material=floorMat;
+ floor.checkCollisions=true;
+ collisionMeshes.push(floor);
 
- /* =====================================================
-    WALL
- ===================================================== */
-
- function wall(
-  name,
-  x,
-  y,
-  z,
-  width,
-  height,
-  depth
- ){
-
-  const mesh=
-   BABYLON.MeshBuilder.CreateBox(
-    name,
-    {
-     width,
-     height,
-     depth
-    },
-    scene
-   );
-
-  mesh.position.set(
-   x,
-   y,
-   z
-  );
-
-  mesh.material=wallMat;
-
-  mesh.checkCollisions=true;
-
-  collisionMeshes.push(
-   mesh
-  );
-
-  return mesh;
-
- }
-
- wall(
-  "northWall",
-  0,
-  3,
-  49,
-  98,
-  6,
-  1
- );
-
- wall(
-  "southWall",
-  0,
-  3,
-  -49,
-  98,
-  6,
-  1
- );
-
- wall(
-  "westWall",
-  -49,
-  3,
-  0,
-  1,
-  6,
-  98
- );
-
- wall(
-  "eastWall",
-  49,
-  3,
-  0,
-  1,
-  6,
-  98
- );
-
- wall(
-  "middleWall",
-  0,
-  2.5,
-  8,
-  18,
-  5,
-  1
- );
-
- wall(
-  "middleWall2",
-  0,
-  2.5,
-  -8,
-  18,
-  5,
-  1
- );
-
- wall(
-  "leftWall",
-  -14,
-  2.5,
-  0,
-  1,
-  5,
-  14
- );
-
- wall(
-  "rightWall",
-  14,
-  2.5,
-  0,
-  1,
-  5,
-  14
- );
-
- wall(
-  "upperWall",
-  10,
-  2.5,
-  18,
-  18,
-  5,
-  1
- );
-
- wall(
-  "lowerWall",
-  -10,
-  2.5,
-  -18,
-  18,
-  5,
-  1
- );
-
- /* =====================================================
-    COVER
- ===================================================== */
-
- function cover(
-  x,
-  z,
-  w,
-  h,
-  d
- ){
-
-  const mesh=
-   BABYLON.MeshBuilder.CreateBox(
-    "cover",
-    {
-     width:w,
-     height:h,
-     depth:d
-    },
-    scene
-   );
-
-  mesh.position.set(
-   x,
-   h/2,
-   z
-  );
-
-  mesh.material=coverMat;
-
-  mesh.checkCollisions=true;
-
-  collisionMeshes.push(
-   mesh
-  );
-
-  return mesh;
-
- }
-
- cover(-8,5,4,2,2);
- cover(8,5,4,2,2);
-
- cover(-8,-5,4,2,2);
- cover(8,-5,4,2,2);
-
- cover(-22,12,5,2,2);
- cover(22,12,5,2,2);
-
- cover(-22,-12,5,2,2);
- cover(22,-12,5,2,2);
-
- cover(0,20,5,2,2);
- cover(0,-20,5,2,2);
-
- /* =====================================================
-    HIGH GROUND / STAIRS
- ===================================================== */
- function highPlatform(x,z){
-  const PLATFORM_TOP=4.3;
-  const base=BABYLON.MeshBuilder.CreateBox("highPlatform",{width:12,height:2,depth:10},scene);
-  base.position.set(x,PLATFORM_TOP-1,z);
-  base.material=coverMat;
-  base.checkCollisions=true;
-  collisionMeshes.push(base);
-
-  // 계단은 실제 충돌벽으로 만들지 않고, 이동 높이만 계단형으로 계산합니다.
-  // 그래서 한 칸씩 자연스럽게 올라가며 마지막 칸에서 플랫폼 높이와 정확히 연결됩니다.
-  const stairCount=8;
-  const stairStartX=x-10.5;
-  const stairWidth=2.0;
-  for(let i=0;i<stairCount;i++){
-   const top=PLATFORM_TOP*(i+1)/stairCount;
-   const mesh=BABYLON.MeshBuilder.CreateBox(`highStep${x}_${i}`,{width:stairWidth,height:top,depth:4},scene);
-   mesh.position.set(stairStartX+i*stairWidth,top/2,z);
-   mesh.material=coverMat;
-   mesh.checkCollisions=false;
-   mesh.isPickable=false;
-  }
-  stairSurfaces.push({minX:x-11.5,maxX:x+5,minZ:z-2,maxZ:z+2,baseY:GROUND_Y,maxY:GROUND_Y+PLATFORM_TOP,platformX:x,platformZ:z});
- }
- highPlatform(-28,22);
- highPlatform(28,-22);
- highPlatform(28,22);
- highPlatform(-28,-22);
-
- /* =====================================================
-    MAP DECORATION / ATMOSPHERE
-    외부 에셋 없이 Babylon 기본 도형만 사용합니다.
- ===================================================== */
- const trimMat=mat("mapTrim",[.06,.32,.42],new BABYLON.Color3(.08,.7,.95));
- const warmMat=mat("mapWarm",[.32,.18,.06],new BABYLON.Color3(1,.38,.08));
- const darkMat=mat("mapDark",[.045,.055,.07]);
- const plantMat=mat("mapPlant",[.08,.22,.13],new BABYLON.Color3(.08,.5,.18));
- const sandMat=mat("mapSand",[.22,.20,.16]);
-
- function decoBox(name,x,y,z,w,h,d,material,collide=false){
+ function box(name,x,y,z,w,h,d,material,collide=true,rot=0){
   const m=BABYLON.MeshBuilder.CreateBox(name,{width:w,height:h,depth:d},scene);
-  m.position.set(x,y,z);
-  m.material=material;
-  m.isPickable=false;
-  if(collide){ m.checkCollisions=true; collisionMeshes.push(m); }
+  m.position.set(x,y,z); m.rotation.y=rot; m.material=material; m.isPickable=false;
+  if(collide){m.checkCollisions=true;collisionMeshes.push(m);}
   return m;
  }
-
- function pillar(x,z,accent=true){
-  decoBox("pillar",x,3,z,1.2,6,1.2,darkMat,true);
-  if(accent) decoBox("pillarAccent",x,3,z-.66,.18,5.2,.08,trimMat,false);
+ function cyl(name,x,y,z,diameter,height,material,collide=false,segments=18){
+  const m=BABYLON.MeshBuilder.CreateCylinder(name,{diameter,height,tessellation:segments},scene);
+  m.position.set(x,y,z);m.material=material;m.isPickable=false;
+  if(collide){m.checkCollisions=true;collisionMeshes.push(m);} return m;
  }
-
- function lamp(x,z){
-  decoBox("lampPole",x,2.1,z,.16,4.2,.16,darkMat,false);
-  decoBox("lampHead",x,4.25,z,.55,.16,.55,warmMat,false);
-  const glow=BABYLON.MeshBuilder.CreateSphere("lampGlow",{diameter:.22,segments:8},scene);
-  glow.position.set(x,4.05,z);
-  glow.material=warmMat;
-  glow.isPickable=false;
- }
-
- function planter(x,z){
-  decoBox("planter",x,.45,z,2.2,.9,2.2,darkMat,true);
-  const stem=BABYLON.MeshBuilder.CreateCylinder("plant",{height:1.5,diameter:.8,tessellation:8},scene);
-  stem.position.set(x,1.55,z);
-  stem.material=plantMat;
-  stem.isPickable=false;
- }
-
- function crateStack(x,z,rot=0){
-  const a=decoBox("crateA",x,.65,z,1.3,1.3,1.3,sandMat,true); a.rotation.y=rot;
-  const b=decoBox("crateB",x+.15,1.95,z+.1,1.1,1.1,1.1,sandMat,true); b.rotation.y=rot+.12;
- }
-
- // 중앙 보행로: 바닥에 얇은 패널을 깔아 공간을 구분합니다.
- for(let i=-4;i<=4;i++){
-  decoBox("centerTile",i*3.2,.012,0,2.7,.025,7,darkMat,false);
- }
- decoBox("centerStripe",0,.018,0,1.2,.035,34,trimMat,false);
- decoBox("centerStripe2",0,.02,0,34,.035,1.2,trimMat,false);
-
- // 네 모서리와 교차로에 산업형 기둥/등을 배치합니다.
- [[-40,-40],[-40,40],[40,-40],[40,40],[-18,18],[18,18],[-18,-18],[18,-18]].forEach((q,i)=>pillar(q[0],q[1],i%2===0));
- [[-38,-10],[-38,10],[38,-10],[38,10],[-10,-38],[10,-38],[-10,38],[10,38]].forEach(q=>lamp(q[0],q[1]));
-
- // 낮은 엄폐물 주변에 화분과 상자를 추가해 단조로운 공간을 줄입니다.
- planter(-31,0); planter(31,0);
- crateStack(-20,27,.18); crateStack(20,-27,-.22);
- crateStack(-20,-27,.28); crateStack(20,27,-.18);
-
- // 고지대 플랫폼 가장자리에 청색/주황색 포인트 라인.
- [[-28,22],[28,22],[-28,-22],[28,-22]].forEach(q=>{
-  decoBox("platformTrim",q[0],5.98,q[1],12.3,.08,.16,trimMat,false);
-  decoBox("platformTrim2",q[0],5.98,q[1],.16,.08,10.3,trimMat,false);
- });
-
- // 외곽 벽 하단의 반복 패널
- for(let x=-42;x<=42;x+=7){
-  decoBox("northPanel",x,.65,48.35,5,.9,.08,darkMat,false);
-  decoBox("southPanel",x,.65,-33.35,5,.9,.08,darkMat,false);
- }
- for(let z=-42;z<=42;z+=7){
-  decoBox("westPanel",-48.35,.65,z,.08,.9,5,darkMat,false);
-  decoBox("eastPanel",48.35,.65,z,.08,.9,5,darkMat,false);
- }
-
- // 작은 포인트 조명으로 밤/실내형 전술 맵 분위기를 만듭니다.
- [[-34,-34],[34,-34],[-34,34],[34,34],[0,31],[0,-31]].forEach(q=>{
-  const point=new BABYLON.PointLight("mapPoint",new BABYLON.Vector3(q[0],4,q[1]),scene);
-  point.diffuse=new BABYLON.Color3(.08,.5,.8);
-  point.intensity=.45;
-  point.range=12;
- });
-
- // ===== 고급 전술기지 디테일 =====
- // 중앙 구역을 하나의 큰 전술 광장처럼 보이게 만드는 바닥 패널/라인
- for(let z=-30;z<=30;z+=6){
-  decoBox("roadPanel",0,.025,z,28,.03,.16,darkMat,false);
- }
- for(let x=-30;x<=30;x+=6){
-  decoBox("roadPanelV",x,.026,0,.16,.03,28,darkMat,false);
- }
-
- // 낮은 벽 위의 반복되는 금속 패널과 수직 보강재
- function panelWall(x,y,z,w,h,d,material=darkMat){
-  decoBox("panelWall",x,y,z,w,h,d,material,false);
-  const count=Math.max(2,Math.floor(Math.max(w,d)/2.5));
-  for(let i=0;i<count;i++){
-   const t=(i+.5)/count-.5;
-   if(w>=d) decoBox("panelRib",x+t*w,y,z-d/2-.025,.08,h*.82,.06,trimMat,false);
-   else decoBox("panelRib",x-d/2-.025,y,z+t*d,.06,h*.82,.08,trimMat,false);
-  }
- }
- panelWall(-22,2.6,12,5.2,3.8,.18);
- panelWall(22,2.6,-12,5.2,3.8,.18);
-
- // 중앙 통신탑/관측 구조물
- decoBox("commandBase",0,.35,0,8,.7,8,darkMat,true);
- decoBox("commandCore",0,1.15,0,4.8,1.0,4.8,coverMat,true);
- decoBox("commandGlow",0,1.68,0,3.8,.08,3.8,trimMat,false);
- for(let a=0;a<4;a++){
-  const ang=a*Math.PI/2;
-  const x=Math.cos(ang)*3.2;
-  const z=Math.sin(ang)*3.2;
-  decoBox("commandPillar",x,2.0,z,.45,3.0,.45,darkMat,false);
-  decoBox("commandLight",x,3.55,z,.5,.08,.5,warmMat,false);
- }
-
- // 고지대 주변의 금속 난간 느낌을 내는 기둥과 상부 빔
- [[-28,22],[28,22],[-28,-22],[28,-22]].forEach(q=>{
-  const [x,z]=q;
-  for(let dx of [-5,0,5]){
-   decoBox("railPost",x+dx,6.9,z-4.3,.12,1.8,.12,darkMat,false);
-  }
-  decoBox("railTop",x,7.7,z-4.3,10.2,.12,.12,trimMat,false);
- });
-
- // 컨테이너/전술 장비 보관소 형태의 구조물
- function containerUnit(x,z,rot=0){
-  const c=decoBox("container",x,1.5,z,8,3,3,darkMat,true);
-  c.rotation.y=rot;
-  for(let i=-3;i<=3;i+=2){
-   const px=x+Math.cos(rot)*i;
-   const pz=z+Math.sin(rot)*i;
-   decoBox("containerStripe",px,1.5,pz,.12,2.5,3.08,trimMat,false).rotation.y=rot;
-  }
- }
- containerUnit(-35,-18,.08);
- containerUnit(35,18,-.08);
-
- // 맵 끝부분에 입구 아치 형태를 추가해 단순한 벽 느낌을 줄임
- function gate(x,z,rot=0){
-  const left=decoBox("gateLeft",x-4,3,z,1.2,6,1.2,darkMat,true); left.rotation.y=rot;
-  const right=decoBox("gateRight",x+4,3,z,1.2,6,1.2,darkMat,true); right.rotation.y=rot;
-  const top=decoBox("gateTop",x,5.7,z,9.2,1.2,1.2,coverMat,true); top.rotation.y=rot;
-  decoBox("gateLight",x,5.55,z-.66,5.5,.12,.12,warmMat,false).rotation.y=rot;
- }
- gate(0,42,0);
- gate(0,-42,0);
-
- // 지면에 작은 금속 볼라드와 경고등을 배치
- for(let x=-36;x<=36;x+=8){
-  if(Math.abs(x)<12) continue;
-  decoBox("bollard",x,.55,30,.32,1.1,.32,darkMat,false);
-  decoBox("warningLight",x,1.1,30,.38,.08,.38,warmMat,false);
- }
-
- /* =====================================================
-    ORGANIC MAP PASS — 곡선/대각선/원형 구조로 네모난 인상을 줄입니다.
-    기존 플레이 동선과 충돌 시스템은 유지하고, 시각적 구조와 일부 엄폐물만 추가합니다.
- ===================================================== */
- function decoCylinder(name,x,y,z,diameter,height,material,collide=false){
-  const m=BABYLON.MeshBuilder.CreateCylinder(name,{diameter,height,tessellation:20},scene);
-  m.position.set(x,y,z);
-  m.material=material;
-  m.isPickable=false;
-  if(collide){ m.checkCollisions=true; collisionMeshes.push(m); }
-  return m;
- }
- function decoTorus(name,x,y,z,diameter,thickness,material){
+ function torus(name,x,y,z,diameter,thickness,material){
   const m=BABYLON.MeshBuilder.CreateTorus(name,{diameter,thickness,tessellation:28},scene);
-  m.position.set(x,y,z);
-  m.material=material;
-  m.isPickable=false;
-  return m;
+  m.position.set(x,y,z);m.material=material;m.isPickable=false;return m;
  }
- function curvedWall(cx,cz,radius,startAngle,endAngle,count,height,depth,material,collide=false){
-  for(let i=0;i<count;i++){
-   const t=(i+.5)/count;
-   const a=startAngle+(endAngle-startAngle)*t;
-   const x=cx+Math.cos(a)*radius;
-   const z=cz+Math.sin(a)*radius;
-   const seg=decoBox("curvedCover",x,height/2,z,depth, height,Math.max(1.8,radius*Math.abs(endAngle-startAngle)/count*1.15),material,collide);
-   seg.rotation.y=a+Math.PI/2;
+ function archway(x,z,rot=0,open=3.2){
+  // 두 기둥과 상부 석조 아치. 중앙은 비워 실제 통로가 됩니다.
+  const s=5.8;
+  box("archLeft",x-Math.cos(rot)*s/2,2.5,z-Math.sin(rot)*s/2,1.0,5.0,1.0,stoneMat,true,rot);
+  box("archRight",x+Math.cos(rot)*s/2,2.5,z+Math.sin(rot)*s/2,1.0,5.0,1.0,stoneMat,true,rot);
+  box("archTop",x,5.0,z,7.0,1.0,1.0,stoneMat,true,rot);
+  box("archTrim",x,5.45,z,5.0,.16,.16,brassMat,false,rot);
+ }
+ function building(x,z,w,d,h,rot=0,accent=true){
+  // 벽은 건물 외곽에만 두어 내부가 막힌 충돌 박스가 되지 않게 합니다.
+  const t=.55;
+  box("houseNorth",x,h/2,z-d/2+t/2,w,h,t,stuccoMat,true,rot);
+  box("houseSouth",x,h/2,z+d/2-t/2,w,h,t,stuccoLight,true,rot);
+  box("houseWest",x-w/2+t/2,h/2,z,t,h,d,stuccoLight,true,rot);
+  box("houseEast",x+w/2-t/2,h/2,z,t,h,d,stuccoMat,true,rot);
+  // 지붕
+  box("roof",x,h+.12,z,w+.7,.28,d+.7,terracottaMat,false,rot);
+  // 지붕 타일 느낌의 얇은 반복 스트립
+  for(let i=-2;i<=2;i++) box("roofTile",x+i*(w/5.2),h+.30,z,w*.07,.08,d+.9,creamTrim,false,rot);
+  // 창문/셔터는 시각 전용
+  if(accent){
+   const fx=Math.cos(rot),fz=Math.sin(rot);
+   for(const side of [-1,1]){
+    const px=x+fx*(w/2+.03), pz=z+fz*(w/2+.03);
+    box("window",px,h*.58,pz,.95,1.15,.10,glassMat,false,rot+Math.PI/2);
+    box("shutterL",px-fz*.62,h*.58,pz+fx*.62,.18,1.25,.10,woodMat,false,rot+Math.PI/2);
+    box("shutterR",px+fz*.62,h*.58,pz-fx*.62,.18,1.25,.10,woodMat,false,rot+Math.PI/2);
+   }
   }
  }
- function diagonalCover(x,z,w,d,rot=0,collide=true){
-  const m=decoBox("diagonalCover",x,1.35,z,w,2.7,d,darkMat,collide);
-  m.rotation.y=rot;
-  const trim=decoBox("diagonalTrim",x,2.75,z,w*.72,.10,.10,trimMat,false);
-  trim.rotation.y=rot;
+ function canopy(x,z,w,d){
+  box("canopyPost",x-w/2+.18,1.65,z-d/2+.18,.24,3.3,.24,woodMat,true);
+  box("canopyPost",x+w/2-.18,1.65,z-d/2+.18,.24,3.3,.24,woodMat,true);
+  box("canopyTop",x,3.3,z,w, .22,d,terracottaMat,false);
+ }
+ function planter(x,z,r=1.2){
+  cyl("planter",x,.42,z,r*2,.84,stoneMat,true);
+  cyl("plant",x,1.15,z,r*1.15,1.15,leafMat,false);
+  cyl("plant2",x,1.72,z,r*.7,.8,greenMat,false);
+ }
+ function tree(x,z,scale=1){
+  cyl("treeTrunk",x,1.4*scale,z,.38*scale,2.8*scale,woodMat,false);
+  const crown=cyl("treeCrown",x,3.15*scale,z,2.4*scale,2.8*scale,leafMat,false,12);
+  crown.rotation.z=.12;
+ }
+ function crate(x,z,rot=0){
+  box("crate",x,.7,z,1.4,1.4,1.4,woodMat,true,rot);
+  box("crateTrim",x,1.42,z,1.48,.08,.08,creamTrim,false,rot);
+  box("crateTrim2",x,.7,z,1.48,.08,.08,creamTrim,false,rot);
  }
 
- // 중앙 원형 전술 광장 — 직선 교차로 대신 원형 기준점을 만듭니다.
- decoCylinder("centralPlaza",0,.03,0,25,.06,darkMat,false);
- decoTorus("centralRing",0,.075,0,25,.20,trimMat);
- decoTorus("centralRingInner",0,.085,0,13,.12,warmMat);
- decoCylinder("centralCore",0,.10,0,5.4,.12,coverMat,false);
+ // 외곽 경계: 벽 색도 모두 밝은 석재/회벽으로 통일합니다.
+ box("borderNorth",0,2.7,49,98,5.4,.7,stoneMat,true);
+ box("borderSouth",0,2.7,-49,98,5.4,.7,stoneMat,true);
+ box("borderWest",-49,2.7,0,.7,5.4,98,stoneMat,true);
+ box("borderEast",49,2.7,0,.7,5.4,98,stoneMat,true);
+
+ // A/B 사이트를 포함하는 새로운 3방향 동선.
+ // 중앙 광장과 좌/우 골목을 먼저 만들고, 건물은 바깥쪽으로 배치합니다.
+ building(-34,22,20,18,5.8,.0,true);
+ building(34,-22,20,18,5.8,Math.PI,true);
+ building(-34,-25,17,16,5.4,0,false);
+ building(34,25,17,16,5.4,Math.PI,false);
+ building(0,39,26,15,5.0,0,false);
+ building(0,-39,26,15,5.0,Math.PI,false);
+
+ // 중앙 광장 — 분수와 아치가 시각적 중심이 됩니다.
+ cyl("fountainBase",0,.18,0,11.5,.36,stoneMat,true);
+ torus("fountainRing",0,.39,0,11.2,.18,creamTrim);
+ cyl("fountainBasin",0,.48,0,7.4,.55,stoneMat,true);
+ cyl("fountainWater",0,.78,0,5.8,.10,glassMat,false);
+ cyl("fountainPillar",0,1.65,0,1.0,1.8,stoneMat,false);
+ cyl("fountainTop",0,2.62,0,2.1,.28,creamTrim,false);
  for(let a=0;a<8;a++){
   const ang=a*Math.PI/4;
-  const x=Math.cos(ang)*8.5;
-  const z=Math.sin(ang)*8.5;
-  const marker=decoBox("radialMarker",x,.075,z,3.8,.05,.22,trimMat,false);
-  marker.rotation.y=ang;
+  box("plazaRay",Math.cos(ang)*10,.035,Math.sin(ang)*10,5.0,.04,.18,creamTrim,false,ang);
  }
 
- // 중앙 주변은 4개의 부드러운 곡선 엄폐물로 구성합니다.
- curvedWall(0,0,14,-Math.PI*.78,-Math.PI*.22,6,2.4,.9,darkMat,true);
- curvedWall(0,0,14,Math.PI*.22,Math.PI*.78,6,2.4,.9,darkMat,true);
- curvedWall(0,0,14,Math.PI*.78,Math.PI*1.22,5,2.2,.85,darkMat,true);
- curvedWall(0,0,14,Math.PI*1.78,Math.PI*2.22,5,2.2,.85,darkMat,true);
-
- // 대각선 엄폐물 — 사각형 방의 느낌을 끊고 시야에 자연스러운 각도를 만듭니다.
- diagonalCover(-15,5,7,1.2,-.52,true);
- diagonalCover(15,-5,7,1.2,.52,true);
- diagonalCover(-15,-5,7,1.2,.52,true);
- diagonalCover(15,5,7,1.2,-.52,true);
-
- // 모서리에는 직각 대신 원형 정원/장비 패드를 배치합니다.
- [[-39,-39],[-39,39],[39,-39],[39,39]].forEach((q,i)=>{
-  decoCylinder("cornerPad",q[0],.04,q[1],10,.08,darkMat,false);
-  decoTorus("cornerRing",q[0],.09,q[1],10,.16,i%2?warmMat:trimMat);
-  for(let a=0;a<4;a++){
-   const ang=a*Math.PI/2+Math.PI/4;
-   decoCylinder("cornerBollard",q[0]+Math.cos(ang)*3.2,.6,q[1]+Math.sin(ang)*3.2,.42,1.2,darkMat,false);
-  }
+ // 중앙을 둘러싼 4개의 낮은 석재 엄폐물. 검정/파란 구조물은 사용하지 않습니다.
+ [[-14,9,.28],[14,-9,-.28],[-14,-9,-.28],[14,9,.28]].forEach(q=>{
+  box("stoneCover",q[0],1.15,q[1],6.5,2.3,1.0,stoneMat,true,q[2]);
+  box("stoneCoverTrim",q[0],2.35,q[1],4.8,.12,.12,creamTrim,false,q[2]);
  });
 
- // 고지대 주변에도 곡선형 난간/테두리를 추가해 플랫폼을 박스처럼 보이지 않게 합니다.
- [[-28,22],[28,22],[-28,-22],[28,-22]].forEach((q,i)=>{
-  const a0=i%2===0?Math.PI*.08:Math.PI*1.08;
-  curvedWall(q[0],q[1],5.7,a0,a0+Math.PI*.82,7,1.0,.14,trimMat,false);
-  decoTorus("platformAccent",q[0],6.02,q[1],8.5,.10,trimMat);
+ // 중앙과 각 사이트를 연결하는 석조 아치.
+ archway(0,15,0);
+ archway(0,-15,Math.PI);
+ archway(-17,0,Math.PI/2);
+ archway(17,0,-Math.PI/2);
+
+ // A/B 사이트 표지용 원형 패드와 따뜻한 조명.
+ function sitePad(x,z,label){
+  cyl("sitePad",x,.06,z,15,.12,creamTrim,false);
+  torus("siteRing",x,.13,z,15,.16,terracottaMat);
+  cyl("siteMarker",x,.18,z,2.8,.16,stoneMat,false);
+  const sign=box("siteSign",x,2.2,z-5.8,2.0,2.2,.18,stuccoLight,false);
+  sign.rotation.y=Math.PI;
+  // 라벨은 Babylon DynamicTexture 없이 간단한 색상 기호로 표현합니다.
+  box("siteLetter",x,2.2,z-5.92,1.1,1.1,.06,terracottaMat,false);
+ }
+ sitePad(-31,20,"A");
+ sitePad(31,-20,"B");
+
+ // 좌우 골목에 작은 상점형 파사드와 차양을 배치.
+ canopy(-29,8,7,4); canopy(29,-8,7,4);
+ canopy(-29,-8,6,3.5); canopy(29,8,6,3.5);
+
+ // 높은 곳으로 순간 이동시키는 구형 플랫폼/계단은 완전히 제거.
+ // 대신 지상에서 자연스럽게 이동하는 넓은 석재 계단을 2곳만 둡니다.
+ function groundStairs(x,z,rot=0){
+  const count=6, stepW=1.25, depth=3.6, total=7.5;
+  for(let i=0;i<count;i++){
+   const h=.28*(i+1);
+   const offset=(i-(count-1)/2)*stepW;
+   const px=x+Math.cos(rot)*offset, pz=z+Math.sin(rot)*offset;
+   box("newStair",px,h/2,pz,stepW,h,depth,stoneMat,true,rot);
+  }
+  stairSurfaces.push({minX:x-4,maxX:x+4,minZ:z-2,maxZ:z+2,baseY:GROUND_Y,maxY:GROUND_Y+1.68,platformX:x,platformZ:z,rot});
+ }
+ groundStairs(-22,17,0);
+ groundStairs(22,-17,Math.PI);
+
+ // 계단 위는 작은 발코니로 연결되지만 지붕/천장으로 올라가는 구조는 없습니다.
+ box("balconyA",-22,1.95,12,7,.22,5,stoneMat,true);
+ box("balconyB",22,1.95,-12,7,.22,5,stoneMat,true);
+
+ // 식물/나무/상자와 램프를 분산해 빈 사각 공간을 없앱니다.
+ [[-41,10],[-41,-10],[41,10],[41,-10],[-10,41],[10,41],[-10,-41],[10,-41]].forEach(q=>tree(q[0],q[1],.9));
+ [[-20,29],[20,-29],[-20,-29],[20,29],[-5,28],[5,-28]].forEach(q=>planter(q[0],q[1],1.1));
+ [[-24,4],[24,-4],[-8,24],[8,-24],[-37,0],[37,0]].forEach((q,i)=>crate(q[0],q[1],i*.18));
+
+ // 따뜻한 벽등.
+ function lamp(x,z){
+  cyl("lampPole",x,2.0,z,.12,3.6,woodMat,false);
+  box("lampHead",x,3.85,z,.48,.22,.48,brassMat,false);
+  cyl("lampGlow",x,3.62,z,.18,.18,creamTrim,false,12);
+ }
+ [[-38,20],[-38,-20],[38,20],[38,-20],[-12,12],[12,-12],[-12,-12],[12,12]].forEach(q=>lamp(q[0],q[1]));
+
+ // 낮은 화단과 골목 입구.
+ [[-7,32],[7,32],[-7,-32],[7,-32]].forEach(q=>planter(q[0],q[1],.9));
+
+ // 외곽 건물에 얇은 석재 기둥을 추가해 실루엣을 풍부하게 합니다.
+ [[-44,27],[-44,-27],[44,27],[44,-27]].forEach(q=>{
+  box("cornerColumn",q[0],2.7,q[1],1.0,5.4,1.0,stoneMat,true);
+  box("cornerColumnTrim",q[0],5.15,q[1],1.18,.12,1.18,creamTrim,false);
  });
 
- // 길게 뻗은 직선 외곽선 대신 사선 방향의 지면 패턴을 추가합니다.
- for(let i=-3;i<=3;i++){
-  const line=decoBox("diagonalFloorLine",i*7,.028,0,1.0,.035,82,trimMat,false);
-  line.rotation.y=(i%2===0?.18:-.18);
+ // 먼 배경의 종탑 실루엣 — 충돌 없이 장식만 합니다.
+ box("bellTower",0,6.5,46,4.8,13,stuccoLight,false);
+ box("bellTowerRoof",0,13.2,46,5.6,.7,terracottaMat,false);
+ for(let y of [5.5,8.0,10.5]){
+  box("towerWindow",0,y,43.48,1.0,1.0,.08,woodMat,false);
  }
 
- // 원형 화분과 낮은 관목을 추가해 산업 시설 사이의 빈 공간을 부드럽게 연결합니다.
- function roundPlanter(x,z,r=1.4){
-  decoCylinder("roundPlanter",x,.42,z,r*2,.84,darkMat,true);
-  decoCylinder("roundPlant",x,1.18,z,r*1.05,1.0,plantMat,false);
-  decoTorus("planterTrim",x,.86,z,r*2.05,.10,trimMat);
- }
- roundPlanter(-27,0,1.45);
- roundPlanter(27,0,1.45);
- roundPlanter(0,-28,1.25);
- roundPlanter(0,28,1.25);
-
- // 짧은 곡선형 벽을 동선 끝에 배치해 직선 복도 느낌을 줄입니다.
- curvedWall(-30,0,7,Math.PI*.30,Math.PI*.72,4,2.1,.8,darkMat,true);
- curvedWall(30,0,7,Math.PI*1.30,Math.PI*1.72,4,2.1,.8,darkMat,true);
-
- // 맵 전체의 작은 금속 라이트를 원형/대각선 패턴으로 분산합니다.
- [[-12,25],[12,25],[-25,12],[-25,-12],[25,12],[25,-12],[-12,-25],[12,-25]].forEach((q,i)=>{
-  decoCylinder("routeLightBase",q[0],.28,q[1],.5,.56,darkMat,false);
-  decoCylinder("routeLight",q[0],.62,q[1],.22,.18,i%2?warmMat:trimMat,false);
+ // 맵 끝자락의 따뜻한 포인트 라이트.
+ [[-32,32],[32,-32],[-32,-32],[32,32],[0,0]].forEach(q=>{
+  const l=new BABYLON.PointLight("warmMapLight",new BABYLON.Vector3(q[0],4,q[1]),scene);
+  l.diffuse=new BABYLON.Color3(1,.55,.28); l.specular=new BABYLON.Color3(1,.72,.45); l.intensity=.55; l.range=14;
  });
 
-
- /* =====================================================
-    PREMIUM MEDITERRANEAN / TACTICAL VILLAGE PASS
-    따뜻한 테라코타 건물 + 석재 + 아치 + 지붕 + 식생
- ===================================================== */
- const stuccoMat=mat("warmStucco",[.72,.36,.19]);
- stuccoMat.roughness=.82;
- const creamMat=mat("warmCream",[.88,.67,.45]);
- creamMat.roughness=.9;
- const stoneMat=mat("limestone",[.43,.36,.27]);
- stoneMat.roughness=.95;
- const roofMat=mat("terracottaRoof",[.43,.12,.055]);
- roofMat.roughness=.9;
- const roofLightMat=mat("roofHighlight",[.66,.24,.09]);
- const woodMat=mat("darkWood",[.16,.075,.035]);
- const glassMat=new BABYLON.StandardMaterial("warmGlass",scene);
- glassMat.diffuseColor=new BABYLON.Color3(.08,.24,.28);
- glassMat.emissiveColor=new BABYLON.Color3(.025,.08,.09);
- glassMat.alpha=.88;
- const waterMat=new BABYLON.StandardMaterial("fountainWater",scene);
- waterMat.diffuseColor=new BABYLON.Color3(.08,.38,.48);
- waterMat.emissiveColor=new BABYLON.Color3(.025,.12,.15);
- waterMat.alpha=.82;
- const ivyMat=mat("ivy",[.08,.24,.08]);
- const flowerMat=mat("flowers",[.55,.20,.24],new BABYLON.Color3(.15,.04,.02));
-
- function archOpening(x,y,z,w,h,rot=0){
-  const side1=decoBox("archStone",x-w/2,y+h/2,z,.42,h,1.0,stoneMat,false); side1.rotation.y=rot;
-  const side2=decoBox("archStone",x+w/2,y+h/2,z,.42,h,1.0,stoneMat,false); side2.rotation.y=rot;
-  const top=decoBox("archTop",x,y+h,z,w+.5,.55,1.0,stoneMat,false); top.rotation.y=rot;
-  decoTorus("archRound",x,y+h-.18,z,w+.45,.34,stoneMat).rotation.x=Math.PI/2;
- }
- function roof(x,y,z,w,d,rot=0){
-  const r=decoBox("terracottaRoof",x,y,z,w,.32,d,roofMat,false); r.rotation.y=rot;
-  const ridge=decoBox("roofRidge",x,y+.23,z,w*.92,.16,.22,roofLightMat,false); ridge.rotation.y=rot;
-  for(let i=-4;i<=4;i++){
-   const tile=decoBox("roofTile",x+i*(w/9),y+.19,z,d*.02,.08,d*.9,roofLightMat,false);
-   tile.rotation.y=rot;
-  }
- }
- function windowUnit(x,y,z,rot=0){
-  decoBox("windowFrame",x,y,z,2.0,.12,1.35,woodMat,false).rotation.y=rot;
-  const g=decoBox("windowGlass",x,y,z-.03,1.55,.06,1.0,glassMat,false); g.rotation.y=rot;
-  const s1=decoBox("windowBar",x,y,z-.08,.09,.08,1.0,creamMat,false); s1.rotation.y=rot;
-  const s2=decoBox("windowBar",x,y,z-.08,1.55,.08,.09,creamMat,false); s2.rotation.y=rot;
- }
- function balcony(x,y,z,rot=0){
-  const deck=decoBox("balconyDeck",x,y,z,3.4,.18,1.25,stoneMat,true); deck.rotation.y=rot;
-  for(let i=-1;i<=1;i++){
-   const post=decoBox("balconyPost",x+i*1.25,y+.7,z, .10,1.45,.10,woodMat,false); post.rotation.y=rot;
-  }
-  const rail=decoBox("balconyRail",x,y+1.28,z,3.5,.10,.10,woodMat,false); rail.rotation.y=rot;
- }
- function facadeBuilding(x,z,w,d,h,rot=0){
-  const shell=decoBox("stuccoBuilding",x,h/2,z,w,h,d,stuccoMat,false); shell.rotation.y=rot;
-  roof(x,h+.12,z,w+1.0,d+.8,rot);
-  const frontZ=z-d/2-.035;
-  for(let i=-1;i<=1;i++) windowUnit(x+i*(w/3.3),h*.62,frontZ,rot);
-  balcony(x,h*.48,frontZ-.28,rot);
-  const door=decoBox("door",x,.95,frontZ-.05,1.45,1.9,.12,woodMat,false); door.rotation.y=rot;
-  archOpening(x,0,frontZ-.09,2.0,2.25,rot);
- }
-
- // 주변의 건물군 — 외곽 벽을 도시의 파사드처럼 감쌉니다.
- facadeBuilding(-36,-43,18,7,7,0);
- facadeBuilding(8,-43,18,7,7,0);
- facadeBuilding(36,43,18,7,7,Math.PI);
- facadeBuilding(-8,43,18,7,7,Math.PI);
- facadeBuilding(-43,-28,7,17,7,Math.PI/2);
- facadeBuilding(43,28,7,17,7,-Math.PI/2);
-
- // 중앙 골목의 낮은 상점/아치
- [[-27,0,0],[-18,27,Math.PI/2],[27,0,Math.PI],[18,-27,-Math.PI/2]].forEach(q=>{
-  const [x,z,r]=q;
-  facadeBuilding(x,z,9,6,4.8,r);
- });
-
- // 중앙 분수 — 기존 광장 구조 위에 따뜻한 석재 랜드마크를 얹습니다.
- decoCylinder("fountainBase",0,.38,0,7.6,.72,stoneMat,true);
- decoCylinder("fountainWater",0,.78,0,5.8,.10,waterMat,false);
- decoCylinder("fountainInner",0,1.02,0,2.3,.42,stoneMat,false);
- decoCylinder("fountainWaterTop",0,1.25,0,1.65,.07,waterMat,false);
- decoCylinder("fountainColumn",0,1.75,0,.42,1.0,stoneMat,false);
- decoCylinder("fountainCap",0,2.25,0,1.05,.18,creamMat,false);
-
- // 아치형 통로를 여러 방향에 배치해 사진 속 골목 느낌을 만듭니다.
- archOpening(-24,0,-.2,5.5,4.2,0);
- archOpening(24,0,.2,5.5,4.2,Math.PI);
- archOpening(0,0,24,5.5,4.2,Math.PI/2);
- archOpening(0,0,-24,5.5,4.2,-Math.PI/2);
-
- // 나무/화분/아이비
- function cypress(x,z,scale=1){
-  decoCylinder("cypressTrunk",x,1.0,z,.55*scale,2.0*scale,woodMat,false);
-  const c=decoCylinder("cypressLeaf",x,3.0*scale,z,2.0*scale,4.5*scale,ivyMat,false);
-  c.scaling.y=1.15;
- }
- function ivy(x,y,z,rot=0){
-  for(let i=0;i<5;i++){
-   const leaf=decoCylinder("ivyLeaf",x+(i-2)*.38,y+Math.sin(i)*.18,z,.18,.55,ivyMat,false);
-   leaf.rotation.z=.55+Math.sin(i)*.25; leaf.rotation.y=rot;
-  }
- }
- cypress(-31,-5,1.1); cypress(31,5,1.1); cypress(-5,31,.9); cypress(5,-31,.9);
- [[-36,-40],[-28,-40],[28,40],[36,40],[-40,-12],[40,12]].forEach(q=>ivy(q[0],2.5,q[1]));
-
- // 천장 지붕 아래 따뜻한 램프
- function warmLamp(x,y,z){
-  decoBox("lampArm",x,y,z,.12,.12,1.1,woodMat,false);
-  const glow=BABYLON.MeshBuilder.CreateSphere("warmLampGlow",{diameter:.32,segments:10},scene);
-  glow.position.set(x,y-.25,z);
-  glow.material=warmMat;
-  glow.isPickable=false;
- }
- [[-39,4,-36],[-30,4,-36],[30,4,36],[39,4,36],[-43,3,-20],[43,3,20]].forEach(q=>warmLamp(q[0],q[1],q[2]));
-
- // 바닥을 돌바닥처럼 보이게 하는 불규칙 패턴
- for(let r=4;r<=30;r+=4){
-  decoTorus("stoneRing",0,.055,0,r,.055,creamMat);
- }
- for(let i=0;i<18;i++){
-  const a=i*Math.PI/9;
-  const m=decoBox("radialStone",Math.cos(a)*18,.06,Math.sin(a)*18,6,.05,.08,stoneMat,false);
-  m.rotation.y=a;
- }
-
- // 하늘의 따뜻한 원경 구조물
- const skylineMat=mat("farBuilding",[.42,.23,.16]);
- [[-34,8,39,7,14],[0,9,43,9,16],[34,7,39,7,13]].forEach(q=>{
-  const b=decoBox("farTower",q[0],q[1],q[2],q[3],q[4],4,skylineMat,false);
-  roof(q[0],q[1]+q[4]/2+.2,q[2],q[3]+1,4,0);
- });
-
- // 화면 전체를 따뜻한 오후빛으로 통일
- const warmFill=new BABYLON.HemisphericLight("warmFill",new BABYLON.Vector3(0,1,0),scene);
- warmFill.diffuse=new BABYLON.Color3(1,.78,.58);
- warmFill.groundColor=new BABYLON.Color3(.28,.20,.15);
- warmFill.intensity=.22;
-
- /* =====================================================
-    LEGACY MAP CLEANUP
-    새 지중해풍 맵과 기존 네모형 맵이 겹치지 않도록
-    기존 내부 벽/산업 장식의 렌더링과 충돌을 제거합니다.
-    외곽 경계와 고지대/계단은 그대로 유지합니다.
- ===================================================== */
- const legacyVisualNames=[
-  "middleWall","middleWall2","leftWall","rightWall","upperWall","lowerWall",
-  "cover","centerTile","centerStripe","centerStripe2",
-  "pillar","pillarAccent","lampPole","lampHead","lampGlow",
-  "planter","plant","crateA","crateB",
-  "platformTrim","platformTrim2","northPanel","southPanel","westPanel","eastPanel",
-  "roadPanel","roadPanelV","panelWall","panelRib",
-  "commandBase","commandCore","commandGlow","commandPillar","commandLight",
-  "railPost","railTop","container","containerStripe",
-  "gateLeft","gateRight","gateTop","gateLight","bollard","warningLight",
-  "diagonalFloorLine"
- ];
- for(const mesh of scene.meshes){
-  if(!mesh || mesh.isDisposed()) continue;
-  if(legacyVisualNames.includes(mesh.name)){
-   mesh.setEnabled(false);
-   mesh.checkCollisions=false;
-   const idx=collisionMeshes.indexOf(mesh);
-   if(idx!==-1) collisionMeshes.splice(idx,1);
-  }
- }
-
- // 새 건물 파사드는 실제 벽으로 사용해 보이는 건물과 충돌도 일치시킵니다.
- for(const mesh of scene.meshes){
-  if(!mesh || mesh.isDisposed()) continue;
-  if(mesh.name==="stuccoBuilding"){
-   mesh.checkCollisions=true;
-   if(!collisionMeshes.includes(mesh)) collisionMeshes.push(mesh);
-  }
- }
-
+ // 새 맵에서는 계단 표면만 사용하고, 기존 고지대/천장 텔레포트 로직은 존재하지 않습니다.
  return scene;
 
 }
@@ -4205,23 +3718,13 @@ function respawnPlayer(){
 function getStairSurfaceY(x,z){
  for(const s of stairSurfaces){
   if(x<s.minX || x>s.maxX || z<s.minZ || z>s.maxZ) continue;
-  const rel=(x-(s.platformX-10.5))/2.0;
-  const step=Math.max(0,Math.min(7,Math.floor(rel)));
-  const top=4.3*(step+1)/8;
-  return GROUND_Y+top;
+  const axis=(Math.cos(s.rot||0)*(x-s.platformX)+Math.sin(s.rot||0)*(z-s.platformZ));
+  const step=Math.max(0,Math.min(5,Math.floor((axis+3.75)/1.25)));
+  return GROUND_Y+.28*(step+1);
  }
  return null;
 }
-
-function getWalkSurfaceY(x,z){
- const stairY=getStairSurfaceY(x,z);
- for(const s of stairSurfaces){
-  if(Math.abs(x-s.platformX)<=6 && Math.abs(z-s.platformZ)<=5){
-   return GROUND_Y+4.3;
-  }
- }
- return stairY;
-}
+function getWalkSurfaceY(x,z){ return getStairSurfaceY(x,z); }
 
 function updateMovement(
  dt
@@ -5196,6 +4699,7 @@ window.addEventListener(
    if(e.code==="Digit1"){equipSlot("melee");return;}
    if(e.code==="Digit2"){equipSlot("sidearm");return;}
    if(e.code==="Digit3"){equipSlot("primary");return;}
+   if(e.code==="KeyV"){cycleWeaponSlot();return;}
    if(e.code==="KeyQ"&&gameMode==="training"){showWeaponSelect();return;}
   }
 
@@ -5863,6 +5367,15 @@ const zoomBtn=document.getElementById("zoomBtn");
 zoomBtn.addEventListener("pointerdown",e=>{e.preventDefault();e.stopPropagation();toggleZoom();});
 const weaponOpenBtn=document.getElementById("weaponOpenBtn");
 weaponOpenBtn.addEventListener("pointerdown",e=>{e.preventDefault();e.stopPropagation();if(gameStarted&&!gameOver&&!playerDead)showWeaponSelect();});
+
+function cycleWeaponSlot(){
+ if(!gameStarted||gameOver||playerDead||weaponSelectionOpen)return;
+ const order=["melee","sidearm","primary"];
+ const i=Math.max(0,order.indexOf(currentSlot));
+ equipSlot(order[(i+1)%order.length]);
+}
+const swapWeaponBtn=document.getElementById("swapWeaponBtn");
+swapWeaponBtn.addEventListener("pointerdown",e=>{e.preventDefault();e.stopPropagation();cycleWeaponSlot();});
 
 canvas.addEventListener("contextmenu",e=>e.preventDefault());
 window.addEventListener("mousedown",e=>{if(e.button===2&&gameStarted&&!gameOver&&!playerDead)setZoom(true);});
